@@ -5,8 +5,8 @@
 //import org.orekit.frames.TopocentricFrame;
 //import CoverageAnalysis;
 //import Orbit;
-//import seak.orekit.coverage.access.TimeIntervalArray;
-//import seak.orekit.event.EventIntervalMerger;
+//import seakers.orekit.coverage.access.TimeIntervalArray;
+//import seakers.orekit.event.EventIntervalMerger;
 //
 //import java.util.HashMap;
 //import java.util.Map;

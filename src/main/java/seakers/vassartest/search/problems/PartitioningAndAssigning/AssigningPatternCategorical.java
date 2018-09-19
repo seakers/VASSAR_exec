@@ -1,16 +1,16 @@
 package seakers.vassartest.search.problems.PartitioningAndAssigning;
 
 import org.moeaframework.core.Variable;
-import seak.architecture.util.IntegerVariable;
+import seakers.architecture.util.IntegerVariable;
 
 import java.util.ArrayList;
 
 /**
- * This class extends seak.architecture.pattern.Assigning, which defines the input space using
+ * This class extends seakers.architecture.pattern.Assigning, which defines the input space using
  * binary variables. Instead, this class defines the input space using categorical (Integer) variables.
  */
 
-public class AssigningPatternCategorical extends seak.architecture.pattern.Assigning{
+public class AssigningPatternCategorical extends seakers.architecture.pattern.Assigning{
 
     protected int mNodes;
     protected int nNodes;

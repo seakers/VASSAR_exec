@@ -8,7 +8,7 @@ import seakers.vassar.evaluation.ArchitectureEvaluationManager;
 import seakers.vassar.architecture.AbstractArchitectureGenerator;
 import seakers.vassar.problems.Assigning.ArchitectureGenerator;
 import seakers.vassar.problems.Assigning.ClimateCentricParams;
-import seak.orekit.util.OrekitConfig;
+import seakers.orekit.util.OrekitConfig;
 import seakers.vassar.problems.Assigning.ArchitectureEvaluator;
 
 import java.io.File;

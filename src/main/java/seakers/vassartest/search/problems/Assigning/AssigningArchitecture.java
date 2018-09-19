@@ -5,10 +5,10 @@
 package seakers.vassartest.search.problems.Assigning;
 
 import org.moeaframework.core.Solution;
-import seak.architecture.Architecture;
-import seak.architecture.pattern.ArchitecturalDecision;
-import seak.architecture.pattern.Assigning;
-import seak.architecture.pattern.Combining;
+import seakers.architecture.Architecture;
+import seakers.architecture.pattern.ArchitecturalDecision;
+import seakers.architecture.pattern.Assigning;
+import seakers.architecture.pattern.Combining;
 
 import java.util.ArrayList;
 

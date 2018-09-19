@@ -2,7 +2,7 @@ package seakers.vassartest;
 
 import org.moeaframework.core.Population;
 import org.moeaframework.core.Solution;
-import seak.architecture.io.ResultIO;
+import seakers.architecture.io.ResultIO;
 
 import java.io.*;
 

@@ -7,7 +7,7 @@ import seakers.vassar.architecture.AbstractArchitecture;
 import seakers.vassar.local.BaseParams;
 import seakers.vassar.problems.PartitioningAndAssigning.ArchitectureGenerator;
 import seakers.vassar.problems.PartitioningAndAssigning.PartitioningAndAssigningParams;
-import seak.architecture.util.IntegerVariable;
+import seakers.architecture.util.IntegerVariable;
 import seakers.vassar.problems.PartitioningAndAssigning.Architecture;
 
 import java.util.ArrayList;

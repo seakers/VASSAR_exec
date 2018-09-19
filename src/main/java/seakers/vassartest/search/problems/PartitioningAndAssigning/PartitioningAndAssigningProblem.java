@@ -11,8 +11,8 @@ import seakers.vassar.Result;
 import seakers.vassar.architecture.AbstractArchitecture;
 import seakers.vassar.evaluation.ArchitectureEvaluationManager;
 import seakers.vassar.local.BaseParams;
-import seak.architecture.problem.SystemArchitectureProblem;
-import seak.architecture.util.IntegerVariable;
+import seakers.architecture.problem.SystemArchitectureProblem;
+import seakers.architecture.util.IntegerVariable;
 import seakers.vassar.problems.PartitioningAndAssigning.Architecture;
 
 import java.util.HashSet;

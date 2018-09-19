@@ -5,12 +5,12 @@
 package seakers.vassartest.search.problems.PartitioningAndAssigning;
 
 import org.moeaframework.core.Solution;
-import seak.architecture.pattern.ArchitecturalDecision;
-import seak.architecture.pattern.Partitioning;
+import seakers.architecture.pattern.ArchitecturalDecision;
+import seakers.architecture.pattern.Partitioning;
 
 import java.util.ArrayList;
 
-public class PartitioningAndAssigningArchitecture extends seak.architecture.Architecture {
+public class PartitioningAndAssigningArchitecture extends seakers.architecture.Architecture {
 
     /**
      * Tag used for the assigning decision

@@ -4,8 +4,8 @@ import org.moeaframework.core.Solution;
 import org.moeaframework.core.Variation;
 import seakers.vassar.local.BaseParams;
 import seakers.vassartest.search.problems.PartitioningAndAssigning.PartitioningAndAssigningArchitecture;
-import seak.architecture.Architecture;
-import seak.architecture.util.IntegerVariable;
+import seakers.architecture.Architecture;
+import seakers.architecture.util.IntegerVariable;
 
 import java.util.ArrayList;
 import java.util.Arrays;

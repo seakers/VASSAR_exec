@@ -1,6 +1,6 @@
 package seakers.vassartest;
 
-import seak.orekit.util.OrekitConfig;
+import seakers.orekit.util.OrekitConfig;
 import seakers.vassar.architecture.AbstractArchitecture;
 import seakers.vassar.evaluation.AbstractArchitectureEvaluator;
 import seakers.vassar.evaluation.ArchitectureEvaluationManager;

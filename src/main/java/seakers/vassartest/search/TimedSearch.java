@@ -11,7 +11,7 @@ import org.moeaframework.core.Algorithm;
 import org.moeaframework.core.Population;
 import org.moeaframework.core.Solution;
 import org.moeaframework.util.TypedProperties;
-import seak.architecture.io.ResultIO;
+import seakers.architecture.io.ResultIO;
 
 import java.io.File;
 import java.io.IOException;

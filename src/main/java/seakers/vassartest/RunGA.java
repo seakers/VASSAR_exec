@@ -14,8 +14,8 @@ import seakers.vassartest.search.problems.Assigning.AssigningArchitecture;
 import seakers.vassartest.search.problems.Assigning.AssigningProblem;
 import seakers.vassartest.search.TimedSearch;
 import seakers.vassar.problems.Assigning.ClimateCentricParams;
-import seak.architecture.operators.IntegerUM;
-import seak.orekit.util.OrekitConfig;
+import seakers.architecture.operators.IntegerUM;
+import seakers.orekit.util.OrekitConfig;
 import seakers.vassar.problems.Assigning.ArchitectureEvaluator;
 
 import java.io.*;
@@ -39,9 +39,9 @@ public class RunGA {
         ExecutorService pool = Executors.newFixedThreadPool(numCpus);
         CompletionService<Algorithm> ecs = new ExecutorCompletionService<>(pool);
 
-        //parameters and operators for seak.vassar_server.search
+        //parameters and operators for seakers.vassar_server.search
         TypedProperties properties = new TypedProperties();
-        //seak.vassar_server.search paramaters set here
+        //seakers.vassar_server.search paramaters set here
         int popSize = 500;
         int maxEvals = 10000;
         properties.setInt("maxEvaluations", maxEvals);
