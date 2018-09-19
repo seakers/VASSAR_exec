@@ -1,5 +1,6 @@
 package seakers.vassartest;
 
+import seak.orekit.util.OrekitConfig;
 import seakers.vassar.architecture.AbstractArchitecture;
 import seakers.vassar.evaluation.AbstractArchitectureEvaluator;
 import seakers.vassar.evaluation.ArchitectureEvaluationManager;
@@ -17,9 +18,9 @@ public class SMAPEvaluationTest {
     public static void main(String[] args){
 
         //PATH
-        String path = "./problems/SMAP";
+        String resourcesPath = "../VASSAR_resources";
 
-        AssigningParams params = new SMAPParams(path,
+        AssigningParams params = new SMAPParams(resourcesPath,
                 "CRISP-ATTRIBUTES","test","normal","");
         AbstractArchitectureEvaluator eval = new ArchitectureEvaluator(params);
         ArchitectureEvaluationManager AE = new ArchitectureEvaluationManager(params, eval);
@@ -39,7 +40,9 @@ public class SMAPEvaluationTest {
         testArch = new Architecture(map, 1, params);
 
         AE.init(1);
+        OrekitConfig.init(1, params.orekitResourcesPath);
         Result result = AE.evaluateArchitectureSync(testArch, "Slow");
+        OrekitConfig.end();
         AE.clear();
 
         System.out.println(result.getScience());

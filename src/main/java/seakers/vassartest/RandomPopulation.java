@@ -24,14 +24,14 @@ public class RandomPopulation {
 
         ClimateCentricParams params;
 
-        String path = "." + File.separator + "problems" + File.separator + "ClimateCentric";
-        params = new ClimateCentricParams(path,
+        String resourcesPath = "../VASSAR_resources";
+        params = new ClimateCentricParams(resourcesPath,
                 "CRISP-ATTRIBUTES","test","normal","search_heuristic_rules_smap_127");
-        params.aggregationXls = params.path + "/xls/Aggregation Rules-Weather.xls";
         AbstractArchitectureEvaluator eval = new ArchitectureEvaluator(params);
         ArchitectureEvaluationManager AE = new ArchitectureEvaluationManager(params, eval);
         AbstractArchitectureGenerator archGenerator = new ArchitectureGenerator(params);
-        OrekitConfig.init(6);
+        OrekitConfig.init(6, params.orekitResourcesPath);
+
 
         ArrayList<AbstractArchitecture> initialPopulation = archGenerator.generateBiasedRandomPopulation(POP_SIZE, 0.25);
         AE.init(6);

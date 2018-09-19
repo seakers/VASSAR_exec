@@ -64,14 +64,14 @@ public class RunGA {
         properties.setBoolean("saveSelection", true);
 
         //initialize problem
-        String path = "./" + File.separator + "problems" + File.separator + "ClimateCentric";
+        String path = "../VASSAR_resources";
         ClimateCentricParams params = new ClimateCentricParams(path, "CRISP-ATTRIBUTES",
                 "test", "normal", "search_heuristic_rules_smap_127");
-        params.aggregationXls = params.path + "/xls/Aggregation Rules-" + problemCap + ".xls";
+        params.aggregationXls = params.problemPath + "/xls/Aggregation Rules-" + problemCap + ".xls";
         AbstractArchitectureEvaluator evaluator = new ArchitectureEvaluator(params);
         ArchitectureEvaluationManager AEM = new ArchitectureEvaluationManager(params, evaluator);
         AEM.init(numCpus);
-        OrekitConfig.init(numCpus);
+        OrekitConfig.init(numCpus, params.orekitResourcesPath);
 
         for (int i = 0; i < numRuns; ++i) {
 

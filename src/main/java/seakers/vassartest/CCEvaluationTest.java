@@ -1,5 +1,6 @@
 package seakers.vassartest;
 
+import seak.orekit.util.OrekitConfig;
 import seakers.vassar.Result;
 import seakers.vassar.architecture.AbstractArchitecture;
 import seakers.vassar.evaluation.AbstractArchitectureEvaluator;
@@ -15,9 +16,9 @@ public class CCEvaluationTest {
     public static void main(String[] args){
 
         //PATH
-        String path = "./problems/ClimateCentric";
+        String resourcesPath = "../VASSAR_resources";
 
-        AssigningParams params = new ClimateCentricParams(path, "CRISP-ATTRIBUTES",
+        AssigningParams params = new ClimateCentricParams(resourcesPath, "CRISP-ATTRIBUTES",
                 "test", "normal", "search_heuristic_rules_smap_127");
         AbstractArchitectureEvaluator eval = new ArchitectureEvaluator(params);
         ArchitectureEvaluationManager AE = new ArchitectureEvaluationManager(params, eval);
@@ -32,8 +33,12 @@ public class CCEvaluationTest {
         testArch = new Architecture("111100000000000000000000000000000000000000000000000000000000", 1, params);
 
         AE.init(1);
+        OrekitConfig.init(1, params.orekitResourcesPath);
         Result result = AE.evaluateArchitectureSync(testArch, "Slow");
+        OrekitConfig.end();
         AE.clear();
+
+        System.out.println(result.toString());
 
         System.out.println("DONE");
     }
