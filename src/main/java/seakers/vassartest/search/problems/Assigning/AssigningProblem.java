@@ -31,15 +31,17 @@ public class AssigningProblem extends AbstractProblem implements SystemArchitect
 
     private final String problem;
 
-    private final ArchitectureEvaluationManager evaluationManager;
-
-    private final BaseParams params;
-
     private final double dcThreshold = 0.5;
 
     private final double massThreshold = 3000.0; //[kg]
 
     private final double packingEffThreshold = 0.4; //[kg]
+
+    private int nfe;
+
+    private ArchitectureEvaluationManager evaluationManager;
+
+    private BaseParams params;
 
     /**
      * @param alternativesForNumberOfSatellites
@@ -51,13 +53,15 @@ public class AssigningProblem extends AbstractProblem implements SystemArchitect
         this.evaluationManager = evaluationManager;
         this.alternativesForNumberOfSatellites = alternativesForNumberOfSatellites;
         this.params = params;
+        this.nfe = 0;
     }
 
     @Override
     public void evaluate(Solution sltn) {
         AssigningArchitecture arch = (AssigningArchitecture) sltn;
         evaluateArch(arch);
-        System.out.println(String.format("Arch %s Science = %10f; Cost = %10f",
+        this.nfe++;
+        System.out.println(this.nfe + ": " + String.format("Arch %s Science = %10f; Cost = %10f",
                 arch.toString(), arch.getObjective(0), arch.getObjective(1)));
     }
 
@@ -77,27 +81,9 @@ public class AssigningProblem extends AbstractProblem implements SystemArchitect
                 throw new IllegalArgumentException("Unrecorgnizable problem type: " + problem);
             }
 
-            Result result = null;
-            try {
-                result = this.evaluationManager.evaluateArchitectureAsync(arch_old, "Slow").get();
-            }
-            catch (ExecutionException e) {
-                System.out.println("Exception when evaluating an architecture");
-                e.printStackTrace();
-                this.evaluationManager.clear();
-                System.exit(-1);
-            }
-            catch (InterruptedException e) {
-                System.out.println("Execution got interrupted while evaluating an architecture");
-                e.printStackTrace();
-                this.evaluationManager.clear();
-                System.exit(-1);
-            }
-
+            Result result = this.evaluationManager.evaluateArchitectureSync(arch_old, "Slow");
             arch.setObjective(0, -result.getScience()); //negative because MOEAFramework assumes minimization problems
-
-            double cost = result.getCost();
-            arch.setObjective(1, cost); //normalize cost to maximum value
+            arch.setObjective(1, result.getCost()); //normalize cost to maximum value
             arch.setAlreadyEvaluated(true);
         }
     }
@@ -107,4 +93,7 @@ public class AssigningProblem extends AbstractProblem implements SystemArchitect
         return new AssigningArchitecture(alternativesForNumberOfSatellites, params.getNumInstr(), params.getNumOrbits(), 2);
     }
 
+    public void resetEvaluationManager(){
+        this.evaluationManager.init();
+    }
 }
