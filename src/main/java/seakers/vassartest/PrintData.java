@@ -10,8 +10,8 @@ public class PrintData {
     public static void main(String[] args) {
         int numRuns = 30;
 
-        String path = "./problems/ClimateCentric/results/";
-        String problemType = "weather";
+        String path = "../VASSAR_resources/problems/SMAP_JPL2/results/";
+        String problemType = "smap_jpl2_";
 
         for (int run = 0; run < numRuns; ++run) {
             Population population;

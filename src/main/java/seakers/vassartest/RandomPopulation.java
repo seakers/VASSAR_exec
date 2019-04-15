@@ -6,10 +6,8 @@ import seakers.vassar.architecture.AbstractArchitecture;
 import seakers.vassar.evaluation.AbstractArchitectureEvaluator;
 import seakers.vassar.evaluation.ArchitectureEvaluationManager;
 import seakers.vassar.architecture.AbstractArchitectureGenerator;
-import seakers.vassar.problems.Assigning.ArchitectureGenerator;
-import seakers.vassar.problems.Assigning.ClimateCentricParams;
+import seakers.vassar.problems.Assigning.*;
 import seakers.orekit.util.OrekitConfig;
-import seakers.vassar.problems.Assigning.ArchitectureEvaluator;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -20,20 +18,20 @@ public class RandomPopulation {
      */
     public static void main(String[] args) {
 
-        int POP_SIZE = 200;
+        int POP_SIZE = 500;
 
-        ClimateCentricParams params;
+        SMAPParams params;
 
         String resourcesPath = "../VASSAR_resources";
-        params = new ClimateCentricParams(resourcesPath,
-                "CRISP-ATTRIBUTES","test","normal","search_heuristic_rules_smap_127");
+        params = new SMAPParams(resourcesPath,
+                "CRISP-ATTRIBUTES","test","normal","");
         AbstractArchitectureEvaluator eval = new ArchitectureEvaluator(params);
         ArchitectureEvaluationManager AE = new ArchitectureEvaluationManager(params, eval);
         AbstractArchitectureGenerator archGenerator = new ArchitectureGenerator(params);
         OrekitConfig.init(6, params.orekitResourcesPath);
 
 
-        ArrayList<AbstractArchitecture> initialPopulation = archGenerator.generateBiasedRandomPopulation(POP_SIZE, 0.25);
+        ArrayList<AbstractArchitecture> initialPopulation = archGenerator.generateBiasedRandomPopulation(POP_SIZE, 0.15);
         AE.init(6);
         AE.setPopulation(initialPopulation);
         AE.evaluatePopulation();

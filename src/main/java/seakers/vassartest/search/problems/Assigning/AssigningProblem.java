@@ -7,11 +7,11 @@ package seakers.vassartest.search.problems.Assigning;
 
 import org.moeaframework.core.Solution;
 import org.moeaframework.problem.AbstractProblem;
+import seakers.architecture.problem.SystemArchitectureProblem;
 import seakers.vassar.Result;
 import seakers.vassar.architecture.AbstractArchitecture;
 import seakers.vassar.evaluation.ArchitectureEvaluationManager;
 import seakers.vassar.local.BaseParams;
-import seakers.architecture.problem.SystemArchitectureProblem;
 import seakers.vassar.problems.Assigning.Architecture;
 import seakers.vassar.problems.Assigning.AssigningParams;
 
@@ -67,24 +67,33 @@ public class AssigningProblem extends AbstractProblem implements SystemArchitect
 
     private void evaluateArch(AssigningArchitecture arch) {
         if (!arch.getAlreadyEvaluated()) {
-            String bitString = "";
+            StringBuilder bitStringBuilder = new StringBuilder(this.getNumberOfVariables());
             for (int i = 1; i < this.getNumberOfVariables(); ++i) {
-                bitString += arch.getVariable(i).toString();
+                bitStringBuilder.append(arch.getVariable(i).toString());
             }
 
             AbstractArchitecture arch_old;
-            if (problem.equalsIgnoreCase("SMAP") || problem.equalsIgnoreCase("ClimateCentric")) {
+            if (problem.equalsIgnoreCase("SMAP") || problem.equalsIgnoreCase("SMAP_JPL1")
+                    || problem.equalsIgnoreCase("SMAP_JPL2")
+                    || problem.equalsIgnoreCase("ClimateCentric")) {
                 // Generate a new architecture
-                arch_old = new Architecture(bitString, 1, (AssigningParams)params);
+                arch_old = new Architecture(bitStringBuilder.toString(), 1, (AssigningParams)params);
             }
             else {
                 throw new IllegalArgumentException("Unrecorgnizable problem type: " + problem);
             }
 
-            Result result = this.evaluationManager.evaluateArchitectureSync(arch_old, "Slow");
-            arch.setObjective(0, -result.getScience()); //negative because MOEAFramework assumes minimization problems
-            arch.setObjective(1, result.getCost()); //normalize cost to maximum value
-            arch.setAlreadyEvaluated(true);
+            try {
+                Result result = this.evaluationManager.evaluateArchitectureAsync(arch_old, "Slow").get();
+                arch.setObjective(0, -result.getScience()); //negative because MOEAFramework assumes minimization problems
+
+                double cost = result.getCost();
+                arch.setObjective(1, cost); //normalize cost to maximum value
+                arch.setAlreadyEvaluated(true);
+            }
+            catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
         }
     }
 

@@ -10,6 +10,8 @@ import org.moeaframework.core.variable.BinaryVariable;
 import org.moeaframework.util.TypedProperties;
 import seakers.vassar.evaluation.AbstractArchitectureEvaluator;
 import seakers.vassar.evaluation.ArchitectureEvaluationManager;
+import seakers.vassar.problems.Assigning.SMAPJPL1Params;
+import seakers.vassar.problems.Assigning.SMAPJPL2Params;
 import seakers.vassartest.search.problems.Assigning.AssigningArchitecture;
 import seakers.vassartest.search.problems.Assigning.AssigningProblem;
 import seakers.vassartest.search.TimedSearch;
@@ -30,11 +32,9 @@ public class RunGA {
     public static void main(String[] args) {
         System.out.println("Starting GA for binary input data");
 
-        int numRuns = 15;
-        int numCpus = 5;
-        int startOn = 15;
-        String problem = "weather";
-        String problemCap = "Weather";
+        int numRuns = 30;
+        int numCpus = 6;
+        int startOn = 0;
 
         ExecutorService pool = Executors.newFixedThreadPool(numCpus);
         CompletionService<Algorithm> ecs = new ExecutorCompletionService<>(pool);
@@ -65,9 +65,8 @@ public class RunGA {
 
         //initialize problem
         String path = "../VASSAR_resources";
-        ClimateCentricParams params = new ClimateCentricParams(path, "CRISP-ATTRIBUTES",
-                "test", "normal", "search_heuristic_rules_smap_127");
-        params.aggregationXls = params.problemPath + "/xls/Aggregation Rules-" + problemCap + ".xls";
+        SMAPJPL1Params params = new SMAPJPL1Params(path, "CRISP-ATTRIBUTES",
+                "test", "normal", "");
         AbstractArchitectureEvaluator evaluator = new ArchitectureEvaluator(params);
         ArchitectureEvaluationManager AEM = new ArchitectureEvaluationManager(params, evaluator);
         AEM.init(numCpus);
@@ -75,16 +74,21 @@ public class RunGA {
 
         for (int i = 0; i < numRuns; ++i) {
 
-            Problem assignmentProblem = new AssigningProblem(new int[]{1}, "ClimateCentric", AEM, params);
+            Problem assignmentProblem = new AssigningProblem(new int[]{1}, "SMAP_JPL1", AEM, params);
 
             // Create a solution for each input arch in the dataset
-            String csvFile = params.pathSaveResults + "/start_" + problem + ".csv";
+            String csvFile = params.pathSaveResults + "/start.csv";
             String line = "";
             String cvsSplitBy = ",";
 
             List<Solution> initial = new ArrayList<>();
+            boolean header = true;
             try (BufferedReader br = new BufferedReader(new FileReader(csvFile))) {
                 while ((line = br.readLine()) != null) {
+                    if (header) {
+                        header = false;
+                        continue;
+                    }
                     // use comma as separator
                     String[] csvArch = line.split(cvsSplitBy);
                     AssigningArchitecture arch = new AssigningArchitecture(new int[]{1},
@@ -118,7 +122,7 @@ public class RunGA {
             CompoundVariation var = new CompoundVariation(singlecross, bitFlip, intergerMutation);
 
             Algorithm eMOEA = new EpsilonMOEA(assignmentProblem, population, archive, selection, var, initialization);
-            ecs.submit(new TimedSearch(eMOEA, properties, path + File.separator + "results", "emoea_" + problem + (i+startOn)));
+            ecs.submit(new TimedSearch(eMOEA, properties, params.pathSaveResults, "emoea_" + "smap_jpl1_" + (i+startOn)));
         }
 
         for (int i = 0; i < numRuns; ++i) {
