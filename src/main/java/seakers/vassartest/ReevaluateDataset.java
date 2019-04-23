@@ -21,8 +21,8 @@ public class ReevaluateDataset {
         SMAPJPL2Params params;
 
         String resourcesPath = "../VASSAR_resources";
-        params = new SMAPJPL2Params(resourcesPath, "CRISP-ATTRIBUTES","test","normal","");
-        AbstractArchitectureEvaluator eval = new ArchitectureEvaluator(params);
+        params = new SMAPJPL2Params(resourcesPath, "CRISP-ATTRIBUTES","test","normal");
+        AbstractArchitectureEvaluator eval = new ArchitectureEvaluator();
         ArchitectureEvaluationManager AE = new ArchitectureEvaluationManager(params, eval);
         OrekitConfig.init(6, params.orekitResourcesPath);
 
@@ -49,8 +49,8 @@ public class ReevaluateDataset {
         }
 
         AE.init(6);
-        AE.setPopulation(archSet);
-        AE.evaluatePopulation();
+//        AE.setPopulation(archSet);
+//        AE.evaluatePopulation();
         ResultCollection c = new ResultCollection(params, AE.getResults());
 
         ResultCollectionRecorder writer = new ResultCollectionRecorder(params);

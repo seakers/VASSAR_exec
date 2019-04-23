@@ -28,7 +28,7 @@ public class ClimateCentricEvaluation2019Spring {
         System.out.println("Starting GA for binary input data");
 
         int numRuns = 1;
-        int numCpus = 1;
+        int numCpus = 2;
 
         String problem = "ClimateCentric";
         ExecutorService pool = Executors.newFixedThreadPool(numCpus);
@@ -42,7 +42,7 @@ public class ClimateCentricEvaluation2019Spring {
 
         //seakers.vassar_server.search paramaters set here
         int popSize = 500;
-        int maxEvals = 7000;
+        int maxEvals = 10000;
         properties.setInt("maxEvaluations", maxEvals);
         properties.setInt("populationSize", popSize);
         double crossoverProbability = 1.0;
@@ -54,7 +54,7 @@ public class ClimateCentricEvaluation2019Spring {
         Initialization initialization;
 
         //setup for epsilon MOEA
-        double[] epsilonDouble = new double[]{0.001, 10};
+        double[] epsilonDouble = new double[]{0.002, 10};
 
         //setup for saving results
         properties.setBoolean("saveQuality", false);

@@ -11,23 +11,14 @@ import org.moeaframework.core.Algorithm;
 import org.moeaframework.core.Population;
 import org.moeaframework.core.Solution;
 import org.moeaframework.util.TypedProperties;
-import seakers.architecture.io.ResultIO;
-import seakers.vassar.Result;
-import seakers.vassar.architecture.AbstractArchitecture;
-import seakers.vassar.problems.Assigning.Architecture;
-import seakers.vassar.problems.Assigning.AssigningParams;
 import seakers.vassartest.search.problems.Assigning.AssigningArchitecture;
 import seakers.vassartest.search.problems.Assigning.AssigningProblem;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.BitSet;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.StringJoiner;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 
 /**
  *
