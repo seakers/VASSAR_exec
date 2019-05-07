@@ -17,6 +17,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.StringJoiner;
 import java.util.concurrent.Callable;
 
@@ -70,6 +72,10 @@ public class ClimateCentricProblemSearch implements Callable<Algorithm> {
             }
             alg.step();
         }
+
+        Population pop = ((AbstractEvolutionaryAlgorithm) alg).getPopulation();
+        String filename = savePath + File.separator + alg.getClass().getSimpleName() + "_" + name + "_" + cnt;
+        savePopulationCSV(pop, filename);
 
         alg.terminate();
         long finishTime = System.currentTimeMillis();

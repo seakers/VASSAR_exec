@@ -15,6 +15,8 @@ import seakers.vassar.BaseParams;
 import seakers.vassar.problems.Assigning.Architecture;
 import seakers.vassar.problems.Assigning.AssigningParams;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 
@@ -43,6 +45,10 @@ public class AssigningProblem extends AbstractProblem implements SystemArchitect
 
     private BaseParams params;
 
+    private boolean saveEvaluatedSolutions;
+
+    private Map<Integer, double[]> hashedArch;
+
     /**
      * @param alternativesForNumberOfSatellites
      */
@@ -54,6 +60,8 @@ public class AssigningProblem extends AbstractProblem implements SystemArchitect
         this.alternativesForNumberOfSatellites = alternativesForNumberOfSatellites;
         this.params = params;
         this.nfe = 0;
+        this.saveEvaluatedSolutions = false;
+        this.hashedArch = new HashMap<>();
     }
 
     @Override
@@ -67,34 +75,57 @@ public class AssigningProblem extends AbstractProblem implements SystemArchitect
 
     private void evaluateArch(AssigningArchitecture arch) {
         if (!arch.getAlreadyEvaluated()) {
-            StringBuilder bitStringBuilder = new StringBuilder(this.getNumberOfVariables());
-            for (int i = 1; i < this.getNumberOfVariables(); ++i) {
-                bitStringBuilder.append(arch.getVariable(i).toString());
-            }
 
-            AbstractArchitecture arch_old;
-            if (problem.equalsIgnoreCase("SMAP") || problem.equalsIgnoreCase("SMAP_JPL1")
-                    || problem.equalsIgnoreCase("SMAP_JPL2")
-                    || problem.equalsIgnoreCase("ClimateCentric")) {
-                // Generate a new architecture
-                arch_old = new Architecture(bitStringBuilder.toString(), 1, (AssigningParams)params);
-            }
-            else {
-                throw new IllegalArgumentException("Unrecorgnizable problem type: " + problem);
-            }
-
-            try {
-                Result result = this.evaluationManager.evaluateArchitectureAsync(arch_old, "Slow").get();
-                arch.setObjective(0, -result.getScience()); //negative because MOEAFramework assumes minimization problems
-
-                double cost = result.getCost();
-                arch.setObjective(1, cost); //normalize cost to maximum value
+            if(hashedArch.containsKey(arch.hashCode())){
+                double[] objectives = hashedArch.get(arch.hashCode());
+                arch.setObjective(0, objectives[0]); //negative because MOEAFramework assumes minimization problems
+                arch.setObjective(1, objectives[1]); //normalize cost to maximum value
                 arch.setAlreadyEvaluated(true);
-            }
-            catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
+
+            }else{
+                StringBuilder bitStringBuilder = new StringBuilder(this.getNumberOfVariables());
+                for (int i = 1; i < this.getNumberOfVariables(); ++i) {
+                    bitStringBuilder.append(arch.getVariable(i).toString());
+                }
+
+                AbstractArchitecture arch_old;
+                if (problem.equalsIgnoreCase("SMAP") || problem.equalsIgnoreCase("SMAP_JPL1")
+                        || problem.equalsIgnoreCase("SMAP_JPL2")
+                        || problem.equalsIgnoreCase("ClimateCentric")) {
+                    // Generate a new architecture
+                    arch_old = new Architecture(bitStringBuilder.toString(), 1, (AssigningParams)params);
+                }
+                else {
+                    throw new IllegalArgumentException("Unrecorgnizable problem type: " + problem);
+                }
+
+                try {
+                    Result result = this.evaluationManager.evaluateArchitectureAsync(arch_old, "Slow").get();
+                    arch.setObjective(0, -result.getScience()); //negative because MOEAFramework assumes minimization problems
+                    arch.setObjective(1, result.getCost()); //normalize cost to maximum value
+                    arch.setAlreadyEvaluated(true);
+
+                    if(this.saveEvaluatedSolutions){
+                        double[] objectives = new double[2];
+                        objectives[0] = -result.getScience();
+                        objectives[1] = result.getCost();
+                        hashedArch.put(arch.hashCode(), objectives);
+                    }
+                }
+                catch (InterruptedException | ExecutionException e) {
+                    e.printStackTrace();
+                }
             }
         }
+    }
+
+    public AssigningProblem setSaveEvaluatedSolutions(){
+        this.saveEvaluatedSolutions = true;
+        return this;
+    }
+
+    public void clearHashedArch(){
+        this.hashedArch = new HashMap<>();
     }
 
     @Override
