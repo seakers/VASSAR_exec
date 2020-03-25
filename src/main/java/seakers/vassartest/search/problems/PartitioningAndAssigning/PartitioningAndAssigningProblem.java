@@ -7,10 +7,10 @@ package seakers.vassartest.search.problems.PartitioningAndAssigning;
 
 import org.moeaframework.core.Solution;
 import org.moeaframework.problem.AbstractProblem;
+import seakers.vassar.BaseParams;
 import seakers.vassar.Result;
 import seakers.vassar.architecture.AbstractArchitecture;
 import seakers.vassar.evaluation.ArchitectureEvaluationManager;
-import seakers.vassar.local.BaseParams;
 import seakers.architecture.problem.SystemArchitectureProblem;
 import seakers.architecture.util.IntegerVariable;
 import seakers.vassar.problems.PartitioningAndAssigning.Architecture;

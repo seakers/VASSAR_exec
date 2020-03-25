@@ -57,7 +57,7 @@ public class TimedSearch implements Callable<Algorithm> {
         }
 
         LocalDateTime currentTime = LocalDateTime.now();
-        LocalDateTime endTime = currentTime.plus(20, ChronoUnit.MINUTES);
+        LocalDateTime endTime = currentTime.plus(2880, ChronoUnit.MINUTES);
         while (!alg.isTerminated() && (alg.getNumberOfEvaluations() < maxEvaluations) && LocalDateTime.now().isBefore(endTime)) {
             if (alg.getNumberOfEvaluations() % 500 == 0) {
                 System.out.println("NFE: " + alg.getNumberOfEvaluations());

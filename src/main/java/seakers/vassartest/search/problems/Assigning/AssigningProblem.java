@@ -8,10 +8,10 @@ package seakers.vassartest.search.problems.Assigning;
 import org.moeaframework.core.Solution;
 import org.moeaframework.problem.AbstractProblem;
 import seakers.architecture.problem.SystemArchitectureProblem;
+import seakers.vassar.BaseParams;
 import seakers.vassar.Result;
 import seakers.vassar.architecture.AbstractArchitecture;
 import seakers.vassar.evaluation.ArchitectureEvaluationManager;
-import seakers.vassar.local.BaseParams;
 import seakers.vassar.problems.Assigning.Architecture;
 import seakers.vassar.problems.Assigning.AssigningParams;
 

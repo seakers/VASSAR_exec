@@ -32,7 +32,7 @@ public class RunGA {
     public static void main(String[] args) {
         System.out.println("Starting GA for binary input data");
 
-        int numRuns = 30;
+        int numRuns = 1;
         int numCpus = 6;
         int startOn = 0;
 
@@ -65,7 +65,7 @@ public class RunGA {
 
         //initialize problem
         String path = "../VASSAR_resources";
-        SMAPJPL1Params params = new SMAPJPL1Params(path, "CRISP-ATTRIBUTES",
+        ClimateCentricParams params = new ClimateCentricParams(path, "CRISP-ATTRIBUTES",
                 "test", "normal", "");
         AbstractArchitectureEvaluator evaluator = new ArchitectureEvaluator(params);
         ArchitectureEvaluationManager AEM = new ArchitectureEvaluationManager(params, evaluator);
@@ -74,41 +74,10 @@ public class RunGA {
 
         for (int i = 0; i < numRuns; ++i) {
 
-            Problem assignmentProblem = new AssigningProblem(new int[]{1}, "SMAP_JPL1", AEM, params);
+            Problem assignmentProblem = new AssigningProblem(new int[]{1}, "ClimateCentric", AEM, params);
 
             // Create a solution for each input arch in the dataset
-            String csvFile = params.pathSaveResults + "/start.csv";
-            String line = "";
-            String cvsSplitBy = ",";
-
-            List<Solution> initial = new ArrayList<>();
-            boolean header = true;
-            try (BufferedReader br = new BufferedReader(new FileReader(csvFile))) {
-                while ((line = br.readLine()) != null) {
-                    if (header) {
-                        header = false;
-                        continue;
-                    }
-                    // use comma as separator
-                    String[] csvArch = line.split(cvsSplitBy);
-                    AssigningArchitecture arch = new AssigningArchitecture(new int[]{1},
-                            params.getNumInstr(), params.getNumOrbits(), 2);
-                    for (int j = 1; j < arch.getNumberOfVariables(); ++j) {
-                        BinaryVariable var = new BinaryVariable(1);
-                        var.set(0, csvArch[0].charAt(j-1) == '1');
-                        arch.setVariable(j, var);
-                    }
-                    arch.setObjective(0, -Double.valueOf(csvArch[1]));
-                    arch.setObjective(1, Double.valueOf(csvArch[2]));
-                    arch.setAlreadyEvaluated(true);
-                    initial.add(arch);
-                }
-            }
-            catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            initialization = new InjectedInitialization(assignmentProblem, initial.size(), initial);
+            initialization = new RandomInitialization(assignmentProblem, 500);
 
             //initialize population structure for algorithm
             Population population = new Population();
@@ -122,7 +91,7 @@ public class RunGA {
             CompoundVariation var = new CompoundVariation(singlecross, bitFlip, intergerMutation);
 
             Algorithm eMOEA = new EpsilonMOEA(assignmentProblem, population, archive, selection, var, initialization);
-            ecs.submit(new TimedSearch(eMOEA, properties, params.pathSaveResults, "emoea_" + "smap_jpl1_" + (i+startOn)));
+            ecs.submit(new TimedSearch(eMOEA, properties, params.pathSaveResults, "emoea_" + "cc_" + (i+startOn)));
         }
 
         for (int i = 0; i < numRuns; ++i) {

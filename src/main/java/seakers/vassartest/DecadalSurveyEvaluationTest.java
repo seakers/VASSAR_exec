@@ -1,10 +1,10 @@
 package seakers.vassartest;
 
+import seakers.vassar.BaseParams;
 import seakers.vassar.Result;
 import seakers.vassar.architecture.AbstractArchitecture;
 import seakers.vassar.evaluation.AbstractArchitectureEvaluator;
 import seakers.vassar.evaluation.ArchitectureEvaluationManager;
-import seakers.vassar.local.BaseParams;
 import seakers.vassar.problems.PartitioningAndAssigning.Architecture;
 import seakers.vassar.problems.PartitioningAndAssigning.ArchitectureEvaluator;
 import seakers.vassar.problems.PartitioningAndAssigning.Decadal2017AerosolsParams;

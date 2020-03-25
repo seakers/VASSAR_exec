@@ -2,7 +2,7 @@ package seakers.vassartest.search.problems.PartitioningAndAssigning.operators;
 
 import org.moeaframework.core.Solution;
 import org.moeaframework.core.Variation;
-import seakers.vassar.local.BaseParams;
+import seakers.vassar.BaseParams;
 import seakers.vassartest.search.problems.PartitioningAndAssigning.PartitioningAndAssigningArchitecture;
 import seakers.architecture.Architecture;
 import seakers.architecture.util.IntegerVariable;

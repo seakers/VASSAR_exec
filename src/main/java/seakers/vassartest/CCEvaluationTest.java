@@ -19,7 +19,7 @@ public class CCEvaluationTest {
         String resourcesPath = "../VASSAR_resources";
 
         AssigningParams params = new ClimateCentricParams(resourcesPath, "CRISP-ATTRIBUTES",
-                "test", "normal", "search_heuristic_rules_smap_127");
+                "test", "normal");
         AbstractArchitectureEvaluator eval = new ArchitectureEvaluator(params);
         ArchitectureEvaluationManager AE = new ArchitectureEvaluationManager(params, eval);
         AbstractArchitecture testArch;
