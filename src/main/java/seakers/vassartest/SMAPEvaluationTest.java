@@ -21,8 +21,8 @@ public class SMAPEvaluationTest {
         String resourcesPath = "../VASSAR_resources";
 
         AssigningParams params = new SMAPParams(resourcesPath,
-                "CRISP-ATTRIBUTES","test","normal","");
-        AbstractArchitectureEvaluator eval = new ArchitectureEvaluator(params);
+                "CRISP-ATTRIBUTES","test","normal");
+        AbstractArchitectureEvaluator eval = new ArchitectureEvaluator();
         ArchitectureEvaluationManager AE = new ArchitectureEvaluationManager(params, eval);
         AbstractArchitecture testArch;
 

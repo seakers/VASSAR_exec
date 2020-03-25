@@ -20,7 +20,7 @@ public class CCEvaluationTest {
 
         AssigningParams params = new ClimateCentricParams(resourcesPath, "CRISP-ATTRIBUTES",
                 "test", "normal");
-        AbstractArchitectureEvaluator eval = new ArchitectureEvaluator(params);
+        AbstractArchitectureEvaluator eval = new ArchitectureEvaluator();
         ArchitectureEvaluationManager AE = new ArchitectureEvaluationManager(params, eval);
         AbstractArchitecture testArch;
 

@@ -65,9 +65,8 @@ public class RunGA {
 
         //initialize problem
         String path = "../VASSAR_resources";
-        ClimateCentricParams params = new ClimateCentricParams(path, "CRISP-ATTRIBUTES",
-                "test", "normal", "");
-        AbstractArchitectureEvaluator evaluator = new ArchitectureEvaluator(params);
+        ClimateCentricParams params = new ClimateCentricParams(path, "CRISP-ATTRIBUTES", "test", "normal");
+        AbstractArchitectureEvaluator evaluator = new ArchitectureEvaluator();
         ArchitectureEvaluationManager AEM = new ArchitectureEvaluationManager(params, evaluator);
         AEM.init(numCpus);
         OrekitConfig.init(numCpus, params.orekitResourcesPath);
@@ -76,8 +75,39 @@ public class RunGA {
 
             Problem assignmentProblem = new AssigningProblem(new int[]{1}, "ClimateCentric", AEM, params);
 
-            // Create a solution for each input arch in the dataset
-            initialization = new RandomInitialization(assignmentProblem, 500);
+//            // Create a solution for each input arch in the dataset
+//            String csvFile = params.pathSaveResults + "/start.csv";
+//            String line = "";
+//            String cvsSplitBy = ",";
+//
+//            List<Solution> initial = new ArrayList<>();
+//            boolean header = true;
+//            try (BufferedReader br = new BufferedReader(new FileReader(csvFile))) {
+//                while ((line = br.readLine()) != null) {
+//                    if (header) {
+//                        header = false;
+//                        continue;
+//                    }
+//                    // use comma as separator
+//                    String[] csvArch = line.split(cvsSplitBy);
+//                    AssigningArchitecture arch = new AssigningArchitecture(new int[]{1},
+//                            params.getNumInstr(), params.getNumOrbits(), 2);
+//                    for (int j = 1; j < arch.getNumberOfVariables(); ++j) {
+//                        BinaryVariable var = new BinaryVariable(1);
+//                        var.set(0, csvArch[0].charAt(j-1) == '1');
+//                        arch.setVariable(j, var);
+//                    }
+//                    arch.setObjective(0, -Double.valueOf(csvArch[1]));
+//                    arch.setObjective(1, Double.valueOf(csvArch[2]));
+//                    arch.setAlreadyEvaluated(true);
+//                    initial.add(arch);
+//                }
+//            }
+//            catch (IOException e) {
+//                e.printStackTrace();
+//            }
+
+            initialization = new RandomInitialization(assignmentProblem, popSize);
 
             //initialize population structure for algorithm
             Population population = new Population();
@@ -91,7 +121,7 @@ public class RunGA {
             CompoundVariation var = new CompoundVariation(singlecross, bitFlip, intergerMutation);
 
             Algorithm eMOEA = new EpsilonMOEA(assignmentProblem, population, archive, selection, var, initialization);
-            ecs.submit(new TimedSearch(eMOEA, properties, params.pathSaveResults, "emoea_" + "cc_" + (i+startOn)));
+            ecs.submit(new TimedSearch(eMOEA, properties, params.pathSaveResults, "emoea_" + "ClimateCentric" + (i+startOn)));
         }
 
         for (int i = 0; i < numRuns; ++i) {

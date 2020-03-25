@@ -19,8 +19,8 @@ public class DecadalSurveyEvaluationTest {
         //PATH
         String path = "./problems/SMAP";
 
-        BaseParams params = new Decadal2017AerosolsParams(path,"CRISP-ATTRIBUTES","test","normal","");
-        AbstractArchitectureEvaluator eval = new ArchitectureEvaluator(params);
+        BaseParams params = new Decadal2017AerosolsParams(path,"CRISP-ATTRIBUTES","test","normal");
+        AbstractArchitectureEvaluator eval = new ArchitectureEvaluator();
         ArchitectureEvaluationManager evalManager = new ArchitectureEvaluationManager(params, eval);
         AbstractArchitecture testArch;
 

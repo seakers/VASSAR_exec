@@ -11,6 +11,7 @@ import seakers.architecture.pattern.Assigning;
 import seakers.architecture.pattern.Combining;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 /**
  * This class creates a solution for the problem consisting of an assigning
@@ -85,6 +86,15 @@ public class AssigningArchitecture extends Architecture {
 
     public boolean getAlreadyEvaluated() {
         return this.alreadyEvaluated;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        for (int i = 0; i < getNumberOfVariables(); i++) {
+            hash = 67 * hash + Objects.hashCode(this.getVariable(i));
+        }
+        return hash;
     }
 
     @Override

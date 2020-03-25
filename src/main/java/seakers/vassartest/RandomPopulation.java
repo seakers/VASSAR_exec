@@ -24,8 +24,8 @@ public class RandomPopulation {
 
         String resourcesPath = "../VASSAR_resources";
         params = new SMAPParams(resourcesPath,
-                "CRISP-ATTRIBUTES","test","normal","");
-        AbstractArchitectureEvaluator eval = new ArchitectureEvaluator(params);
+                "CRISP-ATTRIBUTES","test","normal");
+        AbstractArchitectureEvaluator eval = new ArchitectureEvaluator();
         ArchitectureEvaluationManager AE = new ArchitectureEvaluationManager(params, eval);
         AbstractArchitectureGenerator archGenerator = new ArchitectureGenerator(params);
         OrekitConfig.init(6, params.orekitResourcesPath);
@@ -33,8 +33,8 @@ public class RandomPopulation {
 
         ArrayList<AbstractArchitecture> initialPopulation = archGenerator.generateBiasedRandomPopulation(POP_SIZE, 0.15);
         AE.init(6);
-        AE.setPopulation(initialPopulation);
-        AE.evaluatePopulation();
+//        AE.setPopulation(initialPopulation);
+//        AE.evaluatePopulation();
         ResultCollection c = new ResultCollection(params, AE.getResults());
 
         ResultCollectionRecorder writer = new ResultCollectionRecorder(params);
