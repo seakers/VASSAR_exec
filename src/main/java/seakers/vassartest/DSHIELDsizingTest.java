@@ -1,35 +1,41 @@
 package seakers.vassartest;
 
+import org.junit.Ignore;
 import org.moeaframework.algorithm.EpsilonMOEA;
 import org.moeaframework.core.*;
 import org.moeaframework.core.comparator.ChainedComparator;
 import org.moeaframework.core.comparator.ParetoObjectiveComparator;
-import org.moeaframework.core.operator.*;
+import org.moeaframework.core.operator.CompoundVariation;
+import org.moeaframework.core.operator.OnePointCrossover;
+import org.moeaframework.core.operator.RandomInitialization;
+import org.moeaframework.core.operator.TournamentSelection;
 import org.moeaframework.core.operator.binary.BitFlip;
-import org.moeaframework.core.variable.BinaryVariable;
 import org.moeaframework.util.TypedProperties;
-import seakers.vassar.evaluation.AbstractArchitectureEvaluator;
-import seakers.vassar.evaluation.ArchitectureEvaluationManager;
-import seakers.vassar.problems.Assigning.SMAPJPL1Params;
-import seakers.vassar.problems.Assigning.SMAPJPL2Params;
-import seakers.vassartest.search.problems.Assigning.AssigningArchitecture;
-import seakers.vassartest.search.problems.Assigning.AssigningProblem;
-import seakers.vassartest.search.TimedSearch;
-import seakers.vassar.problems.Assigning.ClimateCentricParams;
 import seakers.architecture.operators.IntegerUM;
 import seakers.orekit.util.OrekitConfig;
+import seakers.vassar.Result;
+import seakers.vassar.evaluation.AbstractArchitectureEvaluator;
+import seakers.vassar.evaluation.DSHIELDArchitectureEvaluator;
+import seakers.vassar.architecture.AbstractArchitecture;
+import seakers.vassar.evaluation.ArchitectureEvaluationManager;
 import seakers.vassar.problems.Assigning.ArchitectureEvaluator;
+import seakers.vassar.problems.Assigning.ArchitectureGenerator;
+import seakers.vassar.problems.Assigning.ClimateCentricParams;
+import seakers.vassar.problems.Assigning.DSHIELDParams;
+import seakers.vassar.spacecraft.SpacecraftDescription;
+import seakers.vassartest.search.TimedSearch;
+import seakers.vassartest.search.problems.Assigning.AssigningProblem;
 
-import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
 
-public class RunGA {
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
+public class DSHIELDsizingTest {
+    private static String resourcesPath = "../VASSAR_resources";
+    private DSHIELDParams params;
+    private ArrayList<SpacecraftDescription> designs;
+
+    public static void main(String[] args){
         System.out.println("Starting GA for binary input data");
 
         int numRuns = 1;
@@ -65,47 +71,17 @@ public class RunGA {
 
         //initialize problem
         String path = "../VASSAR_resources";
-        ClimateCentricParams params = new ClimateCentricParams(path, "CRISP-ATTRIBUTES", "test", "normal");
-        AbstractArchitectureEvaluator evaluator = new ArchitectureEvaluator();
+        String[] orbits = {"SSO-500-SSO-AM","SSO-500-SSO-DD","SSO-600-SSO-AM","SSO-600-SSO-DD","SSO-700-SSO-AM","SSO-700-SSO-DD"};
+
+        DSHIELDParams params = new DSHIELDParams(orbits, "DSHIELD", path, "CRISP-ATTRIBUTES","test", "normal");
+        DSHIELDArchitectureEvaluator evaluator = new DSHIELDArchitectureEvaluator();
         ArchitectureEvaluationManager AEM = new ArchitectureEvaluationManager(params, evaluator);
         AEM.init(numCpus);
         OrekitConfig.init(numCpus, params.orekitResourcesPath);
 
         for (int i = 0; i < numRuns; ++i) {
 
-            Problem assignmentProblem = new AssigningProblem(new int[]{1}, "ClimateCentric", AEM, params);
-
-//            // Create a solution for each input arch in the dataset
-//            String csvFile = params.pathSaveResults + "/start.csv";
-//            String line = "";
-//            String cvsSplitBy = ",";
-//
-//            List<Solution> initial = new ArrayList<>();
-//            boolean header = true;
-//            try (BufferedReader br = new BufferedReader(new FileReader(csvFile))) {
-//                while ((line = br.readLine()) != null) {
-//                    if (header) {
-//                        header = false;
-//                        continue;
-//                    }
-//                    // use comma as separator
-//                    String[] csvArch = line.split(cvsSplitBy);
-//                    AssigningArchitecture arch = new AssigningArchitecture(new int[]{1},
-//                            params.getNumInstr(), params.getNumOrbits(), 2);
-//                    for (int j = 1; j < arch.getNumberOfVariables(); ++j) {
-//                        BinaryVariable var = new BinaryVariable(1);
-//                        var.set(0, csvArch[0].charAt(j-1) == '1');
-//                        arch.setVariable(j, var);
-//                    }
-//                    arch.setObjective(0, -Double.valueOf(csvArch[1]));
-//                    arch.setObjective(1, Double.valueOf(csvArch[2]));
-//                    arch.setAlreadyEvaluated(true);
-//                    initial.add(arch);
-//                }
-//            }
-//            catch (IOException e) {
-//                e.printStackTrace();
-//            }
+            Problem assignmentProblem = new AssigningProblem(new int[]{1}, "SMAP", AEM, params);
 
             initialization = new RandomInitialization(assignmentProblem, popSize);
 

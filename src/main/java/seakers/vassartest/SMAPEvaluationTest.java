@@ -1,5 +1,7 @@
 package seakers.vassartest;
 
+import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DirectoryCrawler;
 import seakers.orekit.util.OrekitConfig;
 import seakers.vassar.architecture.AbstractArchitecture;
 import seakers.vassar.evaluation.AbstractArchitectureEvaluator;
@@ -10,6 +12,7 @@ import seakers.vassar.Result;
 import seakers.vassar.problems.Assigning.Architecture;
 import seakers.vassar.problems.Assigning.ArchitectureEvaluator;
 
+import java.io.File;
 import java.util.HashMap;
 
 
@@ -32,10 +35,10 @@ public class SMAPEvaluationTest {
 
         //Reference rbsa.eoss.architecture #1
         HashMap<String,String[]> map = new HashMap<>();
-        String[] payl_polar = {""};map.put("LEO-600-polar-NA",payl_polar);
-        String[] payl_AM = {"BIOMASS"};map.put("SSO-600-SSO-AM", payl_AM);
-        String[] payl_600DD = {""};map.put("SSO-600-SSO-DD",payl_600DD);
-        String[] payl_800AM = {"SMAP_MWR","VIIRS"};map.put("SSO-800-SSO-AM",payl_800AM);
+        String[] payl_polar = {"VIIRS", "SMAP_MWR", "SMAP_RAD"};map.put("LEO-600-polar-NA",payl_polar);
+        String[] payl_AM = {""};map.put("SSO-600-SSO-AM", payl_AM);
+        String[] payl_600DD = {"SMAP_MWR"};map.put("SSO-600-SSO-DD",payl_600DD);
+        String[] payl_800AM = {""};map.put("SSO-800-SSO-AM",payl_800AM);
         String[] payl_800DD = {""};map.put("SSO-800-SSO-DD",payl_800DD);
         testArch = new Architecture(map, 1, params);
 
