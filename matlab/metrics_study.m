@@ -6,7 +6,7 @@ clc
 %% Cases to consider for GA data
 random_data_bool = true;
 % Case 1 - Epsilon MOEA
-assign_case = true;
+assign_case = false;
 random_init = true;
 case_instrdc_bools = [false, false, false, false];
 case_instrorb_bools = [false, false, false, false];
@@ -16,11 +16,52 @@ case_spmass_bools = [false, false, false, false];
 case_instrsyn_bools = [false, false, false, false];
 case_heur_bools = [case_instrdc_bools; case_instrorb_bools; case_interinstr_bools; case_packeff_bools; case_spmass_bools; case_instrsyn_bools];
 
-%% Compute objectives, constraints and heuristics
+%% Compute support for ease of satisfaction study
+n_des2 = 300; % number of random designs to use for ease of satisfaction study
+n_runs2 = 10; % number of runs 
+
+support_rand_instrdc_runs = zeros(n_runs2,1);
+support_rand_instrorb_runs = zeros(n_runs2,1);
+support_rand_interinstr_runs = zeros(n_runs2,1);
+support_rand_packeff_runs = zeros(n_runs2,1);
+support_rand_spmass_runs = zeros(n_runs2,1);
+support_rand_instrsyn_runs = zeros(n_runs2,1);
+
+for i = 1:n_runs2
+    [~, heur_rand_run2, ~] = read_csv_data(assign_case, case_heur_bools, random_data_bool, random_init, i-1);
+    
+    heur_rand_red2 = heur_rand_run2(1:n_des2,:);
+    
+    instrdc_run_rand = heur_rand_red2(:,1);
+    instrorb_run_rand = heur_rand_red2(:,2);
+    interinstr_run_rand = heur_rand_red2(:,3);
+    packeff_run_rand = heur_rand_red2(:,4);
+    spmass_run_rand = heur_rand_red2(:,5);
+    instrsyn_run_rand = heur_rand_red2(:,6);
+    
+    support_rand_instrdc_runs(i,1) = length(instrdc_run_rand(instrdc_run_rand==0))/size(instrdc_run_rand,1);
+    support_rand_instrorb_runs(i,1) = length(instrorb_run_rand(instrorb_run_rand==0))/size(instrdc_run_rand,1);
+    support_rand_interinstr_runs(i,1) = length(interinstr_run_rand(interinstr_run_rand==0))/size(instrdc_run_rand,1);
+    support_rand_packeff_runs(i,1) = length(packeff_run_rand(packeff_run_rand==0))/size(instrdc_run_rand,1);
+    support_rand_spmass_runs(i,1) = length(spmass_run_rand(spmass_run_rand==0))/size(instrdc_run_rand,1);
+    support_rand_instrsyn_runs(i,1) = length(instrsyn_run_rand(instrsyn_run_rand==0))/size(instrdc_run_rand,1);
+    
+end
+
+support_rand_tablestats = [mean(support_rand_instrdc_runs),std(support_rand_instrdc_runs);
+                            mean(support_rand_instrorb_runs),std(support_rand_instrorb_runs);
+                            mean(support_rand_interinstr_runs),std(support_rand_interinstr_runs);
+                            mean(support_rand_packeff_runs),std(support_rand_packeff_runs);
+                            mean(support_rand_spmass_runs),std(support_rand_spmass_runs);
+                            mean(support_rand_instrsyn_runs),std(support_rand_instrsyn_runs)];
+    
+
+
+%% Compute objectives, constraints and heuristics for correlation study
 n_pop = 300; % population size of random/epsilon MOEA runs
 n_runs = 10; % number of runs 
 
-n_des = 300; % number of designs of random & epsilon MOEA each to use for metrics computation
+n_des = 300; % number of designs of random & epsilon MOEA each to use for correlation study
 
 add_ga_data = true;
 
@@ -212,12 +253,12 @@ for i = 1:n_runs
     cost_thresh_val_true(i,1) = cost_thresh_val*(cost_max_all(i,1) - cost_min_all(i,1)) + cost_min_all(i,1);
 end
 
-instrdc_thresh_val = prctile(instrdc_array,25);
+instrdc_thresh_val = prctile(instrdc_array,55);
 instrorb_thresh_val = prctile(instrorb_array,50);
-interinstr_thresh_val = prctile(interinstr_array,50);
-packeff_thresh_val = prctile(packeff_array,50);
-spmass_thresh_val = prctile(spmass_array,50);
-instrsyn_thresh_val = prctile(instrsyn_array,25);
+interinstr_thresh_val = prctile(interinstr_array,55);
+packeff_thresh_val = prctile(packeff_array,96);
+spmass_thresh_val = prctile(spmass_array,72);
+instrsyn_thresh_val = prctile(instrsyn_array,60);
 
 mindist_pf_thresh_val = prctile(min_dist_pf_array,50);
 
@@ -279,12 +320,26 @@ pearson_packeff_pfdist = zeros(n_runs,1);
 pearson_spmass_pfdist = zeros(n_runs,1);
 pearson_instrsyn_pfdist = zeros(n_runs,1);
 
+pval_pearson_instrdc_pfdist = zeros(n_runs,1);
+pval_pearson_instrorb_pfdist = zeros(n_runs,1);
+pval_pearson_interinstr_pfdist = zeros(n_runs,1);
+pval_pearson_packeff_pfdist = zeros(n_runs,1);
+pval_pearson_spmass_pfdist = zeros(n_runs,1);
+pval_pearson_instrsyn_pfdist = zeros(n_runs,1);
+
 spearman_instrdc_pfdist = zeros(n_runs,1);
 spearman_instrorb_pfdist = zeros(n_runs,1);
 spearman_interinstr_pfdist = zeros(n_runs,1);
 spearman_packeff_pfdist = zeros(n_runs,1);
 spearman_spmass_pfdist = zeros(n_runs,1);
 spearman_instrsyn_pfdist = zeros(n_runs,1);
+
+pval_spearman_instrdc_pfdist = zeros(n_runs,1);
+pval_spearman_instrorb_pfdist = zeros(n_runs,1);
+pval_spearman_interinstr_pfdist = zeros(n_runs,1);
+pval_spearman_packeff_pfdist = zeros(n_runs,1);
+pval_spearman_spmass_pfdist = zeros(n_runs,1);
+pval_spearman_instrsyn_pfdist = zeros(n_runs,1);
 
 for i = 1:n_runs
     current_field = strcat('trial',num2str(i));
@@ -297,19 +352,19 @@ for i = 1:n_runs
     spmass_total = spmass_all.(current_field);
     instrsyn_total = instrsyn_all.(current_field);
     
-    [pearson_instrdc_pfdist(i),~] = corr(instrdc_total,min_dist_pf_total,'Type','Pearson','Rows','complete');
-    [pearson_instrorb_pfdist(i),~] = corr(instrorb_total,min_dist_pf_total,'Type','Pearson','Rows','complete');
-    [pearson_interinstr_pfdist(i),~] = corr(interinstr_total,min_dist_pf_total,'Type','Pearson','Rows','complete');  
-    [pearson_packeff_pfdist(i),~] = corr(packeff_total,min_dist_pf_total,'Type','Pearson','Rows','complete');
-    [pearson_spmass_pfdist(i),~] = corr(spmass_total,min_dist_pf_total,'Type','Pearson','Rows','complete');
-    [pearson_instrsyn_pfdist(i),~] = corr(instrsyn_total,min_dist_pf_total,'Type','Pearson','Rows','complete');
+    [pearson_instrdc_pfdist(i),pval_pearson_instrdc_pfdist(i)] = corr(instrdc_total,min_dist_pf_total,'Type','Pearson','Rows','complete');
+    [pearson_instrorb_pfdist(i),pval_pearson_instrorb_pfdist(i)] = corr(instrorb_total,min_dist_pf_total,'Type','Pearson','Rows','complete');
+    [pearson_interinstr_pfdist(i),pval_pearson_interinstr_pfdist(i)] = corr(interinstr_total,min_dist_pf_total,'Type','Pearson','Rows','complete');  
+    [pearson_packeff_pfdist(i),pval_pearson_packeff_pfdist(i)] = corr(packeff_total,min_dist_pf_total,'Type','Pearson','Rows','complete');
+    [pearson_spmass_pfdist(i),pval_pearson_spmass_pfdist(i)] = corr(spmass_total,min_dist_pf_total,'Type','Pearson','Rows','complete');
+    [pearson_instrsyn_pfdist(i),pval_pearson_instrsyn_pfdist(i)] = corr(instrsyn_total,min_dist_pf_total,'Type','Pearson','Rows','complete');
 
-    [spearman_instrdc_pfdist(i),~] = corr(instrdc_total,min_dist_pf_total,'Type','Spearman','Rows','complete');
-    [spearman_instrorb_pfdist(i),~] = corr(instrorb_total,min_dist_pf_total,'Type','Spearman','Rows','complete');
-    [spearman_interinstr_pfdist(i),~] = corr(interinstr_total,min_dist_pf_total,'Type','Spearman','Rows','complete');  
-    [spearman_packeff_pfdist(i),~] = corr(packeff_total,min_dist_pf_total,'Type','Spearman','Rows','complete');
-    [spearman_spmass_pfdist(i),~] = corr(spmass_total,min_dist_pf_total,'Type','Spearman','Rows','complete');
-    [spearman_instrsyn_pfdist(i),~] = corr(instrsyn_total,min_dist_pf_total,'Type','Spearman','Rows','complete');
+    [spearman_instrdc_pfdist(i),pval_spearman_instrdc_pfdist(i)] = corr(instrdc_total,min_dist_pf_total,'Type','Spearman','Rows','complete');
+    [spearman_instrorb_pfdist(i),pval_spearman_instrorb_pfdist(i)] = corr(instrorb_total,min_dist_pf_total,'Type','Spearman','Rows','complete');
+    [spearman_interinstr_pfdist(i),pval_spearman_interinstr_pfdist(i)] = corr(interinstr_total,min_dist_pf_total,'Type','Spearman','Rows','complete');  
+    [spearman_packeff_pfdist(i),pval_spearman_packeff_pfdist(i)] = corr(packeff_total,min_dist_pf_total,'Type','Spearman','Rows','complete');
+    [spearman_spmass_pfdist(i),pval_spearman_spmass_pfdist(i)] = corr(spmass_total,min_dist_pf_total,'Type','Spearman','Rows','complete');
+    [spearman_instrsyn_pfdist(i),pval_spearman_instrsyn_pfdist(i)] = corr(instrsyn_total,min_dist_pf_total,'Type','Spearman','Rows','complete');
     
 end
 
@@ -319,6 +374,130 @@ correlation_tablestats = [mean(pearson_instrdc_pfdist), std(pearson_instrdc_pfdi
     mean(pearson_packeff_pfdist), std(pearson_packeff_pfdist), mean(spearman_packeff_pfdist), std(spearman_packeff_pfdist);
     mean(pearson_spmass_pfdist), std(pearson_spmass_pfdist), mean(spearman_spmass_pfdist), std(spearman_spmass_pfdist);
     mean(pearson_instrsyn_pfdist), std(pearson_instrsyn_pfdist), mean(spearman_instrsyn_pfdist), std(spearman_instrsyn_pfdist)];
+
+correlation_pval_tablestats = [mean(pval_pearson_instrdc_pfdist), std(pval_pearson_instrdc_pfdist), mean(pval_spearman_instrdc_pfdist), std(pval_spearman_instrdc_pfdist);
+    mean(pval_pearson_instrorb_pfdist), std(pval_pearson_instrorb_pfdist), mean(pval_spearman_instrorb_pfdist), std(pval_spearman_instrorb_pfdist);
+    mean(pval_pearson_interinstr_pfdist), std(pval_pearson_interinstr_pfdist), mean(pval_spearman_interinstr_pfdist), std(pval_spearman_interinstr_pfdist);
+    mean(pval_pearson_packeff_pfdist), std(pval_pearson_packeff_pfdist), mean(pval_spearman_packeff_pfdist), std(pval_spearman_packeff_pfdist);
+    mean(pval_pearson_spmass_pfdist), std(pval_pearson_spmass_pfdist), mean(pval_spearman_spmass_pfdist), std(pval_spearman_spmass_pfdist);
+    mean(pval_pearson_instrsyn_pfdist), std(pval_pearson_instrsyn_pfdist), mean(pval_spearman_instrsyn_pfdist), std(pval_spearman_instrsyn_pfdist)];
+
+%% Heuristic indices calculation
+corr_exp_instrdc = 1; % correlation expectation with pfdist
+corr_exp_instrorb = 1; % correlation expectation with pfdist
+corr_exp_interinstr = 1; % correlation expectation with pfdist
+corr_exp_packeff = 1; % correlation expectation with pfdist
+corr_exp_spmass = 1; % correlation expectation with pfdist
+corr_exp_instrsyn = 1; % correlation expectation with pfdist
+
+corr_min = 0.4; % minimum significant correlation value
+
+%%%% VERSION 1
+% indices_instrdc_total = zeros(n_runs,1);
+% indices_instrorb_total = zeros(n_runs,1);
+% indices_interinstr_total = zeros(n_runs,1);
+% indices_packeff_total = zeros(n_runs,1);
+% indices_spmass_total = zeros(n_runs,1);
+% indices_instrsyn_total = zeros(n_runs,1);
+% 
+% indices_instrdc_norm_total = zeros(n_runs,1);
+% indices_instrorb_norm_total = zeros(n_runs,1);
+% indices_interinstr_norm_total = zeros(n_runs,1);
+% indices_packeff_norm_total = zeros(n_runs,1);
+% indices_spmass_norm_total = zeros(n_runs,1);
+% indices_instrsyn_norm_total = zeros(n_runs,1);
+% 
+% for i = 1:n_runs
+% %     indices_instrdc_total(i) = ((find_max_value_in_array([pearson_instrdc_pfdist(i),spearman_instrdc_pfdist(i)])/support_pf_runs(i))*(corr_exp_instrdc))/(support_full_instrdc_runs(i)+1e-2);
+% %     indices_instrorb_total(i) = ((find_max_value_in_array([pearson_instrorb_pfdist(i),spearman_instrorb_pfdist(i)])/support_pf_runs(i))*(corr_exp_instrorb))/(support_full_instrorb_runs(i)+1e-2);
+% %     indices_interinstr_total(i) = ((find_max_value_in_array([pearson_interinstr_pfdist(i),spearman_interinstr_pfdist(i)])/support_pf_runs(i))*(corr_exp_interinstr))/(support_full_interinstr_runs(i)+1e-2);
+% %     indices_packeff_total(i) = ((find_max_value_in_array([pearson_packeff_pfdist(i),spearman_packeff_pfdist(i)])/support_pf_runs(i))*(corr_exp_packeff))/(support_full_packeff_runs(i)+1e-2);
+% %     indices_spmass_total(i) = ((find_max_value_in_array([pearson_spmass_pfdist(i),spearman_spmass_pfdist(i)])/support_pf_runs(i))*(corr_exp_spmass))/(support_full_spmass_runs(i)+1e-2);
+% %     indices_instrsyn_total(i) = ((find_max_value_in_array([pearson_instrsyn_pfdist(i),spearman_instrsyn_pfdist(i)])/support_pf_runs(i))*(corr_exp_instrsyn))/(support_full_instrsyn_runs(i)+1e-2);
+% 
+%     % Not incorporating support of heuristic
+%     indices_instrdc_total(i) = compute_heuristic_index_contribution(pearson_instrdc_pfdist(i), spearman_instrdc_pfdist(i), corr_min, corr_exp_instrdc, support_pf_runs(i));
+%     indices_instrorb_total(i) = compute_heuristic_index_contribution(pearson_instrorb_pfdist(i), spearman_instrorb_pfdist(i), corr_min, corr_exp_instrorb, support_pf_runs(i));
+%     indices_interinstr_total(i) = compute_heuristic_index_contribution(pearson_interinstr_pfdist(i), spearman_interinstr_pfdist(i), corr_min, corr_exp_interinstr, support_pf_runs(i));
+%     indices_packeff_total(i) = compute_heuristic_index_contribution(pearson_packeff_pfdist(i), spearman_packeff_pfdist(i), corr_min, corr_exp_packeff, support_pf_runs(i));
+%     indices_spmass_total(i) = compute_heuristic_index_contribution(pearson_spmass_pfdist(i), spearman_spmass_pfdist(i), corr_min, corr_exp_spmass, support_pf_runs(i));
+%     indices_instrsyn_total(i) = compute_heuristic_index_contribution(pearson_instrsyn_pfdist(i), spearman_instrsyn_pfdist(i), corr_min, corr_exp_instrsyn, support_pf_runs(i));
+%     
+%     indices_sum = abs(indices_instrdc_total(i)) + abs(indices_instrorb_total(i)) + abs(indices_interinstr_total(i)) + abs(indices_packeff_total(i)) + abs(indices_spmass_total(i)) + abs(indices_instrsyn_total(i));
+%     indices_instrdc_norm_total(i) = indices_instrdc_total(i)/indices_sum;
+%     indices_instrorb_norm_total(i)= indices_instrorb_total(i)/indices_sum;
+%     indices_interinstr_norm_total(i) = indices_interinstr_total(i)/indices_sum;
+%     indices_packeff_norm_total(i) = indices_packeff_total(i)/indices_sum;
+%     indices_spmass_norm_total(i) = indices_spmass_total(i)/indices_sum;
+%     indices_instrsyn_norm_total(i) = indices_instrsyn_total(i)/indices_sum;
+% end
+% 
+% indices_tablestats = [mean(indices_instrdc_total),std(indices_instrdc_total);
+%                       mean(indices_instrorb_total),std(indices_instrorb_total);
+%                       mean(indices_interinstr_total),std(indices_interinstr_total);
+%                       mean(indices_packeff_total),std(indices_packeff_total);
+%                       mean(indices_spmass_total),std(indices_spmass_total);
+%                       mean(indices_instrsyn_total),std(indices_instrsyn_total)];
+%                   
+% indices_norm_tablestats = [mean(indices_instrdc_norm_total),std(indices_instrdc_norm_total);
+%                       mean(indices_instrorb_norm_total),std(indices_instrorb_norm_total);
+%                       mean(indices_interinstr_norm_total),std(indices_interinstr_norm_total);
+%                       mean(indices_packeff_norm_total),std(indices_packeff_norm_total);
+%                       mean(indices_spmass_norm_total),std(indices_spmass_norm_total);
+%                       mean(indices_instrsyn_norm_total),std(indices_instrsyn_norm_total)];
+    
+%%%% VERSION 2
+% Compute average correlation coefficients
+corr_avg_instrdc_pfdist = (pearson_instrdc_pfdist + spearman_instrdc_pfdist)/2;
+corr_avg_instrorb_pfdist = (pearson_instrorb_pfdist + spearman_instrorb_pfdist)/2;
+corr_avg_interinstr_pfdist = (pearson_interinstr_pfdist + spearman_interinstr_pfdist)/2;
+corr_avg_packeff_pfdist = (pearson_packeff_pfdist + spearman_packeff_pfdist)/2;
+corr_avg_spmass_pfdist = (pearson_spmass_pfdist + spearman_spmass_pfdist)/2;
+corr_avg_instrsyn_pfdist = (pearson_instrsyn_pfdist + spearman_instrsyn_pfdist)/2;
+
+% Compute I1 for each heuristic
+% I1_instrdc = compute_heuristic_I1_contribution(corr_avg_instrdc_pfdist, corr_min, corr_exp_instrdc, support_pf_runs);
+% I1_instrorb = compute_heuristic_I1_contribution(corr_avg_instrorb_pfdist, corr_min, corr_exp_instrorb, support_pf_runs);
+% I1_interinstr = compute_heuristic_I1_contribution(corr_avg_interinstr_pfdist, corr_min, corr_exp_interinstr, support_pf_runs);
+% I1_packeff = compute_heuristic_I1_contribution(corr_avg_packeff_pfdist, corr_min, corr_exp_packeff, support_pf_runs);
+% I1_spmass = compute_heuristic_I1_contribution(corr_avg_spmass_pfdist, corr_min, corr_exp_spmass, support_pf_runs);
+% I1_instrsyn = compute_heuristic_I1_contribution(corr_avg_instrsyn_pfdist, corr_min, corr_exp_instrsyn, support_pf_runs);
+
+I1_instrdc = compute_heuristic_I1_contribution2(corr_avg_instrdc_pfdist, corr_exp_instrdc, support_pf_runs);
+I1_instrorb = compute_heuristic_I1_contribution2(corr_avg_instrorb_pfdist, corr_exp_instrorb, support_pf_runs);
+I1_interinstr = compute_heuristic_I1_contribution2(corr_avg_interinstr_pfdist, corr_exp_interinstr, support_pf_runs);
+I1_packeff = compute_heuristic_I1_contribution2(corr_avg_packeff_pfdist, corr_exp_packeff, support_pf_runs);
+I1_spmass = compute_heuristic_I1_contribution2(corr_avg_spmass_pfdist, corr_exp_spmass, support_pf_runs);
+I1_instrsyn = compute_heuristic_I1_contribution2(corr_avg_instrsyn_pfdist, corr_exp_instrsyn, support_pf_runs);
+
+I1_norm_instrdc = I1_instrdc/(abs(I1_instrdc) + abs(I1_instrorb) + abs(I1_interinstr) + abs(I1_packeff) + abs(I1_spmass) + abs(I1_instrsyn));
+I1_norm_instrorb = I1_instrorb/(abs(I1_instrdc) + abs(I1_instrorb) + abs(I1_interinstr) + abs(I1_packeff) + abs(I1_spmass) + abs(I1_instrsyn));
+I1_norm_interinstr = I1_interinstr/(abs(I1_instrdc) + abs(I1_instrorb) + abs(I1_interinstr) + abs(I1_packeff) + abs(I1_spmass) + abs(I1_instrsyn));
+I1_norm_packeff = I1_packeff/(abs(I1_instrdc) + abs(I1_instrorb) + abs(I1_interinstr) + abs(I1_packeff) + abs(I1_spmass) + abs(I1_instrsyn));
+I1_norm_spmass = I1_spmass/(abs(I1_instrdc) + abs(I1_instrorb) + abs(I1_interinstr) + abs(I1_packeff) + abs(I1_spmass) + abs(I1_instrsyn));
+I1_norm_instrsyn = I1_instrsyn/(abs(I1_instrdc) + abs(I1_instrorb) + abs(I1_interinstr) + abs(I1_packeff) + abs(I1_spmass) + abs(I1_instrsyn));
+
+% Compute I2 for each heuristic
+% I2_instrdc = compute_heuristic_I2_contribution(corr_avg_instrdc_pfdist, corr_min, corr_exp_instrdc, support_pf_runs, support_full_instrdc_runs);
+% I2_instrorb = compute_heuristic_I2_contribution(corr_avg_instrorb_pfdist, corr_min, corr_exp_instrorb, support_pf_runs, support_full_instrorb_runs);
+% I2_interinstr = compute_heuristic_I2_contribution(corr_avg_interinstr_pfdist, corr_min, corr_exp_interinstr, support_pf_runs, support_full_interinstr_runs);
+% I2_packeff = compute_heuristic_I2_contribution(corr_avg_packeff_pfdist, corr_min, corr_exp_packeff, support_pf_runs, support_full_packeff_runs);
+% I2_spmass = compute_heuristic_I2_contribution(corr_avg_spmass_pfdist, corr_min, corr_exp_spmass, support_pf_runs, support_full_spmass_runs);
+% I2_instrsyn = compute_heuristic_I2_contribution(corr_avg_instrsyn_pfdist, corr_min, corr_exp_instrsyn, support_pf_runs, support_full_instrsyn_runs);
+
+I2_instrdc = compute_heuristic_I2_contribution2(corr_avg_instrdc_pfdist, corr_exp_instrdc, support_pf_runs, support_full_instrdc_runs);
+I2_instrorb = compute_heuristic_I2_contribution2(corr_avg_instrorb_pfdist, corr_exp_instrorb, support_pf_runs, support_full_instrorb_runs);
+I2_interinstr = compute_heuristic_I2_contribution2(corr_avg_interinstr_pfdist, corr_exp_interinstr, support_pf_runs, support_full_interinstr_runs);
+I2_packeff = compute_heuristic_I2_contribution2(corr_avg_packeff_pfdist, corr_exp_packeff, support_pf_runs, support_full_packeff_runs);
+I2_spmass = compute_heuristic_I2_contribution2(corr_avg_spmass_pfdist, corr_exp_spmass, support_pf_runs, support_full_spmass_runs);
+I2_instrsyn = compute_heuristic_I2_contribution2(corr_avg_instrsyn_pfdist, corr_exp_instrsyn, support_pf_runs, support_full_instrsyn_runs);
+
+I2_norm_instrdc = I2_instrdc/(abs(I2_instrdc) + abs(I2_instrorb) + abs(I2_interinstr) + abs(I2_packeff) + abs(I2_spmass) + abs(I2_instrsyn));
+I2_norm_instrorb = I2_instrorb/(abs(I2_instrdc) + abs(I2_instrorb) + abs(I2_interinstr) + abs(I2_packeff) + abs(I2_spmass) + abs(I2_instrsyn));
+I2_norm_interinstr = I2_interinstr/(abs(I2_instrdc) + abs(I2_instrorb) + abs(I2_interinstr) + abs(I2_packeff) + abs(I2_spmass) + abs(I2_instrsyn));
+I2_norm_packeff = I2_packeff/(abs(I2_instrdc) + abs(I2_instrorb) + abs(I2_interinstr) + abs(I2_packeff) + abs(I2_spmass) + abs(I2_instrsyn));
+I2_norm_spmass = I2_spmass/(abs(I2_instrdc) + abs(I2_instrorb) + abs(I2_interinstr) + abs(I2_packeff) + abs(I2_spmass) + abs(I2_instrsyn));
+I2_norm_instrsyn = I2_instrsyn/(abs(I2_instrdc) + abs(I2_instrorb) + abs(I2_interinstr) + abs(I2_packeff) + abs(I2_spmass) + abs(I2_instrsyn));
 
 %% Thresholding heuristics, objectives and constraints into high and low
 instrdc_all_thresh = struct;
@@ -494,6 +673,45 @@ heur_truepf_tablestats = [mean(low_heur_close2truepf(:,1)), std(low_heur_close2t
     mean(high_heur_close2truepf(:,1)), std(high_heur_close2truepf(:,1)), mean(high_heur_close2truepf(:,2)), std(high_heur_close2truepf(:,2)), mean(high_heur_close2truepf(:,3)), std(high_heur_close2truepf(:,3)), mean(high_heur_close2truepf(:,4)), std(high_heur_close2truepf(:,4)), mean(high_heur_close2truepf(:,5)), std(high_heur_close2truepf(:,5)), mean(high_heur_close2truepf(:,6)), std(high_heur_close2truepf(:,6))];
 
 %% Functions
+function max_array_val = find_max_value_in_array(array)
+    max_val = 0;
+    for i1 = 1:length(array)
+        if abs(array(i1)) > max_val
+            max_val = array(i1);
+            max_index = i1;
+        end
+    end
+    max_array_val = array(max_index);
+end
+
+function index_contribution = compute_heuristic_index_contribution(pearson_heur_param, spearman_heur_param, min_corr_val, idx_corr_heur_param, supp_param)
+    index_contribution = log10(find_max_value_in_array([pearson_heur_param,spearman_heur_param])*idx_corr_heur_param/min_corr_val)*(1/supp_param);
+end
+
+function index_contribution = compute_heuristic_I1_contribution(corr_array_heur_param, min_corr_val, idx_corr_heur_param, supp_array_param)
+    % corr_array_heur_param and supp_array_param are (n x 1) arrays where n is the number of runs
+    log_arg = (idx_corr_heur_param*mean(corr_array_heur_param))/(min_corr_val);
+    index_contribution = log10(max([1e-4,log_arg]))*(-1*log10(mean(supp_array_param))); % Cap the log argument to 1e-4 to avoid complex values
+end
+
+function index_contribution = compute_heuristic_I2_contribution(corr_array_heur_param, min_corr_val, idx_corr_heur_param, supp_array_param, supp_array_heur)
+    % corr_array_heur_param, supp_array_heur and supp_array_param are (n x 1) arrays where n is the number of runs
+    log_arg = (idx_corr_heur_param*mean(corr_array_heur_param))/(min_corr_val);
+    index_contribution = log10(max([1e-4,log_arg]))*(log10(mean(supp_array_param))*log10(mean(supp_array_heur))); % Cap the log argument to 1e-4 to avoid complex values
+end
+
+function index_contribution = compute_heuristic_I1_contribution2(corr_array_heur_param, idx_corr_heur_param, supp_array_param)
+    % corr_array_heur_param and supp_array_param are (n x 1) arrays where n is the number of runs
+    log_arg = idx_corr_heur_param*mean(corr_array_heur_param);
+    index_contribution = log_arg*(-1*log10(mean(supp_array_param))); 
+end
+
+function index_contribution = compute_heuristic_I2_contribution2(corr_array_heur_param, idx_corr_heur_param, supp_array_param, supp_array_heur)
+    % corr_array_heur_param, supp_array_heur and supp_array_param are (n x 1) arrays where n is the number of runs
+    log_arg = idx_corr_heur_param*mean(corr_array_heur_param);
+    index_contribution = log_arg*(log10(mean(supp_array_param))*log10(mean(supp_array_heur))); 
+end
+
 function plot_regression(linmodel,X,y,Xname,Yname,run_num)
     X_norm = (X - mean(X))/std(X);
     Y_pred_norm = predict(linmodel,X_norm);
@@ -609,7 +827,7 @@ function [obj_array, heur_array, design_array] = read_csv_data(assign_prob, heur
         
         filepath_moea = '';
         if (constr_count == 4)
-            filepath_moea = 'Epsilon MOEA\\';
+            filepath_moea = 'Epsilon MOEA - Metrics\\';
         end
         
         filepath_random = strcat(filepath_moea,constrained);
@@ -620,8 +838,8 @@ function [obj_array, heur_array, design_array] = read_csv_data(assign_prob, heur
     filepath_prob = 'Assigning\\';
     filename_prob = 'assign_';
     if ~assign_prob
-        filepath_prob = 'Partitioning and Assigning\\';
-        filename_prob = 'partandassign_';
+        filepath_prob = 'Partitioning\\';
+        filename_prob = 'partition_';
     end
     
     full_filename = strcat(filename_random,prob_name,filename_prob,filename_init,num2str(run_num),".csv");
@@ -629,19 +847,12 @@ function [obj_array, heur_array, design_array] = read_csv_data(assign_prob, heur
     %%%% read appropriate file 
     full_filepath = strcat(filepath,filepath_random,filepath_prob,full_filename);
     
-    if assign_prob
-        format_string = '%s';
-        for j = 1:8
-            format_string = strcat(format_string,'%f');
-        end
-    else
-        format_string = '';
-        for j = 1:(24+8) % 2*number of instruments in ClimateCentric params
-            format_string = strcat(format_string,'%f');
-        end
+    format_string = '%s';
+    for j = 1:8
+        format_string = strcat(format_string,'%f');
     end
         
-    data_table = readtable(full_filepath,'Format',format_string,'HeaderLines',1);
+    data_table = readtable(full_filepath,'Format',format_string,'Delimiter',',');
     
     %%%% store retrieved data into different variables
     %%%% csv_data includes: [Pen. Obj. 1, Pen.Obj. 2, True Obj. 1, True Obj. 2, Feasibility Score,
@@ -650,13 +861,8 @@ function [obj_array, heur_array, design_array] = read_csv_data(assign_prob, heur
     pop_size =  size(data_table,1);
     csv_data = zeros(pop_size,8);
     
-    if assign_prob
-        designs = strings(pop_size);
-        designs = data_table(:,1);
-    else
-        designs = zeros(pop_size,24);
-        designs = data_table(:,1:24);
-    end
+    designs = strings(pop_size);
+    designs = data_table(:,1);
         
     csv_data = data_table(:,end-7:end);
     

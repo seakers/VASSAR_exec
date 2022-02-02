@@ -92,7 +92,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Application.GenerateForMetricsStudyPartitioning">
+  <component name="RunManager" selected="Gradle.VASSAR_exec_heur [clean]">
     <configuration name="EvaluateDesignPandA" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="seakers.vassarheur.search.EvaluateDesignPandA" />
       <module name="vassarexecheur.main" />
@@ -172,9 +172,9 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Gradle.VASSAR_exec_heur [build]" />
         <item itemvalue="Application.GenerateForMetricsStudyPartitioning" />
         <item itemvalue="Application.GenerateForMetricsStudyAssigning" />
-        <item itemvalue="Gradle.VASSAR_exec_heur [build]" />
         <item itemvalue="Gradle.VASSAR_exec_heur [clean]" />
         <item itemvalue="Application.EvaluateDesignPandA" />
       </list>
@@ -207,29 +207,9 @@
           <option name="timeStamp" value="12" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/seakers/vassarexecheur/search/GenerateForMetricsStudyPartitioning.java</url>
-          <line>92</line>
-          <option name="timeStamp" value="19" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/seakers/vassarexecheur/search/PartitioningSearch.java</url>
-          <line>47</line>
-          <option name="timeStamp" value="21" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/seakers/vassarexecheur/search/operators/partitioning/PartitioningMutation.java</url>
-          <line>24</line>
-          <option name="timeStamp" value="23" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/seakers/vassarexecheur/search/operators/partitioning/PartitioningCrossover.java</url>
-          <line>31</line>
-          <option name="timeStamp" value="24" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/seakers/vassarexecheur/search/intialization/partitioning/PartitioningInitialization.java</url>
-          <line>72</line>
-          <option name="timeStamp" value="26" />
+          <url>jar://$MAVEN_REPOSITORY$/seakers/vassarheur/1.0/vassarheur-1.0.jar!/seakers/vassarheur/problems/PartitioningAndAssigning/Architecture.class</url>
+          <line>35</line>
+          <option name="timeStamp" value="35" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -237,6 +217,11 @@
       <configuration name="Remote">
         <watch expression="((HashMap)satIndex2InstrumentSet).entrySet().toArray()[2]" custom="java.util.HashMap" />
         <watch expression="((HashMap)satIndex2InstrumentSet).entrySet().toArray()[2]" language="JAVA" custom="java.util.HashMap" />
+        <watch expression="assigning1" />
+        <watch expression="inputs" />
+        <watch expression="satIndex2Orbit" />
+        <watch expression="partitioning" />
+        <watch expression="orbitsUsed" />
       </configuration>
     </watches-manager>
   </component>

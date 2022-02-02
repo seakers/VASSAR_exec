@@ -57,7 +57,7 @@ public class PartitioningSearch implements Callable<Algorithm> {
         }
 
         while (!alg.isTerminated() && (alg.getNumberOfEvaluations() < maxEvaluations)) {
-            if (alg.getNumberOfEvaluations() % 500 == 0) {
+            if (alg.getNumberOfEvaluations() % 100 == 0) {
                 System.out.println("NFE: " + alg.getNumberOfEvaluations());
                 System.out.print("Popsize: " + ((AbstractEvolutionaryAlgorithm) alg).getPopulation().size());
                 System.out.println("  Archivesize: " + ((AbstractEvolutionaryAlgorithm) alg).getArchive().size());

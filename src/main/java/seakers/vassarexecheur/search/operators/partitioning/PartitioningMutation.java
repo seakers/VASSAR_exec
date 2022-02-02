@@ -30,7 +30,7 @@ public class PartitioningMutation extends IntegerUM {
     public int[] repair(int[] inputs){
 
         int[] partitioning = Arrays.copyOfRange(inputs, 0, params.getNumInstr());
-        int[] assigning = Arrays.copyOfRange(inputs, params.getNumInstr(), 2 * params.getNumInstr()+1);
+        int[] assigning = Arrays.copyOfRange(inputs, params.getNumInstr(), 2 * params.getNumInstr());
 
         Architecture newArch = new PartitioningArchitecture(params.getNumInstr(), params.getNumOrbits(), 2);
         int[] newPartitioning = new int[partitioning.length];
@@ -50,12 +50,16 @@ public class PartitioningMutation extends IntegerUM {
             newPartitioning[i] = satID2satIndex.get(satID);
         }
 
+        Arrays.sort(newPartitioning);
+
         for(int i = 0; i < assigning.length;i ++){
 
             if(satIndex2Orbit.containsKey(i)){
                 int orb = satIndex2Orbit.get(i);
                 if(orb == -1){
-                    Collection<Integer> orbitsUsed = satIndex2Orbit.values();
+                    Set<Integer> orbitsUsed = new HashSet<>(satIndex2Orbit.values());
+                    orbitsUsed.remove(-1);
+
                     ArrayList<Integer> orbitOptions;
 
                     if(orbitsUsed.size() == params.getNumOrbits()){

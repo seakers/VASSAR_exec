@@ -83,6 +83,12 @@ public class PartitioningProblem extends AbstractProblem implements SystemArchit
                 arch.setAttribute("PackEffViolation",archHeuristics.get(3));
                 arch.setAttribute("SpMassViolation",archHeuristics.get(4));
                 arch.setAttribute("SynergyViolation",archHeuristics.get(5));
+
+                arch.setOperatorParameters(result.getOperatorParameters());
+
+                arch.setSatellitePayloads(result.getSatellitePayloads());
+
+                arch.setSatelliteOrbits(result.getSatelliteOrbits());
             }
             catch (Exception e) {
                 e.printStackTrace();

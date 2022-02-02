@@ -9,7 +9,6 @@ import seakers.vassarheur.BaseParams;
 import seakers.vassarexecheur.search.problems.partitioning.PartitioningArchitecture;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.ArrayList;
 
 public class PartitioningCrossover implements Variation {
@@ -37,8 +36,8 @@ public class PartitioningCrossover implements Variation {
         int[] intVars2 = getIntVariables(arch2);
         int[] partitioning1 = Arrays.copyOfRange(intVars1, 0, params.getNumInstr());
         int[] partitioning2 = Arrays.copyOfRange(intVars2, 0, params.getNumInstr());
-        int[] assigning1 = Arrays.copyOfRange(intVars1, params.getNumInstr(), 2 * params.getNumInstr()+1);
-        int[] assigning2 = Arrays.copyOfRange(intVars2, params.getNumInstr(), 2 * params.getNumInstr()+1);
+        int[] assigning1 = Arrays.copyOfRange(intVars1, params.getNumInstr(), 2 * params.getNumInstr());
+        int[] assigning2 = Arrays.copyOfRange(intVars2, params.getNumInstr(), 2 * params.getNumInstr());
 
         Architecture newArch1 = new PartitioningArchitecture(params.getNumInstr(), params.getNumOrbits(), 2);
         Architecture newArch2 = new PartitioningArchitecture(params.getNumInstr(), params.getNumOrbits(), 2);
@@ -104,23 +103,26 @@ public class PartitioningCrossover implements Variation {
         }
 
         int satIndex = 0;
-        HashMap<Integer, Integer> orbit2SatIndex = new HashMap<>();
-        HashMap<Integer, Integer> satIndex2Orbit = new HashMap<>();
+        ArrayList<Integer> orbits = new ArrayList<>();
 
+        int currentOrb = assignedOrbit[0];
+        orbits.add(currentOrb);
         for(int i = 0; i < assignedOrbit.length; i++){
             int orb = assignedOrbit[i];
 
-            if(!orbit2SatIndex.containsKey(orb)){
-                orbit2SatIndex.put(orb, satIndex);
-                satIndex2Orbit.put(satIndex, orb);
-                satIndex++;
+            if (currentOrb == orb) {
+                partitioning[i] = satIndex;
             }
-
-            partitioning[i] = orbit2SatIndex.get(orb);
+            else {
+                currentOrb = orb;
+                orbits.add(currentOrb);
+                satIndex++;
+                partitioning[i] = satIndex;
+            }
         }
 
-        for(int index: satIndex2Orbit.keySet()){
-            assigning[index] = satIndex2Orbit.get(index);
+        for (int j = 0; j < orbits.size(); j++) {
+            assigning[j] = orbits.get(j);
         }
 
         ArrayList<int[]> out = new ArrayList<>();

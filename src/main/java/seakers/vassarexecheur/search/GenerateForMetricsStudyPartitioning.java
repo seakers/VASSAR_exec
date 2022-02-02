@@ -1,5 +1,6 @@
 package seakers.vassarexecheur.search;
 
+import org.apache.commons.math3.util.CombinatoricsUtils;
 import org.moeaframework.algorithm.EpsilonMOEA;
 import org.moeaframework.core.*;
 import org.moeaframework.core.comparator.ChainedComparator;
@@ -26,14 +27,16 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.stream.IntStream;
 
 public class GenerateForMetricsStudyPartitioning {
 
     public static void main(String[] args) {
-        int numRuns = 1;
+        int numRuns = 10;
         int numCpus = 1;
 
         RunMode runMode  = RunMode.EpsilonMOEA;
+        RandomMode randomMode = RandomMode.FullyRandom;
         InitializationMode initializationMode = InitializationMode.InitializeRandom;
 
         ExecutorService pool = Executors.newFixedThreadPool(numCpus);
@@ -65,6 +68,7 @@ public class GenerateForMetricsStudyPartitioning {
         double dcThreshold = 0.5;
         double massThreshold = 3000.0; // [kg]
         double packEffThreshold = 0.4;
+        boolean considerFeasibility = false; // use false only for biased random generation for random population runs
 
         String savePath = System.getProperty("user.dir") + File.separator + "results";
 
@@ -72,7 +76,7 @@ public class GenerateForMetricsStudyPartitioning {
 
         ClimateCentricPartitioningParams params = new ClimateCentricPartitioningParams(resourcesPath, "CRISP-ATTRIBUTES", "test", "normal");
 
-        AbstractArchitectureEvaluator evaluator = new ArchitectureEvaluator();
+        AbstractArchitectureEvaluator evaluator = new ArchitectureEvaluator(considerFeasibility, dcThreshold, massThreshold, packEffThreshold);
         ArchitectureEvaluationManager evaluationManager = new ArchitectureEvaluationManager(params, evaluator);
         evaluationManager.init(numCpus);
 
@@ -98,8 +102,6 @@ public class GenerateForMetricsStudyPartitioning {
                             // Injected initialization
                             List<Solution> initial = new ArrayList<>();
                             for (int k = 0; k < popSize; k++) {
-                                PartitioningArchitecture arch = new PartitioningArchitecture(params.getNumInstr(), params.getNumOrbits(), 2);
-
                                 int[] instrumentPartitioning = new int[params.getNumInstr()];
                                 int[] orbitAssignment = new int[params.getNumInstr()];
 
@@ -133,15 +135,7 @@ public class GenerateForMetricsStudyPartitioning {
                                     }
                                 }
 
-                                for (int p = 0; p < params.getNumInstr(); p++) {
-                                    IntegerVariable var = new IntegerVariable(instrumentPartitioning[p], 0, params.getNumInstr());
-                                    arch.setVariable(p, var);
-                                }
-
-                                for (int q = 0; q < params.getNumInstr(); q++) {
-                                    IntegerVariable var = new IntegerVariable(orbitAssignment[q], -1, numSats);
-                                    arch.setVariable(params.getNumInstr() + q, var);
-                                }
+                                PartitioningArchitecture arch = createPartitioningArchitecture(instrumentPartitioning, orbitAssignment, params);
 
                                 problem.evaluateArch(arch);
                                 initial.add(arch);
@@ -181,66 +175,160 @@ public class GenerateForMetricsStudyPartitioning {
                 break;
 
             case RandomPopulation:
-                System.out.println("Starting random population evaluation for Partitioning Problem");
                 PartitioningProblem problem = new PartitioningProblem(params.getProblemName(), evaluationManager, params, dcThreshold, massThreshold, packEffThreshold);
 
-                for (int i = 0; i < numRuns; i++) {
-                    String runName = "random_" + params.getProblemName() + "_" + "partition" + "_" + i;
+                switch (randomMode) {
+                    case FullyRandom:
+                        System.out.println("Starting random population evaluation for Partitioning Problem");
+                        for (int i = 0; i < numRuns; i++) {
+                            String runName = "random_" + params.getProblemName() + "_" + "partition" + "_" + i;
 
-                    List<Solution> randomPopulation = new ArrayList<>();
-                    for (int k = 0; k < popSize; k++) {
-                        PartitioningArchitecture arch = new PartitioningArchitecture(params.getNumInstr(), params.getNumOrbits(), 2);
+                            HashSet<Solution> randomPopulation = new HashSet<>();
+                            int numberOfGeneratedArchitectures = 0;
+                            while(numberOfGeneratedArchitectures < popSize) {
+                                int[] instrumentPartitioning = new int[params.getNumInstr()];
+                                int[] orbitAssignment = new int[params.getNumInstr()];
 
-                        int[] instrumentPartitioning = new int[params.getNumInstr()];
-                        int[] orbitAssignment = new int[params.getNumInstr()];
+                                // There must be at least one satellite
+                                int maxNumSats = PRNG.nextInt(params.getNumInstr()) + 1;
 
-                        // There must be at least one satellite
-                        int maxNumSats = PRNG.nextInt(params.getNumInstr()) + 1;
+                                for(int j = 0; j < params.getNumInstr(); j++){
+                                    instrumentPartitioning[j] = PRNG.nextInt(maxNumSats);
+                                }
 
-                        for(int j = 0; j < params.getNumInstr(); j++){
-                            instrumentPartitioning[j] = PRNG.nextInt(maxNumSats);
-                        }
+                                HashMap<Integer, Integer> map = new HashMap<>();
+                                int satIndex = 0;
+                                for(int m = 0; m < params.getNumInstr(); m++){
+                                    int satID = instrumentPartitioning[m];
+                                    if(map.keySet().contains(satID)){
+                                        instrumentPartitioning[m] = map.get(satID);
+                                    }else{
+                                        instrumentPartitioning[m] = satIndex;
+                                        map.put(satID, satIndex);
+                                        satIndex++;
+                                    }
+                                }
+                                Arrays.sort(instrumentPartitioning);
 
-                        HashMap<Integer, Integer> map = new HashMap<>();
-                        int satIndex = 0;
-                        for(int m = 0; m < params.getNumInstr(); m++){
-                            int satID = instrumentPartitioning[m];
-                            if(map.keySet().contains(satID)){
-                                instrumentPartitioning[m] = map.get(satID);
-                            }else{
-                                instrumentPartitioning[m] = satIndex;
-                                map.put(satID, satIndex);
-                                satIndex++;
+                                int numSats = map.keySet().size();
+                                for(int n = 0; n < params.getNumInstr(); n++){
+                                    if(n < numSats){
+                                        orbitAssignment[n] = PRNG.nextInt(params.getNumOrbits());;
+                                    }else{
+                                        orbitAssignment[n] = -1;
+                                    }
+                                }
+
+                                PartitioningArchitecture arch = createPartitioningArchitecture(instrumentPartitioning, orbitAssignment, params);
+
+                                problem.evaluateArch(arch);
+
+                                if (randomPopulation.contains(arch)) {
+                                    continue;
+                                } else {
+                                    randomPopulation.add(arch);
+                                    numberOfGeneratedArchitectures++;
+                                    System.out.println("Architecture " + numberOfGeneratedArchitectures + " of run " + (i+1) + " computed");
+                                }
                             }
+                            String filename = savePath + File.separator + runName + ".csv";
+                            savePopulationCSV(randomPopulation, filename, params);
                         }
-                        Arrays.sort(instrumentPartitioning);
+                        pool.shutdown();
+                        evaluationManager.clear();
+                        System.out.println("DONE");
+                        break;
+                    case BiasedRandom:
+                        System.out.println("Starting biased random population evaluation for Partitioning Problem");
+                        for (int i = 0; i < numRuns; i++) {
+                            String runName = "biasedrandom_" + params.getProblemName() + "_" + "partition" + "_" + i;
 
-                        int numSats = map.keySet().size();
-                        for(int n = 0; n < params.getNumInstr(); n++){
-                            if(n < numSats){
-                                orbitAssignment[n] = PRNG.nextInt(params.getNumOrbits());;
-                            }else{
-                                orbitAssignment[n] = -1;
+                            HashSet<Solution> biasedRandomPopulation = new HashSet<>();
+
+                            // Add all architectures with a single satellite
+                            int[] instrumentPartitioning = new int[params.getNumInstr()];
+                            int[] orbitAssigning = new int[params.getNumInstr()];
+                            Arrays.fill(orbitAssigning, -1);
+                            for (int j = 0; j < params.getNumOrbits(); j++) {
+                                orbitAssigning[0] = j;
+
+                                PartitioningArchitecture arch = createPartitioningArchitecture(instrumentPartitioning, orbitAssigning, params);
+
+                                problem.evaluate(arch);
+                                biasedRandomPopulation.add(arch);
                             }
-                        }
+                            System.out.println("Single satellite architectures added");
 
-                        for (int p = 0; p < params.getNumInstr(); p++) {
-                            IntegerVariable var = new IntegerVariable(instrumentPartitioning[p], 0, params.getNumInstr());
-                            arch.setVariable(p, var);
-                        }
+                            // Compute number of architectures with different number of satellites using Poisson Distribution
+                            int lambda = 4; // lambda for Poisson's Distribution, biases higher number of architectures for lower number of satellites
+                            int[] numberOfSatellites = IntStream.range(2, params.getNumInstr()).toArray();
+                            int[] numberOfArchs = new int[numberOfSatellites.length];
+                            for (int j = 0; j < numberOfArchs.length; j++) {
+                                numberOfArchs[j] = (int) (Math.floor((Math.pow(lambda,numberOfSatellites[j])*Math.exp(-lambda)/CombinatoricsUtils.factorial(numberOfSatellites[j]))*popSize)) +1;
+                            }
 
-                        for (int q = 0; q < params.getNumInstr(); q++) {
-                            IntegerVariable var = new IntegerVariable(orbitAssignment[q], -1, params.getNumOrbits());
-                            arch.setVariable(params.getNumInstr() + q, var);
-                        }
+                            // Add remaining number of architectures with n_orbs number of satellites
+                            instrumentPartitioning = IntStream.range(0, params.getNumInstr()).toArray();
+                            orbitAssigning = new int[params.getNumInstr()];
+                            int numberOfFullArchs = popSize - (params.getNumOrbits() + Arrays.stream(numberOfArchs).sum());
+                            int j = 0;
+                            while (j < numberOfFullArchs) {
+                                Collections.shuffle(Arrays.asList(instrumentPartitioning));
+                                for (int p = 0; p < params.getNumInstr(); p++) {
+                                    orbitAssigning[p] = PRNG.nextInt(params.getNumOrbits());
+                                }
 
-                        problem.evaluateArch(arch);
-                        randomPopulation.add(arch);
-                        System.out.println("Architecture " + (k+1) + " of run " + (i+1) + " computed");
-                    }
-                    String filename = savePath + File.separator + runName + ".csv";
-                    savePopulationCSV(randomPopulation, filename, params);
+                                PartitioningArchitecture arch = createPartitioningArchitecture(instrumentPartitioning, orbitAssigning, params);
+
+                                if (biasedRandomPopulation.contains(arch)) {
+                                    continue;
+                                } else {
+                                    problem.evaluate(arch);
+                                    biasedRandomPopulation.add(arch);
+                                    j++;
+                                }
+                            }
+                            System.out.println("Full satellite architectures added");
+
+                            // Populate architectures with different number of satellites
+                            instrumentPartitioning = new int[params.getNumInstr()];
+                            orbitAssigning = new int[params.getNumInstr()];
+                            Arrays.fill(orbitAssigning, -1);
+                            for (int k = 0; k < numberOfSatellites.length; k++) {
+                                int numSatellites = numberOfSatellites[k];
+                                int n = 0;
+                                while (n < numberOfArchs[k]) {
+                                    for (int m = 0; m < params.getNumInstr(); m++) {
+                                        instrumentPartitioning[m] = PRNG.nextInt(numSatellites);
+                                    }
+                                    for (int m = 0; m < numSatellites; m++) {
+                                        orbitAssigning[m] = PRNG.nextInt(params.getNumOrbits());
+                                    }
+
+                                    PartitioningArchitecture arch = createPartitioningArchitecture(instrumentPartitioning, orbitAssigning, params);
+
+                                    if (biasedRandomPopulation.contains(arch)) {
+                                        continue;
+                                    } else {
+                                        problem.evaluate(arch);
+                                        biasedRandomPopulation.add(arch);
+                                        System.out.println("Architecture " + biasedRandomPopulation.size() + " of run " + (i+1) + " computed");
+                                        n++;
+                                    }
+                                }
+                            }
+                            String filename = savePath + File.separator + runName + ".csv";
+                            savePopulationCSV(biasedRandomPopulation, filename, params);
+                        }
+                        pool.shutdown();
+                        evaluationManager.clear();
+                        System.out.println("DONE");
+                        break;
+
+                    default :
+                        throw new IllegalStateException("Unrecognized random run mode");
                 }
+
                 pool.shutdown();
                 evaluationManager.clear();
                 System.out.println("DONE");
@@ -251,7 +339,7 @@ public class GenerateForMetricsStudyPartitioning {
         }
     }
 
-    public static void savePopulationCSV(List<Solution> pop, String filename, ClimateCentricPartitioningParams params) {
+    public static void savePopulationCSV(HashSet<Solution> pop, String filename, ClimateCentricPartitioningParams params) {
 
         File results = new File(filename);
         results.getParentFile().mkdirs();
@@ -328,6 +416,21 @@ public class GenerateForMetricsStudyPartitioning {
         }
     }
 
+    public static PartitioningArchitecture createPartitioningArchitecture (int[] instrumentPartitions, int[] orbitAssignments, ClimateCentricPartitioningParams params) {
+        PartitioningArchitecture arch = new PartitioningArchitecture(params.getNumInstr(), params.getNumOrbits(), 2);
+
+        for (int p = 0; p < params.getNumInstr(); p++) {
+            IntegerVariable var = new IntegerVariable(instrumentPartitions[p], 0, params.getNumInstr());
+            arch.setVariable(p, var);
+        }
+
+        for (int q = 0; q < params.getNumInstr(); q++) {
+            IntegerVariable var = new IntegerVariable(orbitAssignments[q], -1, params.getNumOrbits());
+            arch.setVariable(params.getNumInstr() + q, var);
+        }
+        return arch;
+    }
+
     public enum RunMode{
         RandomPopulation,
         EpsilonMOEA,
@@ -336,5 +439,10 @@ public class GenerateForMetricsStudyPartitioning {
     public enum InitializationMode{
         InitializeRandom,
         InitializationRandomAndInjected,
+    }
+
+    public enum RandomMode{
+        FullyRandom,
+        BiasedRandom,
     }
 }

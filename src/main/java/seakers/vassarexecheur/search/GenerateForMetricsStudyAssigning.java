@@ -26,8 +26,8 @@ import java.util.concurrent.*;
 public class GenerateForMetricsStudyAssigning {
 
     public static void main(String[] args) {
-        int numRuns = 10;
-        int numCpus = 4;
+        int numRuns = 4;
+        int numCpus = 2;
 
         RunMode runMode  = RunMode.EpsilonMOEA;
         InitializationMode initializationMode = InitializationMode.InitializeRandom;
@@ -61,6 +61,7 @@ public class GenerateForMetricsStudyAssigning {
         double dcThreshold = 0.5;
         double massThreshold = 3000.0; // [kg]
         double packEffThreshold = 0.4;
+        boolean considerFeasibility = true;
 
         String savePath = System.getProperty("user.dir") + File.separator + "results";
 
@@ -68,11 +69,11 @@ public class GenerateForMetricsStudyAssigning {
 
         ClimateCentricAssigningParams params = new ClimateCentricAssigningParams(resourcesPath, "CRISP-ATTRIBUTES","test", "normal");
 
-        AbstractArchitectureEvaluator evaluator = new ArchitectureEvaluator();
+        PRNG.setRandom(new SynchronizedMersenneTwister());
+
+        AbstractArchitectureEvaluator evaluator = new ArchitectureEvaluator(considerFeasibility, dcThreshold, massThreshold, packEffThreshold);
         ArchitectureEvaluationManager evaluationManager = new ArchitectureEvaluationManager(params, evaluator);
         evaluationManager.init(numCpus);
-
-        PRNG.setRandom(new SynchronizedMersenneTwister());
 
         switch (runMode) {
 
@@ -150,9 +151,9 @@ public class GenerateForMetricsStudyAssigning {
 
             case RandomPopulation:
                 System.out.println("Starting random population evaluation for Assigning Problem");
-                AssigningProblem problem = new AssigningProblem(new int[]{1}, params.getProblemName(), evaluationManager, params, dcThreshold, massThreshold, packEffThreshold);
 
                 for (int i = 0; i < numRuns; i++) {
+                    AssigningProblem problem = new AssigningProblem(new int[]{1}, params.getProblemName(), evaluationManager, params, dcThreshold, massThreshold, packEffThreshold);
                     String runName = "random_" + params.getProblemName() + "_" + "assign" + "_" + i;
 
                     List<Solution> randomPopulation = new ArrayList<>();

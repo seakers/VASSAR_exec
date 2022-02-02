@@ -24,11 +24,17 @@ public class AssigningArchitecture extends Architecture {
      */
     private final int[] alternativesForNumberOfSatellites;
     private boolean alreadyEvaluated;
+    private ArrayList<ArrayList<Double>> operatorParameters;
+    private ArrayList<ArrayList<String>> satellitePayloads;
+    private ArrayList<String> satelliteOrbits;
 
     public AssigningArchitecture(int[] alternativesForNumberOfSatellites, int numberOfInstruments, int numberOfOrbits, int numberOfObjectives) {
         super(numberOfObjectives, 0, createDecisions(alternativesForNumberOfSatellites, numberOfInstruments, numberOfOrbits));
         this.alternativesForNumberOfSatellites = alternativesForNumberOfSatellites;
         this.alreadyEvaluated = false;
+        this.operatorParameters = null;
+        this.satellitePayloads = null;
+        this.satelliteOrbits = null;
     }
 
     private static ArrayList<ArchitecturalDecision> createDecisions(int[] altnertivesForNumberOfSatellites, int numberOfInstruments, int numberOfOrbits) {
@@ -46,6 +52,8 @@ public class AssigningArchitecture extends Architecture {
     private AssigningArchitecture(Solution solution) {
         super(solution);
         this.alternativesForNumberOfSatellites = ((AssigningArchitecture) solution).alternativesForNumberOfSatellites;
+        this.operatorParameters = ((AssigningArchitecture) solution).operatorParameters;
+        this.satellitePayloads = ((AssigningArchitecture) solution).satellitePayloads;
     }
 
     public void setAlreadyEvaluated(boolean alreadyEvaluated) {
@@ -55,6 +63,18 @@ public class AssigningArchitecture extends Architecture {
     public boolean getAlreadyEvaluated() {
         return this.alreadyEvaluated;
     }
+
+    public void setOperatorParameters(ArrayList<ArrayList<Double>> operatorParameters) { this.operatorParameters = operatorParameters; }
+
+    public ArrayList<ArrayList<Double>> getOperatorParameters() { return this.operatorParameters; }
+
+    public void setSatellitePayloads(ArrayList<ArrayList<String>> satellitePayloads) { this.satellitePayloads = satellitePayloads; }
+
+    public ArrayList<ArrayList<String>> getSatellitePayloads() { return this.satellitePayloads; }
+
+    public void setSatelliteOrbits(ArrayList<String> satelliteOrbits) { this.satelliteOrbits = satelliteOrbits; }
+
+    public ArrayList<String> getSatelliteOrbits() { return this.satelliteOrbits; }
 
     @Override
     public Solution copy() { return new AssigningArchitecture(this); }
