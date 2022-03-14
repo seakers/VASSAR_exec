@@ -463,12 +463,19 @@ corr_avg_instrsyn_pfdist = (pearson_instrsyn_pfdist + spearman_instrsyn_pfdist)/
 % I1_spmass = compute_heuristic_I1_contribution(corr_avg_spmass_pfdist, corr_min, corr_exp_spmass, support_pf_runs);
 % I1_instrsyn = compute_heuristic_I1_contribution(corr_avg_instrsyn_pfdist, corr_min, corr_exp_instrsyn, support_pf_runs);
 
-I1_instrdc = compute_heuristic_I1_contribution2(corr_avg_instrdc_pfdist, corr_exp_instrdc, support_pf_runs);
-I1_instrorb = compute_heuristic_I1_contribution2(corr_avg_instrorb_pfdist, corr_exp_instrorb, support_pf_runs);
-I1_interinstr = compute_heuristic_I1_contribution2(corr_avg_interinstr_pfdist, corr_exp_interinstr, support_pf_runs);
-I1_packeff = compute_heuristic_I1_contribution2(corr_avg_packeff_pfdist, corr_exp_packeff, support_pf_runs);
-I1_spmass = compute_heuristic_I1_contribution2(corr_avg_spmass_pfdist, corr_exp_spmass, support_pf_runs);
-I1_instrsyn = compute_heuristic_I1_contribution2(corr_avg_instrsyn_pfdist, corr_exp_instrsyn, support_pf_runs);
+% I1_instrdc = compute_heuristic_I1_contribution2(corr_avg_instrdc_pfdist, corr_exp_instrdc, support_pf_runs);
+% I1_instrorb = compute_heuristic_I1_contribution2(corr_avg_instrorb_pfdist, corr_exp_instrorb, support_pf_runs);
+% I1_interinstr = compute_heuristic_I1_contribution2(corr_avg_interinstr_pfdist, corr_exp_interinstr, support_pf_runs);
+% I1_packeff = compute_heuristic_I1_contribution2(corr_avg_packeff_pfdist, corr_exp_packeff, support_pf_runs);
+% I1_spmass = compute_heuristic_I1_contribution2(corr_avg_spmass_pfdist, corr_exp_spmass, support_pf_runs);
+% I1_instrsyn = compute_heuristic_I1_contribution2(corr_avg_instrsyn_pfdist, corr_exp_instrsyn, support_pf_runs);
+
+I1_instrdc = compute_heuristic_I1_contribution_run_vec(corr_avg_instrdc_pfdist, corr_exp_instrdc, support_pf_runs);
+I1_instrorb = compute_heuristic_I1_contribution_run_vec(corr_avg_instrorb_pfdist, corr_exp_instrorb, support_pf_runs);
+I1_interinstr = compute_heuristic_I1_contribution_run_vec(corr_avg_interinstr_pfdist, corr_exp_interinstr, support_pf_runs);
+I1_packeff = compute_heuristic_I1_contribution_run_vec(corr_avg_packeff_pfdist, corr_exp_packeff, support_pf_runs);
+I1_spmass = compute_heuristic_I1_contribution_run_vec(corr_avg_spmass_pfdist, corr_exp_spmass, support_pf_runs);
+I1_instrsyn = compute_heuristic_I1_contribution_run_vec(corr_avg_instrsyn_pfdist, corr_exp_instrsyn, support_pf_runs);
 
 I1_norm_instrdc = I1_instrdc/(abs(I1_instrdc) + abs(I1_instrorb) + abs(I1_interinstr) + abs(I1_packeff) + abs(I1_spmass) + abs(I1_instrsyn));
 I1_norm_instrorb = I1_instrorb/(abs(I1_instrdc) + abs(I1_instrorb) + abs(I1_interinstr) + abs(I1_packeff) + abs(I1_spmass) + abs(I1_instrsyn));
@@ -485,12 +492,19 @@ I1_norm_instrsyn = I1_instrsyn/(abs(I1_instrdc) + abs(I1_instrorb) + abs(I1_inte
 % I2_spmass = compute_heuristic_I2_contribution(corr_avg_spmass_pfdist, corr_min, corr_exp_spmass, support_pf_runs, support_full_spmass_runs);
 % I2_instrsyn = compute_heuristic_I2_contribution(corr_avg_instrsyn_pfdist, corr_min, corr_exp_instrsyn, support_pf_runs, support_full_instrsyn_runs);
 
-I2_instrdc = compute_heuristic_I2_contribution2(corr_avg_instrdc_pfdist, corr_exp_instrdc, support_pf_runs, support_full_instrdc_runs);
-I2_instrorb = compute_heuristic_I2_contribution2(corr_avg_instrorb_pfdist, corr_exp_instrorb, support_pf_runs, support_full_instrorb_runs);
-I2_interinstr = compute_heuristic_I2_contribution2(corr_avg_interinstr_pfdist, corr_exp_interinstr, support_pf_runs, support_full_interinstr_runs);
-I2_packeff = compute_heuristic_I2_contribution2(corr_avg_packeff_pfdist, corr_exp_packeff, support_pf_runs, support_full_packeff_runs);
-I2_spmass = compute_heuristic_I2_contribution2(corr_avg_spmass_pfdist, corr_exp_spmass, support_pf_runs, support_full_spmass_runs);
-I2_instrsyn = compute_heuristic_I2_contribution2(corr_avg_instrsyn_pfdist, corr_exp_instrsyn, support_pf_runs, support_full_instrsyn_runs);
+% I2_instrdc = compute_heuristic_I2_contribution2(corr_avg_instrdc_pfdist, corr_exp_instrdc, support_pf_runs, support_full_instrdc_runs);
+% I2_instrorb = compute_heuristic_I2_contribution2(corr_avg_instrorb_pfdist, corr_exp_instrorb, support_pf_runs, support_full_instrorb_runs);
+% I2_interinstr = compute_heuristic_I2_contribution2(corr_avg_interinstr_pfdist, corr_exp_interinstr, support_pf_runs, support_full_interinstr_runs);
+% I2_packeff = compute_heuristic_I2_contribution2(corr_avg_packeff_pfdist, corr_exp_packeff, support_pf_runs, support_full_packeff_runs);
+% I2_spmass = compute_heuristic_I2_contribution2(corr_avg_spmass_pfdist, corr_exp_spmass, support_pf_runs, support_full_spmass_runs);
+% I2_instrsyn = compute_heuristic_I2_contribution2(corr_avg_instrsyn_pfdist, corr_exp_instrsyn, support_pf_runs, support_full_instrsyn_runs);
+
+I2_instrdc = compute_heuristic_I2_contribution_run_vec(corr_avg_instrdc_pfdist, corr_exp_instrdc, support_pf_runs, support_full_instrdc_runs);
+I2_instrorb = compute_heuristic_I2_contribution_run_vec(corr_avg_instrorb_pfdist, corr_exp_instrorb, support_pf_runs, support_full_instrorb_runs);
+I2_interinstr = compute_heuristic_I2_contribution_run_vec(corr_avg_interinstr_pfdist, corr_exp_interinstr, support_pf_runs, support_full_interinstr_runs);
+I2_packeff = compute_heuristic_I2_contribution_run_vec(corr_avg_packeff_pfdist, corr_exp_packeff, support_pf_runs, support_full_packeff_runs);
+I2_spmass = compute_heuristic_I2_contribution_run_vec(corr_avg_spmass_pfdist, corr_exp_spmass, support_pf_runs, support_full_spmass_runs);
+I2_instrsyn = compute_heuristic_I2_contribution_run_vec(corr_avg_instrsyn_pfdist, corr_exp_instrsyn, support_pf_runs, support_full_instrsyn_runs);
 
 I2_norm_instrdc = I2_instrdc/(abs(I2_instrdc) + abs(I2_instrorb) + abs(I2_interinstr) + abs(I2_packeff) + abs(I2_spmass) + abs(I2_instrsyn));
 I2_norm_instrorb = I2_instrorb/(abs(I2_instrdc) + abs(I2_instrorb) + abs(I2_interinstr) + abs(I2_packeff) + abs(I2_spmass) + abs(I2_instrsyn));
@@ -499,6 +513,12 @@ I2_norm_packeff = I2_packeff/(abs(I2_instrdc) + abs(I2_instrorb) + abs(I2_interi
 I2_norm_spmass = I2_spmass/(abs(I2_instrdc) + abs(I2_instrorb) + abs(I2_interinstr) + abs(I2_packeff) + abs(I2_spmass) + abs(I2_instrsyn));
 I2_norm_instrsyn = I2_instrsyn/(abs(I2_instrdc) + abs(I2_instrorb) + abs(I2_interinstr) + abs(I2_packeff) + abs(I2_spmass) + abs(I2_instrsyn));
 
+indices_tablestats = [mean(I1_instrdc), std(I1_instrdc);
+                    mean(I1_instrorb), std(I1_instrorb);
+                    mean(I1_interinstr), std(I1_interinstr);
+                    mean(I1_packeff), std(I1_packeff);
+                    mean(I1_spmass), std(I1_spmass);
+                    mean(I1_instrsyn), std(I1_instrsyn)];
 %% Thresholding heuristics, objectives and constraints into high and low
 instrdc_all_thresh = struct;
 instrorb_all_thresh = struct;
@@ -706,10 +726,22 @@ function index_contribution = compute_heuristic_I1_contribution2(corr_array_heur
     index_contribution = log_arg*(-1*log10(mean(supp_array_param))); 
 end
 
+function index_contribution = compute_heuristic_I1_contribution_run_vec(corr_array_heur_param, idx_corr_heur_param, supp_array_param)
+    % corr_array_heur_param and supp_array_param are (n x 1) arrays where n is the number of runs
+    log_arg = idx_corr_heur_param.*corr_array_heur_param;
+    index_contribution = log_arg.*(-1.*log10(supp_array_param));
+end
+
 function index_contribution = compute_heuristic_I2_contribution2(corr_array_heur_param, idx_corr_heur_param, supp_array_param, supp_array_heur)
     % corr_array_heur_param, supp_array_heur and supp_array_param are (n x 1) arrays where n is the number of runs
     log_arg = idx_corr_heur_param*mean(corr_array_heur_param);
     index_contribution = log_arg*(log10(mean(supp_array_param))*log10(mean(supp_array_heur))); 
+end
+
+function index_contribution = compute_heuristic_I2_contribution_run_vec(corr_array_heur_param, idx_corr_heur_param, supp_array_param, supp_array_heur)
+    % corr_array_heur_param, supp_array_heur and supp_array_param are (n x 1) arrays where n is the number of runs
+    log_arg = idx_corr_heur_param.*corr_array_heur_param;
+    index_contribution = log_arg.*(log10(supp_array_param).*log10(supp_array_heur)); 
 end
 
 function plot_regression(linmodel,X,y,Xname,Yname,run_num)
@@ -787,7 +819,9 @@ end
 
 function [obj_array, heur_array, design_array] = read_csv_data(assign_prob, heur_bools, random_data_read, rand_init, run_num)
     prob_name = 'ClimateCentric_';
-    filepath = 'C:\\SEAK Lab\\SEAK Lab Github\\VASSAR\\VASSAR_exec_heur\\results\\';
+    %filepath = 'C:\\SEAK Lab\\SEAK Lab
+    %Github\\VASSAR\\VASSAR_exec_heur\\results\\'; % for lab system
+    filepath = 'C:\\Users\\rosha\\Documents\\SEAK Lab Github\\VASSAR\\VASSAR_exec_heur\\results\\'; % for laptop
     methods = ["Int Pen","AOS","Bias Init","ACH"];
     heuristics = ["InstrDC","InstrOrb","InterInstr","PackEff","SpMass","InstrSyn"];
     heur_abbr = ["d","o","i","p","m","s"];
@@ -842,13 +876,23 @@ function [obj_array, heur_array, design_array] = read_csv_data(assign_prob, heur
         filename_prob = 'partition_';
     end
     
-    full_filename = strcat(filename_random,prob_name,filename_prob,filename_init,num2str(run_num),".csv");
+    if random_data_read
+        full_filename = strcat(filename_random,prob_name,filename_prob,filename_init,num2str(run_num),".csv");
+    else
+        full_filename = strcat(filename_random,prob_name,filename_prob,filename_init,num2str(run_num),"_fullpop.csv");
+    end
     
     %%%% read appropriate file 
     full_filepath = strcat(filepath,filepath_random,filepath_prob,full_filename);
     
     format_string = '%s';
-    for j = 1:8
+    if random_data_read
+        n_data_variables = 8;
+    else
+        n_data_variables = 9;
+    end
+
+    for j = 1:n_data_variables
         format_string = strcat(format_string,'%f');
     end
         
@@ -859,18 +903,31 @@ function [obj_array, heur_array, design_array] = read_csv_data(assign_prob, heur
     %%%% Connectivity Score, Stiffness Ratio Constraint, Partial Collapsibility Score, 
     %%%% Nodal Properties Score, Orientation Score]
     pop_size =  size(data_table,1);
-    csv_data = zeros(pop_size,8);
+    if random_data_read
+        csv_data = zeros(pop_size,8);
+    else
+        csv_data = zeros(pop_size,9);
+    end
     
     designs = strings(pop_size);
     designs = data_table(:,1);
         
-    csv_data = data_table(:,end-7:end);
+    if random_data_read
+        csv_data = data_table(:,end-7:end);
+    else
+        csv_data = data_table(:,end-8:end);
+    end
     
     data_array = table2array(csv_data);
     design_array = table2array(designs);
     
-    obj_array = data_array(:,1:2);
-    heur_array = data_array(:,3:end);
+    if random_data_read
+        obj_array = data_array(:,1:2);
+        heur_array = data_array(:,3:end);
+    else
+        obj_array = data_array(:,2:3);
+        heur_array = data_array(:,4:end);
+    end
 end
 
 function norm_array = normalize_array(array)

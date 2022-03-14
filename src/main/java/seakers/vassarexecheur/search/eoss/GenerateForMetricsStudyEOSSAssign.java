@@ -26,7 +26,7 @@ public class GenerateForMetricsStudyEOSSAssign {
 
     public static void main(String[] args){
 
-        int numRuns = 10;
+        int numRuns = 1;
         int numCpus = 1;
 
         RunMode runMode  = RunMode.EpsilonMOEA;
@@ -71,14 +71,16 @@ public class GenerateForMetricsStudyEOSSAssign {
         String savePath = System.getProperty("user.dir") + File.separator + "results";
 
         //initialize EOSS database
-        String problemPath = "C:\\SEAK Lab\\SEAK Lab Github\\EOSS\\EOSS-AIAA\\problems\\climateCentric";
+        // String problemPath = "C:\\SEAK Lab\\SEAK Lab Github\\EOSS\\EOSS-AIAA\\problems\\climateCentric"; // for lab system
+        String problemPath = "C:\\Users\\rosha\\Documents\\SEAK Lab Github\\EOSS\\problems\\climateCentric"; // for laptop
         EOSSDatabase.getInstance();
         EOSSDatabase.loadBuses(new File(problemPath + File.separator + "config" + File.separator + "candidateBuses.xml"));
         EOSSDatabase.loadInstruments(new File(problemPath + File.separator + "xls" + File.separator + "Instrument Capability Definition.xls"));
         EOSSDatabase.loadOrbits(new File(problemPath + File.separator + "config" + File.separator + "candidateOrbits5.xml"));
         EOSSDatabase.loadLaunchVehicles(new File(problemPath + File.separator + "config" + File.separator + "candidateLaunchVehicles.xml"));
 
-        OrekitConfig.init(numCpus,"C:\\SEAK Lab\\SEAK Lab Github\\EOSS\\EOSS-AIAA");
+        // OrekitConfig.init(numCpus,"C:\\SEAK Lab\\SEAK Lab Github\\EOSS\\EOSS-AIAA"); \\ for lab system
+        OrekitConfig.init(numCpus,"C:\\Users\\rosha\\Documents\\SEAK Lab Github\\EOSS"); // for laptop
 
         PRNG.setRandom(new SynchronizedMersenneTwister());
         switch(runMode) {

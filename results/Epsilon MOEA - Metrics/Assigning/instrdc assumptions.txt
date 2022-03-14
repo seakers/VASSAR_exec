@@ -1,2 +1,0 @@
-Using data rate duty cycle assumptions:
-2 ground contacts of 10 mins each at 475 Mbps 

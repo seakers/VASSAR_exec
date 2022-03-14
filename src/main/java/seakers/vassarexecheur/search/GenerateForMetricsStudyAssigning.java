@@ -26,8 +26,8 @@ import java.util.concurrent.*;
 public class GenerateForMetricsStudyAssigning {
 
     public static void main(String[] args) {
-        int numRuns = 4;
-        int numCpus = 2;
+        int numRuns = 1;
+        int numCpus = 1;
 
         RunMode runMode  = RunMode.EpsilonMOEA;
         InitializationMode initializationMode = InitializationMode.InitializeRandom;
@@ -65,7 +65,8 @@ public class GenerateForMetricsStudyAssigning {
 
         String savePath = System.getProperty("user.dir") + File.separator + "results";
 
-        String resourcesPath = "C:\\SEAK Lab\\SEAK Lab Github\\VASSAR\\VASSAR_resources-heur";
+        //String resourcesPath = "C:\\SEAK Lab\\SEAK Lab Github\\VASSAR\\VASSAR_resources-heur"; // for lab system
+        String resourcesPath = "C:\\Users\\rosha\\Documents\\SEAK Lab Github\\VASSAR\\VASSAR_resources-heur"; // for laptop
 
         ClimateCentricAssigningParams params = new ClimateCentricAssigningParams(resourcesPath, "CRISP-ATTRIBUTES","test", "normal");
 

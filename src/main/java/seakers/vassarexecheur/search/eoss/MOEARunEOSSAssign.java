@@ -24,7 +24,7 @@ public class MOEARunEOSSAssign {
     public static void main(String[] args) {
 
         int numRuns = 2;
-        int numCpus = 2;
+        int numCpus = 1;
 
         //// Select enforcement methods for different heuristics
         // boolean_array = [int_pen, AOS, bias_init, ACH, objective, constraint]
