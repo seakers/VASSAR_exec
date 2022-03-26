@@ -37,6 +37,15 @@ public class AssigningArchitecture extends Architecture {
         this.satelliteOrbits = null;
     }
 
+    public AssigningArchitecture(int[] alternativesForNumberOfSatellites, int numberOfInstruments, int numberOfOrbits, int numberOfObjectives, int numberOfConstraints) {
+        super(numberOfObjectives, numberOfConstraints, createDecisions(alternativesForNumberOfSatellites, numberOfInstruments, numberOfOrbits));
+        this.alternativesForNumberOfSatellites = alternativesForNumberOfSatellites;
+        this.alreadyEvaluated = false;
+        this.operatorParameters = null;
+        this.satellitePayloads = null;
+        this.satelliteOrbits = null;
+    }
+
     private static ArrayList<ArchitecturalDecision> createDecisions(int[] altnertivesForNumberOfSatellites, int numberOfInstruments, int numberOfOrbits) {
         ArrayList<ArchitecturalDecision> out = new ArrayList<>();
         out.add(new Combining(new int[]{altnertivesForNumberOfSatellites.length}, combineTag));

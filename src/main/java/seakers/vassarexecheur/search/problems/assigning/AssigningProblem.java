@@ -22,9 +22,12 @@ public class AssigningProblem  extends AbstractProblem implements SystemArchitec
     private final double dcThreshold;
     private final double massThreshold; //[kg]
     private final double packingEfficiencyThreshold;
+    private final int numberOfHeuristicObjectives;
+    private final int numberOfHeuristicConstraints;
+    private final boolean[][] heuristicsConstrained;
 
-    public AssigningProblem(int[] alternativesForNumberOfSatellites, String problem, ArchitectureEvaluationManager evalManager, BaseParams params, double dcThreshold, double massThreshold, double packingEfficiencyThreshold) {
-        super(1 + params.getNumInstr()*params.getNumOrbits(), 2);
+    public AssigningProblem(int[] alternativesForNumberOfSatellites, String problem, ArchitectureEvaluationManager evalManager, BaseParams params, double dcThreshold, double massThreshold, double packingEfficiencyThreshold, int numberOfHeuristicObjectives, int numberOfHeuristicConstraints, boolean[][] heuristicsConstrained) {
+        super(1 + params.getNumInstr()*params.getNumOrbits(), 2+numberOfHeuristicObjectives, numberOfHeuristicConstraints);
         this.problem = problem;
         this.evalManager = evalManager;
         this.alternativesForNumberOfSatellites = alternativesForNumberOfSatellites;
@@ -32,13 +35,16 @@ public class AssigningProblem  extends AbstractProblem implements SystemArchitec
         this.dcThreshold = dcThreshold;
         this.massThreshold = massThreshold;
         this.packingEfficiencyThreshold = packingEfficiencyThreshold;
+        this.numberOfHeuristicObjectives = numberOfHeuristicObjectives;
+        this.numberOfHeuristicConstraints = numberOfHeuristicConstraints;
+        this.heuristicsConstrained = heuristicsConstrained;
     }
 
     @Override
     public void evaluate(Solution solution) {
         AssigningArchitecture arch = (AssigningArchitecture) solution;
         evaluateArch(arch);
-        System.out.println(String.format("Arch %s Science = %10f; Cost = %10f", arch.toString(), arch.getObjective(0), arch.getObjective(1)));
+        //System.out.println(String.format("Arch %s Science = %10f; Cost = %10f", arch.toString(), arch.getObjective(0), arch.getObjective(1)));
     }
 
     public void evaluateArch(AssigningArchitecture arch) {
@@ -62,6 +68,16 @@ public class AssigningProblem  extends AbstractProblem implements SystemArchitec
                 arch.setObjective(1, result.getCost());
 
                 ArrayList<Double> archHeuristics = result.getHeuristics();
+
+                for (int i = 0; i < heuristicsConstrained.length; i++) {
+                    if (heuristicsConstrained[i][4]) {
+                        arch.setObjective(2+i, archHeuristics.get(i));
+                    }
+                    if (heuristicsConstrained[i][5]) {
+                        arch.setConstraint(i, archHeuristics.get(i));
+                    }
+                }
+
                 arch.setAttribute("DCViolation",archHeuristics.get(0));
                 arch.setAttribute("InstrOrbViolation",archHeuristics.get(1));
                 arch.setAttribute("InterInstrViolation",archHeuristics.get(2));
@@ -83,6 +99,6 @@ public class AssigningProblem  extends AbstractProblem implements SystemArchitec
 
     @Override
     public Solution newSolution() {
-        return new AssigningArchitecture(alternativesForNumberOfSatellites, params.getNumInstr(), params.getNumOrbits(), 2);
+        return new AssigningArchitecture(alternativesForNumberOfSatellites, params.getNumInstr(), params.getNumOrbits(), 2+numberOfHeuristicObjectives, numberOfHeuristicConstraints);
     }
 }

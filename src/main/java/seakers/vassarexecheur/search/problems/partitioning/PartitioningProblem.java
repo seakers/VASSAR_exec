@@ -23,8 +23,11 @@ public class PartitioningProblem extends AbstractProblem implements SystemArchit
     private final double dcThreshold;
     private final double massThreshold; //[kg]
     private final double packingEffThreshold;
+    private final int numberOfHeuristicObjectives;
+    private final int numberOfHeuristicConstraints;
+    private final boolean[][] heuristicsConstrained;
 
-    public PartitioningProblem(String problem, ArchitectureEvaluationManager evalManager, BaseParams params, double dcThreshold, double massThreshold, double packingEfficiencyThreshold) {
+    public PartitioningProblem(String problem, ArchitectureEvaluationManager evalManager, BaseParams params, double dcThreshold, double massThreshold, double packingEfficiencyThreshold, int numberOfHeuristicObjectives, int numberOfHeuristicConstraints, boolean[][] heuristicsConstrained) {
         super(2 * params.getNumInstr(),2);
         this.problem = problem;
         this.evaluationManager = evalManager;
@@ -32,12 +35,16 @@ public class PartitioningProblem extends AbstractProblem implements SystemArchit
         this.dcThreshold = dcThreshold;
         this.massThreshold = massThreshold;
         this.packingEffThreshold = packingEfficiencyThreshold;
+        this.numberOfHeuristicObjectives = numberOfHeuristicObjectives;
+        this.numberOfHeuristicConstraints = numberOfHeuristicConstraints;
+        this.heuristicsConstrained = heuristicsConstrained;
     }
 
     @Override
     public void evaluate(Solution solution) {
         PartitioningArchitecture arch = (PartitioningArchitecture) solution;
         evaluateArch(arch);
+        //System.out.println(String.format("Arch %s Science = %10f; Cost = %10f", arch.toString(), arch.getObjective(0), arch.getObjective(1)));
     }
 
     public void evaluateArch (PartitioningArchitecture arch) {
@@ -77,6 +84,16 @@ public class PartitioningProblem extends AbstractProblem implements SystemArchit
                 arch.setObjective(1, result.getCost());
 
                 ArrayList<Double> archHeuristics = result.getHeuristics();
+
+                for (int i = 0; i < heuristicsConstrained.length; i++) {
+                    if (heuristicsConstrained[i][4]) {
+                        arch.setObjective(2+i, archHeuristics.get(i));
+                    }
+                    if (heuristicsConstrained[i][5]) {
+                        arch.setConstraint(1+i, archHeuristics.get(i));
+                    }
+                }
+
                 arch.setAttribute("DCViolation",archHeuristics.get(0));
                 arch.setAttribute("InstrOrbViolation",archHeuristics.get(1));
                 arch.setAttribute("InterInstrViolation",archHeuristics.get(2));
@@ -98,7 +115,7 @@ public class PartitioningProblem extends AbstractProblem implements SystemArchit
 
     @Override
     public Solution newSolution() {
-        return new PartitioningArchitecture(params.getNumInstr(), params.getNumOrbits(), 2);
+        return new PartitioningArchitecture(params.getNumInstr(), params.getNumOrbits(), 2+numberOfHeuristicObjectives, 1+numberOfHeuristicConstraints);
     }
 
     private boolean isFeasible(int[] instrumentPartitioning, int[] orbitAssignment){

@@ -31,6 +31,14 @@ public class PartitioningArchitecture extends Architecture {
         this.satelliteOrbits = null;
     }
 
+    public PartitioningArchitecture(int numberOfInstruments, int numberOfOrbits, int numberOfObjectives, int numberOfConstraints) {
+        super(numberOfObjectives, 1+numberOfConstraints, createDecisions(numberOfInstruments, numberOfOrbits));
+        this.alreadyEvaluated = false;
+        this.operatorParameters = null;
+        this.satellitePayloads = null;
+        this.satelliteOrbits = null;
+    }
+
     private static ArrayList<ArchitecturalDecision> createDecisions(int numberOfInstruments, int numberOfOrbits) {
         ArrayList<ArchitecturalDecision> out = new ArrayList<>();
         out.add(new Partitioning(numberOfInstruments, partitionTag));

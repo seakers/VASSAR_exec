@@ -26,7 +26,7 @@ import java.util.concurrent.*;
 public class GenerateForMetricsStudyAssigning {
 
     public static void main(String[] args) {
-        int numRuns = 1;
+        int numRuns = 30;
         int numCpus = 1;
 
         RunMode runMode  = RunMode.EpsilonMOEA;
@@ -34,6 +34,45 @@ public class GenerateForMetricsStudyAssigning {
 
         ExecutorService pool = Executors.newFixedThreadPool(numCpus);
         CompletionService<Algorithm> ecs = new ExecutorCompletionService<>(pool);
+
+        // Heuristic Enforcement Methods
+        /**
+         * dutyCycleConstrained = [interior_penalty, AOS, biased_init, ACH, objective, constraint]
+         * instrumentOrbitRelationsConstrained = [interior_penalty, AOS, biased_init, ACH, objective, constraint]
+         * interferenceConstrained = [interior_penalty, AOS, biased_init, ACH, objective, constraint]
+         * packingEfficiencyConstrained = [interior_penalty, AOS, biased_init, ACH, objective, constraint]
+         * spacecraftMassConstrained = [interior_penalty, AOS, biased_init, ACH, objective, constraint]
+         * synergyConstrained = [interior_penalty, AOS, biased_init, ACH, objective, constraint]
+         *
+         * heuristicsConstrained = [dutyCycleConstrained, instrumentOrbitRelationsConstrained, interferenceConstrained, packingEfficiencyConstrained, spacecraftMassConstrained, synergyConstrained]
+         */
+        boolean[] dutyCycleConstrained = {false, false, false, false, false, false};
+        boolean[] instrumentOrbitRelationsConstrained = {false, false, false, false, false, false};
+        boolean[] interferenceConstrained = {false, false, false, false, false, false};
+        boolean[] packingEfficiencyConstrained = {false, false, false, false, false, false};
+        boolean[] spacecraftMassConstrained = {false, false, false, false, false, false};
+        boolean[] synergyConstrained = {false, false, false, false, false, false};
+
+        boolean[][] heuristicsConstrained = new boolean[6][6];
+        for (int i = 0; i < 6; i++) {
+            heuristicsConstrained[0][i] = dutyCycleConstrained[i];
+            heuristicsConstrained[1][i] = instrumentOrbitRelationsConstrained[i];
+            heuristicsConstrained[2][i] = interferenceConstrained[i];
+            heuristicsConstrained[3][i] = packingEfficiencyConstrained[i];
+            heuristicsConstrained[4][i] =  spacecraftMassConstrained[i];
+            heuristicsConstrained[5][i] = synergyConstrained[i];
+        }
+
+        int numberOfHeuristicConstraints = 0;
+        int numberOfHeuristicObjectives = 0;
+        for (int i = 0; i < 6; i++) {
+            if (heuristicsConstrained[i][5]) {
+                numberOfHeuristicConstraints++;
+            }
+            if (heuristicsConstrained[i][4]) {
+                numberOfHeuristicObjectives++;
+            }
+        }
 
         // Get time
         String timestamp = new SimpleDateFormat("yyyy-MM-dd-HH-mm").format(new Date());
@@ -65,8 +104,8 @@ public class GenerateForMetricsStudyAssigning {
 
         String savePath = System.getProperty("user.dir") + File.separator + "results";
 
-        //String resourcesPath = "C:\\SEAK Lab\\SEAK Lab Github\\VASSAR\\VASSAR_resources-heur"; // for lab system
-        String resourcesPath = "C:\\Users\\rosha\\Documents\\SEAK Lab Github\\VASSAR\\VASSAR_resources-heur"; // for laptop
+        String resourcesPath = "C:\\SEAK Lab\\SEAK Lab Github\\VASSAR\\VASSAR_resources-heur"; // for lab system
+        //String resourcesPath = "C:\\Users\\rosha\\Documents\\SEAK Lab Github\\VASSAR\\VASSAR_resources-heur"; // for laptop
 
         ClimateCentricAssigningParams params = new ClimateCentricAssigningParams(resourcesPath, "CRISP-ATTRIBUTES","test", "normal");
 
@@ -84,7 +123,7 @@ public class GenerateForMetricsStudyAssigning {
 
                 for (int i = 0; i < numRuns; i++) {
 
-                    AssigningProblem problem = new AssigningProblem(new int[]{1}, params.getProblemName(), evaluationManager, params, dcThreshold, massThreshold, packEffThreshold);
+                    AssigningProblem problem = new AssigningProblem(new int[]{1}, params.getProblemName(), evaluationManager, params, dcThreshold, massThreshold, packEffThreshold, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
 
                     switch (initializationMode) {
                         case InitializeRandom:
@@ -154,7 +193,7 @@ public class GenerateForMetricsStudyAssigning {
                 System.out.println("Starting random population evaluation for Assigning Problem");
 
                 for (int i = 0; i < numRuns; i++) {
-                    AssigningProblem problem = new AssigningProblem(new int[]{1}, params.getProblemName(), evaluationManager, params, dcThreshold, massThreshold, packEffThreshold);
+                    AssigningProblem problem = new AssigningProblem(new int[]{1}, params.getProblemName(), evaluationManager, params, dcThreshold, massThreshold, packEffThreshold, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
                     String runName = "random_" + params.getProblemName() + "_" + "assign" + "_" + i;
 
                     List<Solution> randomPopulation = new ArrayList<>();

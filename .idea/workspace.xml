@@ -11,6 +11,9 @@
   <component name="CodeStyleSettingsInfer">
     <option name="done" value="true" />
   </component>
+  <component name="CoverageViewManager">
+    <option name="myElementSize" value="80" />
+  </component>
   <component name="ExternalProjectsData">
     <projectState path="$PROJECT_DIR$">
       <ProjectState />
@@ -97,9 +100,9 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Application.GenerateForMetricsStudyEOSSAssign">
-    <configuration name="GenerateForMetricsStudyAssigning" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="seakers.vassarexecheur.search.GenerateForMetricsStudyAssigning" />
+  <component name="RunManager" selected="Application.CheckOperators">
+    <configuration name="CheckOperatorHeuristicImprovement" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="seakers.vassarexecheur.search.CheckOperatorHeuristicImprovement" />
       <module name="vassarexecheur.main" />
       <extension name="coverage">
         <pattern>
@@ -111,12 +114,12 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="GenerateForMetricsStudyEOSSAssign" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="seakers.vassarexecheur.search.eoss.GenerateForMetricsStudyEOSSAssign" />
+    <configuration name="CheckOperators" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="seakers.vassarexecheur.search.CheckOperators" />
       <module name="vassarexecheur.main" />
       <extension name="coverage">
         <pattern>
-          <option name="PATTERN" value="seakers.vassarexecheur.search.eoss.*" />
+          <option name="PATTERN" value="seakers.vassarexecheur.search.*" />
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
@@ -124,8 +127,8 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="GenerateForMetricsStudyPartitioning" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="seakers.vassarexecheur.search.GenerateForMetricsStudyPartitioning" />
+    <configuration name="Example" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="seakers.vassarexecheur.search.Example" />
       <module name="vassarexecheur.main" />
       <extension name="coverage">
         <pattern>
@@ -177,11 +180,11 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Gradle.VASSAR_exec_heur [build]" />
-        <item itemvalue="Application.GenerateForMetricsStudyEOSSAssign" />
-        <item itemvalue="Application.GenerateForMetricsStudyPartitioning" />
-        <item itemvalue="Application.GenerateForMetricsStudyAssigning" />
+        <item itemvalue="Application.CheckOperators" />
+        <item itemvalue="Application.Example" />
         <item itemvalue="Gradle.VASSAR_exec_heur [clean]" />
+        <item itemvalue="Gradle.VASSAR_exec_heur [build]" />
+        <item itemvalue="Application.CheckOperatorHeuristicImprovement" />
       </list>
     </recent_temporary>
   </component>
@@ -202,29 +205,19 @@
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="java-line">
-          <url>jar://$MAVEN_REPOSITORY$/seakers/EOSSAIAA/1.0-SNAPSHOT/EOSSAIAA-1.0-SNAPSHOT.jar!/eoss/problem/evaluation/ArchitectureEvaluator.class</url>
-          <line>124</line>
-          <option name="timeStamp" value="7" />
+          <url>file://$PROJECT_DIR$/src/main/java/seakers/vassarexecheur/search/operators/assigning/RepairDutyCycleAssigning.java</url>
+          <line>66</line>
+          <option name="timeStamp" value="44" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>jar://$MAVEN_REPOSITORY$/seakers/vassar/1.0/vassar-1.0.jar!/seakers/vassar/evaluation/AbstractArchitectureEvaluator.class</url>
-          <line>113</line>
-          <option name="timeStamp" value="12" />
+          <url>jar://$MAVEN_REPOSITORY$/seakers/mopAOS/1.0/mopAOS-1.0.jar!/seakers/aos/aos/AOSMOEA.class</url>
+          <line>38</line>
+          <option name="timeStamp" value="45" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>jar://$MAVEN_REPOSITORY$/seakers/vassarheur/1.0/vassarheur-1.0.jar!/seakers/vassarheur/problems/PartitioningAndAssigning/Architecture.class</url>
-          <line>35</line>
-          <option name="timeStamp" value="35" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>jar://$MAVEN_REPOSITORY$/seakers/vassarheur/1.0/vassarheur-1.0.jar!/seakers/vassarheur/Result.class</url>
-          <line>274</line>
-          <option name="timeStamp" value="38" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>jar://$MAVEN_REPOSITORY$/seakers/EOSSAIAA/1.0-SNAPSHOT/EOSSAIAA-1.0-SNAPSHOT.jar!/eoss/problem/assignment/InstrumentAssignment.class</url>
-          <line>125</line>
-          <option name="timeStamp" value="39" />
+          <url>file://$PROJECT_DIR$/src/main/java/seakers/vassarexecheur/search/operators/assigning/RepairDutyCycleAssigning.java</url>
+          <line>139</line>
+          <option name="timeStamp" value="51" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -239,5 +232,10 @@
         <watch expression="orbitsUsed" />
       </configuration>
     </watches-manager>
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/vassarexecheur$MOEARun.ic" NAME="MOEARun Coverage Results" MODIFIED="1647893205611" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false">
+      <FILTER>seakers.vassarexecheur.search.*</FILTER>
+    </SUITE>
   </component>
 </project>
