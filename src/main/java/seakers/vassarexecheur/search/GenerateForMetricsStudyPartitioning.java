@@ -457,7 +457,7 @@ public class GenerateForMetricsStudyPartitioning {
     }
 
     public static PartitioningArchitecture createPartitioningArchitecture (int[] instrumentPartitions, int[] orbitAssignments, ClimateCentricPartitioningParams params) {
-        PartitioningArchitecture arch = new PartitioningArchitecture(params.getNumInstr(), params.getNumOrbits(), 2);
+        PartitioningArchitecture arch = new PartitioningArchitecture(params.getNumInstr(), params.getNumOrbits(), 2, params);
 
         for (int p = 0; p < params.getNumInstr(); p++) {
             IntegerVariable var = new IntegerVariable(instrumentPartitions[p], 0, params.getNumInstr());

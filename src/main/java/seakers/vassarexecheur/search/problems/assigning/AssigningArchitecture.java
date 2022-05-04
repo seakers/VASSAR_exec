@@ -1,6 +1,8 @@
 package seakers.vassarexecheur.search.problems.assigning;
 
 import org.moeaframework.core.Solution;
+import org.moeaframework.core.variable.BinaryVariable;
+import org.moeaframework.core.variable.RealVariable;
 import seakers.architecture.pattern.ArchitecturalDecision;
 import seakers.architecture.pattern.Assigning;
 import seakers.architecture.pattern.Combining;
@@ -87,4 +89,30 @@ public class AssigningArchitecture extends Architecture {
 
     @Override
     public Solution copy() { return new AssigningArchitecture(this); }
+
+    public void setVariablesfromString(String archString) {
+        // Populate arch with bits from architectureString
+        RealVariable var0 = new RealVariable(0.0, 0.0, 0.0);
+        this.setVariable(0, var0);
+        for (int i = 0; i < archString.length(); i++) {
+            BinaryVariable var = new BinaryVariable(1);
+            String bit = archString.substring(i,i+1);
+            if (bit.equalsIgnoreCase("1")) {
+                var.set(0, true);
+            } else {
+                var.set(0, false);
+            }
+            this.setVariable(i+1, var);
+        }
+    }
+
+    public String getBitString() {
+        String bitString = "";
+        for (int i = 1; i < this.getNumberOfVariables(); ++i) {
+            bitString += this.getVariable(i).toString();
+        }
+
+        return bitString;
+    }
+
 }

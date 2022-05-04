@@ -4,9 +4,10 @@ import org.moeaframework.core.Solution;
 import org.moeaframework.core.Variable;
 import org.moeaframework.core.Variation;
 import org.moeaframework.core.variable.BinaryVariable;
-import org.moeaframework.core.variable.IntegerVariable;
+import org.moeaframework.core.variable.RealVariable;
 import org.moeaframework.problem.AbstractProblem;
 import org.moeaframework.util.TypedProperties;
+import seakers.architecture.util.IntegerVariable;
 import seakers.vassarexecheur.search.operators.assigning.*;
 import seakers.vassarexecheur.search.operators.partitioning.*;
 import seakers.vassarexecheur.search.problems.assigning.AssigningArchitecture;
@@ -25,6 +26,7 @@ import seakers.vassarheur.problems.PartitioningAndAssigning.ClimateCentricPartit
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 
 /**
  * Used to check the working of each operator
@@ -35,6 +37,8 @@ public class CheckOperators {
     public static void main(String[] args) {
         // Define problem parameters
         boolean assigningProblem = true; // True -> assigning problem, False -> partitioning problem
+
+        boolean moveInstrument = true; // For the assignment operators only
 
         double dcThreshold = 0.5;
         double massThreshold = 3000.0; // [kg]
@@ -97,6 +101,9 @@ public class CheckOperators {
         ArchitectureEvaluationManager evaluationManager = new ArchitectureEvaluationManager(params, evaluator);
         evaluationManager.init(numCPU);
 
+        HashMap<String, String[]> instrumentSynergyMap = getInstrumentSynergyNameMap(params);
+        HashMap<String, String[]> interferingInstrumentsMap = getInstrumentInterferenceNameMap(params);
+
         // Problem class
         AbstractProblem satelliteProblem;
         if (assigningProblem) {
@@ -106,39 +113,64 @@ public class CheckOperators {
         }
 
         // Initialize heuristic operator
-        String operatorChoice = "dutyCycle"; // can be dutyCycle, instrOrbit, interInstr, packEff, spMass or instrSyn
+        String operatorChoice = "instrOrbit"; // can be dutyCycle, instrOrbit, interInstr, packEff, spMass or instrSyn
         Variation operator = null;
+        String attribute = "";
 
         if (assigningProblem) {
             switch (operatorChoice) {
-                case "dutyCycle": operator = new RepairDutyCycleAssigning(dcThreshold, 1, params);
+                case "dutyCycle":
+                    operator = new RepairDutyCycleAssigning(dcThreshold, 1, params, moveInstrument, (AssigningProblem) satelliteProblem, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator);
+                    attribute = "DCViolation";
                 break;
-                case "instrOrbit": operator = new RepairInstrumentOrbitAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, params);
+                case "instrOrbit":
+                    operator = new RepairInstrumentOrbitAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, params, moveInstrument);
+                    attribute = "InstrOrbViolation";
                 break;
-                case "interInstr": operator = new RepairInterferenceAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, params);
+                case "interInstr":
+                    operator = new RepairInterferenceAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, params, (AssigningProblem) satelliteProblem, interferingInstrumentsMap, moveInstrument);
+                    attribute = "InterInstrViolation";
                 break;
-                case "packEff": operator = new RepairPackingEfficiencyAssigning(packEffThreshold, 1, params);
+                case "packEff":
+                    operator = new RepairPackingEfficiencyAssigning(packEffThreshold, 1, params, moveInstrument, (AssigningProblem) satelliteProblem, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator);
+                    attribute = "PackEffViolation";
                 break;
-                case "spMass": operator = new RepairMassAssigning(massThreshold, 1, params);
+                case "spMass":
+                    operator = new RepairMassAssigning(massThreshold, 1, params, moveInstrument, (AssigningProblem) satelliteProblem, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator);
+                    attribute = "SpMassViolation";
                 break;
-                case "instrSyn": operator = new RepairSynergyAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, params);
+                case "instrSyn":
+                    operator = new RepairSynergyAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, params, (AssigningProblem) satelliteProblem, instrumentSynergyMap, moveInstrument);
+                    attribute = "SynergyViolation";
                 break;
                 default: System.out.println("Invalid operator choice");
                 break;
             }
         } else {
             switch (operatorChoice) {
-                case "dutyCycle": operator = new RepairDutyCyclePartitioning(dcThreshold, 1, params);
+                case "dutyCycle":
+                    operator = new RepairDutyCyclePartitioning(dcThreshold, 1, params, (PartitioningProblem) satelliteProblem, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator);
+                    attribute = "DCViolation";
                 break;
-                case "instrOrbit": operator = new RepairInstrumentOrbitPartitioning(1, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator, params);
+                case "instrOrbit":
+                    operator = new RepairInstrumentOrbitPartitioning(1, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator, params);
+                    attribute = "InstrOrbViolation";
                 break;
-                case "interInstr": operator = new RepairInterferencePartitioning(1, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator, params);
+                case "interInstr":
+                    operator = new RepairInterferencePartitioning(1, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator, params, (PartitioningProblem) satelliteProblem, interferingInstrumentsMap);
+                    attribute = "InterInstrViolation";
                 break;
-                case "packEff": operator = new RepairPackingEfficiencyPartitioning(packEffThreshold, 1, params);
+                case "packEff":
+                    operator = new RepairPackingEfficiencyPartitioning(packEffThreshold, 1, params, (PartitioningProblem) satelliteProblem, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator);
+                    attribute = "PackEffViolation";
                 break;
-                case "spMass": operator = new RepairMassPartitioning(massThreshold, 1, params);
+                case "spMass":
+                    operator = new RepairMassPartitioning(massThreshold, 1, params, (PartitioningProblem) satelliteProblem, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator);
+                    attribute = "SpMassViolation";
                 break;
-                case "instrSyn": operator = new RepairSynergyPartitioning(1, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator, params);
+                case "instrSyn":
+                    operator = new RepairSynergyPartitioning(1, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator, params, (PartitioningProblem) satelliteProblem, instrumentSynergyMap);
+                    attribute = "SynergyViolation";
                 break;
                 default: System.out.println("Invalid operator choice");
                 break;
@@ -146,50 +178,89 @@ public class CheckOperators {
         }
 
         // Initialize architecture
+        Solution child = null;
         if (assigningProblem) {
-            String architectureString = "110110101101101101110110010111011011111010110101101101011110";
+            String architectureString = "101110110101110101101110010111011011011101110110101101011101";
             AssigningArchitecture arch = new AssigningArchitecture(new int[]{1}, params.getNumInstr(), params.getNumOrbits(), 2);
-            // Populate arch with bits from architectureString
-            for (int i = 0; i < architectureString.length(); i++) {
-                BinaryVariable var = new BinaryVariable(1);
-                String bit = architectureString.substring(i,i+1);
-                if (bit.equalsIgnoreCase("1")) {
-                    var.set(0, true);
-                } else {
-                    var.set(0, false);
-                }
-                arch.setVariable(i, var);
-            }
+            arch.setVariablesfromString(architectureString);
 
             // Evaluate and evolve architecture using operator for testing
             satelliteProblem.evaluate(arch);
-            operator.evolve(new Solution[]{arch});
+            child = operator.evolve(new Solution[]{arch})[0];
+            satelliteProblem.evaluate(child);
+
+            evaluationManager.clear();
+            System.out.println("Old Architecture Heuristic: " + arch.getAttribute(attribute));
+            System.out.println("New Architecture Heuristic: " + child.getAttribute(attribute));
+            System.out.println("DONE");
 
         } else {
-            int[] instrumentPartitioning = new int[]{2, 2, 2, 1, 4, 0, 3, 1, 4, 3, 0, 2};
+            //int[] instrumentPartitioning = new int[]{0, 0, 0, 1, 1, 2, 3, 3, 3, 3, 4, 4};
+            int[] instrumentPartitioning = new int[]{0, 1, 0, 2, 2, 4, 3, 3, 3, 3, 4, 4};
             int[] orbitAssignment = new int[]{1, 1, 0, 2, 4, -1, -1, -1, -1, -1, -1, -1};
 
-            PartitioningArchitecture arch = new PartitioningArchitecture(params.getNumInstr(), params.getNumOrbits(), 2, 1);
-            // Populate arch with assigning and partitioning values
-            for (int i = 0; i < 2*instrumentPartitioning.length; i++) {
-                if (i < instrumentPartitioning.length) {
-                    IntegerVariable var = new IntegerVariable(instrumentPartitioning[i], 0, instrumentPartitioning.length);
-                    arch.setVariable(i, var);
-                }
-                if (i >= instrumentPartitioning.length) {
-                    IntegerVariable var = new IntegerVariable(orbitAssignment[instrumentPartitioning.length - i], -1, params.getNumOrbits());
-                    arch.setVariable(i, var);
-                }
-            }
+            PartitioningArchitecture arch = new PartitioningArchitecture(params.getNumInstr(), params.getNumOrbits(), 2, params);
+            arch.setVariablesFromPartitionArrays(instrumentPartitioning, orbitAssignment);
 
             // Evaluate and evolve architecture using operator for testing
             satelliteProblem.evaluate(arch);
-            operator.evolve(new Solution[]{arch});
+            child = operator.evolve(new Solution[]{arch})[0];
+            satelliteProblem.evaluate(child);
+
+            evaluationManager.clear();
+            System.out.println("Old Architecture Heuristic: " + arch.getAttribute(attribute));
+            System.out.println("New Architecture Heuristic: " + child.getAttribute(attribute));
+            System.out.println("DONE");
         }
 
+    }
 
+    /**
+     * Creates instrument synergy map used to compute the instrument synergy violation heuristic (only formulated for the
+     * Climate Centric problem for now) (added by roshansuresh)
+     * @param params
+     * @return Instrument synergy hashmap
+     */
+    protected static HashMap<String, String[]> getInstrumentSynergyNameMap(BaseParams params) {
+        HashMap<String, String[]> synergyNameMap = new HashMap<>();
+        if (params.getProblemName().equalsIgnoreCase("ClimateCentric")) {
+            synergyNameMap.put("ACE_ORCA", new String[]{"DESD_LID", "GACM_VIS", "ACE_POL", "HYSP_TIR", "ACE_LID"});
+            synergyNameMap.put("DESD_LID", new String[]{"ACE_ORCA", "ACE_LID", "ACE_POL"});
+            synergyNameMap.put("GACM_VIS", new String[]{"ACE_ORCA", "ACE_LID"});
+            synergyNameMap.put("HYSP_TIR", new String[]{"ACE_ORCA", "POSTEPS_IRS"});
+            synergyNameMap.put("ACE_POL", new String[]{"ACE_ORCA", "DESD_LID"});
+            synergyNameMap.put("ACE_LID", new String[]{"ACE_ORCA", "CNES_KaRIN", "DESD_LID", "GACM_VIS"});
+            synergyNameMap.put("POSTEPS_IRS", new String[]{"HYSP_TIR"});
+            synergyNameMap.put("CNES_KaRIN", new String[]{"ACE_LID"});
+        }
+        else {
+            System.out.println("Synergy Map for current problem not formulated");
+        }
+        return synergyNameMap;
+    }
 
-
+    /**
+     * Creates instrument interference map used to compute the instrument interference violation heuristic (only formulated for the
+     * Climate Centric problem for now)
+     * @param params
+     * @return Instrument interference hashmap
+     */
+    protected static HashMap<String, String[]> getInstrumentInterferenceNameMap(BaseParams params) {
+        HashMap<String, String[]> interferenceNameMap = new HashMap<>();
+        if (params.getProblemName().equalsIgnoreCase("ClimateCentric")) {
+            interferenceNameMap.put("ACE_LID", new String[]{"ACE_CPR", "DESD_SAR", "CLAR_ERB", "GACM_SWIR"});
+            interferenceNameMap.put("ACE_CPR", new String[]{"ACE_LID", "DESD_SAR", "CNES_KaRIN", "CLAR_ERB", "ACE_POL", "ACE_ORCA", "GACM_SWIR"});
+            interferenceNameMap.put("DESD_SAR", new String[]{"ACE_LID", "ACE_CPR"});
+            interferenceNameMap.put("CLAR_ERB", new String[]{"ACE_LID", "ACE_CPR"});
+            interferenceNameMap.put("CNES_KaRIN", new String[]{"ACE_CPR"});
+            interferenceNameMap.put("ACE_POL", new String[]{"ACE_CPR"});
+            interferenceNameMap.put("ACE_ORCA", new String[]{"ACE_CPR"});
+            interferenceNameMap.put("GACM_SWIR", new String[]{"ACE_LID", "ACE_CPR"});
+        }
+        else {
+            System.out.println("Interference Map fpr current problem not formulated");
+        }
+        return interferenceNameMap;
     }
 
 }

@@ -10,6 +10,7 @@ import jess.Rete;
 import org.moeaframework.core.variable.BinaryVariable;
 import seakers.architecture.util.IntegerVariable;
 import seakers.vassarexecheur.search.problems.partitioning.PartitioningArchitecture;
+import seakers.vassarexecheur.search.problems.partitioning.PartitioningProblem;
 import seakers.vassarheur.BaseParams;
 import seakers.vassarheur.QueryBuilder;
 import seakers.vassarexecheur.search.problems.assigning.AssigningArchitecture;
@@ -23,6 +24,7 @@ import seakers.vassarheur.utils.MatlabFunctions;
 
 import java.lang.reflect.Array;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Moves an instrument from one satellite to another if its interfering pair is present in the same satellite.
@@ -49,11 +51,20 @@ public class RepairInterferencePartitioning implements Variation {
 
     private final BaseParams params;
 
-    public RepairInterferencePartitioning(int numChanges, ResourcePool resourcePool, ArchitectureEvaluator evaluator, BaseParams params) {
+    /**
+     * Partitioning Problem used to evaluate architectures
+     */
+    private PartitioningProblem problem;
+
+    private final HashMap<String, String[]> interferenceMap;
+
+    public RepairInterferencePartitioning(int numChanges, ResourcePool resourcePool, ArchitectureEvaluator evaluator, BaseParams params, PartitioningProblem problem, HashMap<String, String[]> interferenceMap) {
         this.numberOfChanges = numChanges;
         this.resourcePool = resourcePool;
         this.evaluator = evaluator;
         this.params = params;
+        this.problem = problem;
+        this.interferenceMap = interferenceMap;
         //this.pprng = new ParallelPRNG();
     }
 
@@ -65,76 +76,100 @@ public class RepairInterferencePartitioning implements Variation {
     @Override
     public Solution[] evolve(Solution[] solutions) {
         PartitioningArchitecture parent = (PartitioningArchitecture) solutions[0];
-
-        int numPartitioningVariables = params.getNumInstr();
-        int numAssignmentVariables = params.getNumInstr();
-
-        int[] instrumentPartitioning = new int[numPartitioningVariables];
-        int[] orbitAssignment = new int[numAssignmentVariables];
-
-        for (int i = 0; i < numPartitioningVariables; i++) {
-            instrumentPartitioning[i] = ((IntegerVariable) parent.getVariable(i)).getValue();
-        }
-
-        for (int i = 0; i < numAssignmentVariables; i++) {
-            orbitAssignment[i] = ((IntegerVariable) parent.getVariable(numPartitioningVariables + i)).getValue();
-        }
-
-        // Check constraint
-        double constraint = 1.0;
-        if (!isFeasible(instrumentPartitioning, orbitAssignment)) {
-            constraint = 0.0;
-        }
-        parent.setConstraint(0, constraint);
-
-        AbstractArchitecture arch_abs = new Architecture(instrumentPartitioning, orbitAssignment, 1, params);
+        AbstractArchitecture arch_abs = problem.getAbstractArchitecture(parent);
 
         Resource res = resourcePool.getResource();
         MatlabFunctions m = res.getM();
         Rete rete = res.getRete();
         QueryBuilder queryBuilder = res.getQueryBuilder();
 
-        HashMap<String, String[]> interferingInstrumentsMap = getInstrumentInterferenceNameMap(params);
+        //HashMap<String, String[]> interferingInstrumentsMap = getInstrumentInterferenceNameMap(params);
 
         evaluator.assertMissions(params, rete, arch_abs, m);
         ArrayList<Fact> satellites = queryBuilder.makeQuery("MANIFEST::Satellite");
 
         //// METHOD 1 - Get payloads and orbits from Satellite facts
-        //ArrayList<ArrayList<String>> payloads = new ArrayList<>();
-        //ArrayList<String> orbits = new ArrayList<>();
-        //try {
-        //payloads = getSatellitePayloadsFromSatelliteFacts(satellites);
-        //orbits = getSatelliteOrbitsFromSatelliteFacts(satellites);
-        //} catch (JessException e) {
-        //e.printStackTrace();
-        //}
+        ArrayList<ArrayList<String>> payloads = new ArrayList<>();
+        ArrayList<String> orbits = new ArrayList<>();
+        try {
+            payloads = getSatellitePayloadsFromSatelliteFacts(rete, satellites);
+            orbits = getSatelliteOrbitsFromSatelliteFacts(rete, satellites);
+        } catch (JessException e) {
+        e.printStackTrace();
+        }
 
         //// METHOD 2 - Get payloads and satellites from inherent methods
-        ArrayList<ArrayList<String>> payloads = parent.getSatellitePayloads();
-        ArrayList<String> orbits = parent.getSatelliteOrbits();
+        //ArrayList<ArrayList<String>> payloads = parent.getSatellitePayloads();
+        //ArrayList<String> orbits = parent.getSatelliteOrbits();
 
-        ArrayList<ArrayList<Integer>> possibleInstrumentMoves = getValidMoves(rete, satellites, interferingInstrumentsMap);
+        ArrayList<ArrayList<Integer>> possibleInstrumentMoves = getValidMoves(rete, satellites, interferenceMap);
+        ArrayList<ArrayList<Integer>> possibleUniqueInstrumentMoves = (ArrayList<ArrayList<Integer>>) possibleInstrumentMoves.stream().distinct().collect(Collectors.toList());
 
         // Make choices of instrument move randomly
         int numberOfMoves = 0;
-        while ((numberOfMoves < numberOfChanges) && (possibleInstrumentMoves.size() > 0)) {
-            int moveChoiceIndex = PRNG.nextInt(possibleInstrumentMoves.size());
-            ArrayList<Integer> moveChoice = possibleInstrumentMoves.get(moveChoiceIndex);
+        while ((numberOfMoves < numberOfChanges) && (possibleUniqueInstrumentMoves.size() > 0)) {
 
-            // Update payloads
-            ArrayList<String> removalOrbitPayload = payloads.get(moveChoice.get(1));
-            String instrumentToMove = removalOrbitPayload.get(moveChoice.get(0));
-            removalOrbitPayload.remove(moveChoice.get(0));
+            int numberOfTries = 0;
+            boolean feasibleMove = false;
+            while ((!feasibleMove) && (numberOfTries < 1) && (possibleUniqueInstrumentMoves.size() > 0)) {
+                int moveChoiceIndex = PRNG.nextInt(possibleUniqueInstrumentMoves.size());
+                ArrayList<Integer> moveChoice = possibleUniqueInstrumentMoves.get(moveChoiceIndex);
 
-            ArrayList<String> additionOrbitPayload = payloads.get(moveChoice.get(2));
-            additionOrbitPayload.add(instrumentToMove);
+                // Update payloads
+                ArrayList<String> removalOrbitPayload = payloads.get(moveChoice.get(1));
+                String instrumentToMove = removalOrbitPayload.get(moveChoice.get(0));
+                removalOrbitPayload.remove(instrumentToMove);
 
-            payloads.set(moveChoice.get(1), removalOrbitPayload);
-            payloads.set(moveChoice.get(2), additionOrbitPayload);
+                ArrayList<String> additionOrbitPayload = payloads.get(moveChoice.get(2));
+                additionOrbitPayload.add(instrumentToMove);
 
-            possibleInstrumentMoves.remove(moveChoiceIndex);
+                payloads.set(moveChoice.get(1), removalOrbitPayload);
+                payloads.set(moveChoice.get(2), additionOrbitPayload);
+
+                // Check if instrument movement improves heuristic satisfaction
+                PartitioningArchitecture candidateChild = getArchitectureFromPayloadsAndOrbits(payloads, orbits);
+                AbstractArchitecture candidateChild_abs = problem.getAbstractArchitecture(candidateChild);
+
+                try {
+                    rete.reset();
+                } catch (JessException e) {
+                    e.printStackTrace();
+                }
+                evaluator.assertMissions(params, rete, candidateChild_abs, m);
+                ArrayList<ArrayList<Double>> satelliteHeuristics;
+                ArrayList<Double> archHeuristics = null;
+                try {
+                    evaluator.evaluateHeuristicParameters(rete, candidateChild_abs, queryBuilder, m);
+                    satelliteHeuristics = evaluator.computeHeuristics(rete, candidateChild_abs, queryBuilder, params);
+                    archHeuristics = evaluator.computeHeuristicsArchitecture(satelliteHeuristics);
+                } catch (JessException e) {
+                    e.printStackTrace();
+                }
+
+                // archHeuristics -> [dutyCycleViolation, instrumentOrbitAssignmentViolation, interferenceViolation, packingEfficiencyViolation, spacecraftMassViolation, synergyViolation]
+                assert archHeuristics != null;
+                double childInterference = archHeuristics.get(2);
+
+                if (childInterference < (double) parent.getAttribute("InterInstrViolation")) {
+                    feasibleMove = true; // instrument move is feasible
+
+                    possibleInstrumentMoves.remove(moveChoiceIndex);
+                    numberOfMoves += 1;
+                } else  {
+                    // Replace moved instrument and try again
+                    removalOrbitPayload.add(instrumentToMove);
+                    payloads.set(moveChoice.get(1), removalOrbitPayload);
+
+                    additionOrbitPayload.remove(instrumentToMove);
+                    payloads.set(moveChoice.get(2), additionOrbitPayload);
+
+                    possibleUniqueInstrumentMoves.remove(moveChoiceIndex);
+                    numberOfTries += 1;
+                }
+            }
             numberOfMoves += 1;
         }
+        this.resourcePool.freeResource(res);
         PartitioningArchitecture child = getArchitectureFromPayloadsAndOrbits(payloads, orbits);
 
         return new Solution[]{child};
@@ -161,12 +196,23 @@ public class RepairInterferencePartitioning implements Variation {
                             presentValueIntegers.add(j);
                             ArrayList<Integer> possibleSatelliteMoves = getExclusiveSatelliteMoves(allSatellites.size(), i);
                             for (int k = 0; k < presentValueIntegers.size(); k++) {
+                                int presentValueInteger = presentValueIntegers.get(k);
                                 for (int m = 0; m < possibleSatelliteMoves.size(); m++) {
-                                    ArrayList<Integer> removalChoice = new ArrayList<>();
-                                    removalChoice.add(presentValueIntegers.get(k));
-                                    removalChoice.add(i);
-                                    removalChoice.add(possibleSatelliteMoves.get(m));
-                                    validMoves.addAll(Collections.singleton(removalChoice));
+                                    int possibleMoveSatellite = possibleSatelliteMoves.get(m);
+                                    ValueVector otherSatelliteInstruments = allSatellites.get(possibleMoveSatellite).getSlotValue("instruments").listValue(r.getGlobalContext());
+                                    ArrayList<String> otherSatelliteInstrumentsArray = getStringArrayFromValueVector(r, otherSatelliteInstruments);
+                                    String instrument = satelliteInstruments.get(presentValueInteger).stringValue(r.getGlobalContext());
+                                    if (otherSatelliteInstrumentsArray.contains(instrument)) { // Check if current instrument is present in the other candidate satellite
+                                        continue;
+                                    } else {
+                                        ArrayList<Integer> removalChoice = new ArrayList<>();
+                                        removalChoice.add(presentValueInteger);
+                                        removalChoice.add(i);
+                                        removalChoice.add(possibleMoveSatellite);
+                                        if (!validMoves.contains(removalChoice)) {
+                                            validMoves.addAll(Collections.singleton(removalChoice));
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -202,6 +248,29 @@ public class RepairInterferencePartitioning implements Variation {
         return possibleMoves;
     }
 
+    private ArrayList<ArrayList<String>> getSatellitePayloadsFromSatelliteFacts (Rete r, ArrayList<Fact> allSatellites) throws JessException {
+        ArrayList<ArrayList<String>> satellitePayloads = new ArrayList<>();
+        for (int i = 0; i < allSatellites.size(); i++) {
+            ArrayList<String> currentSatellitePayload = new ArrayList<>();
+            ValueVector instrumentsString = allSatellites.get(i).getSlotValue("instruments").listValue(r.getGlobalContext());
+            for (int j = 0; j < instrumentsString.size(); j++) {
+                currentSatellitePayload.add(instrumentsString.get(j).stringValue(r.getGlobalContext()));
+            }
+            satellitePayloads.add(currentSatellitePayload);
+        }
+        return satellitePayloads;
+    }
+
+    private ArrayList<String> getSatelliteOrbitsFromSatelliteFacts (Rete r, ArrayList<Fact> allSatellites) throws JessException {
+        ArrayList<String> satelliteOrbits = new ArrayList<>();
+
+        for (int i = 0; i < allSatellites.size(); i++) {
+            satelliteOrbits.add(allSatellites.get(i).getSlotValue("orbit-string").stringValue(r.getGlobalContext()));
+        }
+
+        return satelliteOrbits;
+    }
+
     private boolean isFeasible(int[] instrumentPartitioning, int[] orbitAssignment){
 
         // Check if the number of satellites matches the number of orbit assignments
@@ -234,36 +303,19 @@ public class RepairInterferencePartitioning implements Variation {
         return true;
     }
 
-    /**
-     * Creates instrument interference map used to compute the instrument interference violation heuristic (only formulated for the
-     * Climate Centric problem for now)
-     * @param params
-     * @return Instrument interference hashmap
-     */
-    protected HashMap<String, String[]> getInstrumentInterferenceNameMap(BaseParams params) {
-        HashMap<String, String[]> interferenceNameMap = new HashMap<>();
-        if (params.getProblemName().equalsIgnoreCase("ClimateCentric")) {
-            interferenceNameMap.put("ACE_LID", new String[]{"ACE_CPR", "DESD_SAR", "CLAR_ERB", "GACM_SWIR"});
-            interferenceNameMap.put("ACE_CPR", new String[]{"ACE_LID", "DESD_SAR", "CNES_KaRIN", "CLAR_ERB", "ACE_POL", "ACE_ORCA", "GACM_SWIR"});
-            interferenceNameMap.put("DESD_SAR", new String[]{"ACE_LID", "ACE_CPR"});
-            interferenceNameMap.put("CLAR_ERB", new String[]{"ACE_LID", "ACE_CPR"});
-            interferenceNameMap.put("CNES_KaRIN", new String[]{"ACE_CPR"});
-            interferenceNameMap.put("ACE_POL", new String[]{"ACE_CPR"});
-            interferenceNameMap.put("ACE_ORCA", new String[]{"ACE_CPR"});
-            interferenceNameMap.put("GACM_SWIR", new String[]{"ACE_LID", "ACE_CPR"});
+    private ArrayList<String> getStringArrayFromValueVector (Rete rete, ValueVector vv) throws JessException {
+        ArrayList<String> stringArray = new ArrayList<>();
+        for (int i = 0; i < vv.size(); i++) {
+            stringArray.add(vv.get(i).stringValue(rete.getGlobalContext()));
         }
-        else {
-            System.out.println("Interference Map fpr current problem not formulated");
-        }
-        return interferenceNameMap;
+        return  stringArray;
     }
 
     private PartitioningArchitecture getArchitectureFromPayloadsAndOrbits (ArrayList<ArrayList<String>> currentPayloads, ArrayList<String> currentOrbits) {
-        // ORDER ORBITS AND INSTRUMENTS BASED ON CLIMATECENTRICPARAMS
         ArrayList<String> instrumentList = new ArrayList<>(Arrays.asList(params.getInstrumentList()));
         ArrayList<String> orbitList = new ArrayList<>(Arrays.asList(params.getOrbitList()));
 
-        PartitioningArchitecture arch = new PartitioningArchitecture(instrumentList.size(), orbitList.size(), 2);
+        PartitioningArchitecture arch = new PartitioningArchitecture(instrumentList.size(), orbitList.size(), 2, params);
 
         for (int i = 0; i < currentOrbits.size(); i++) {
             ArrayList<String> currentOrbitPayloads = currentPayloads.get(i);

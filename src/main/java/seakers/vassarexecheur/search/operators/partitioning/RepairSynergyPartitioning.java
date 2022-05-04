@@ -9,6 +9,7 @@ import org.moeaframework.core.Variation;
 import jess.Rete;
 import org.moeaframework.core.variable.BinaryVariable;
 import seakers.architecture.util.IntegerVariable;
+import seakers.vassarexecheur.search.problems.partitioning.PartitioningProblem;
 import seakers.vassarheur.BaseParams;
 import seakers.vassarheur.QueryBuilder;
 import seakers.vassarexecheur.search.problems.partitioning.PartitioningArchitecture;
@@ -22,6 +23,7 @@ import seakers.vassarheur.utils.MatlabFunctions;
 
 import java.lang.reflect.Array;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Moves an instrument from one orbit to another if instruments of a synergistic pair are present in
@@ -48,11 +50,20 @@ public class RepairSynergyPartitioning implements Variation {
 
     private final BaseParams params;
 
-    public RepairSynergyPartitioning(int numChanges, ResourcePool resourcePool, ArchitectureEvaluator evaluator, BaseParams params) {
+    /**
+     * Assigning Problem used to evaluate architectures
+     */
+    private PartitioningProblem problem;
+
+    private final HashMap<String, String[]> synergyMap;
+
+    public RepairSynergyPartitioning(int numChanges, ResourcePool resourcePool, ArchitectureEvaluator evaluator, BaseParams params, PartitioningProblem problem, HashMap<String, String[]> synergyMap) {
         this.numberOfChanges = numChanges;
         this.resourcePool = resourcePool;
         this.evaluator = evaluator;
         this.params = params;
+        this.problem = problem;
+        this.synergyMap = synergyMap;
         //this.pprng = new ParallelPRNG();
     }
 
@@ -65,35 +76,14 @@ public class RepairSynergyPartitioning implements Variation {
     public Solution[] evolve(Solution[] solutions) {
         PartitioningArchitecture parent = (PartitioningArchitecture) solutions[0];
 
-        int numPartitioningVariables = params.getNumInstr();
-        int numAssignmentVariables = params.getNumInstr();
-
-        int[] instrumentPartitioning = new int[numPartitioningVariables];
-        int[] orbitAssignment = new int[numAssignmentVariables];
-
-        for (int i = 0; i < numPartitioningVariables; i++) {
-            instrumentPartitioning[i] = ((IntegerVariable) parent.getVariable(i)).getValue();
-        }
-
-        for (int i = 0; i < numAssignmentVariables; i++) {
-            orbitAssignment[i] = ((IntegerVariable) parent.getVariable(numPartitioningVariables + i)).getValue();
-        }
-
-        // Check constraint
-        double constraint = 1.0;
-        if (!isFeasible(instrumentPartitioning, orbitAssignment)) {
-            constraint = 0.0;
-        }
-        parent.setConstraint(0, constraint);
-
-        AbstractArchitecture arch_abs = new Architecture(instrumentPartitioning, orbitAssignment, 1, params);
+        AbstractArchitecture arch_abs = problem.getAbstractArchitecture(parent);
 
         Resource res = resourcePool.getResource();
         MatlabFunctions m = res.getM();
         Rete rete = res.getRete();
         QueryBuilder queryBuilder = res.getQueryBuilder();
 
-        HashMap<String, String[]> instrumentSynergyMap = getInstrumentSynergyNameMap(params);
+        //HashMap<String, String[]> instrumentSynergyMap = getInstrumentSynergyNameMap(params);
 
         evaluator.assertMissions(params, rete, arch_abs, m);
         ArrayList<Fact> satellites = queryBuilder.makeQuery("MANIFEST::Satellite");
@@ -112,28 +102,74 @@ public class RepairSynergyPartitioning implements Variation {
         ArrayList<ArrayList<String>> payloads = parent.getSatellitePayloads();
         ArrayList<String> orbits = parent.getSatelliteOrbits();
 
-        ArrayList<ArrayList<Integer>> possibleInstrumentMoves = getValidMoves(rete, satellites, instrumentSynergyMap);
+        ArrayList<ArrayList<Integer>> possibleInstrumentMoves = getValidMoves(rete, satellites, synergyMap);
+        ArrayList<ArrayList<Integer>> possibleUniqueInstrumentMoves = (ArrayList<ArrayList<Integer>>) possibleInstrumentMoves.stream().distinct().collect(Collectors.toList());
 
         // Make choices of instrument move randomly
         int numberOfMoves = 0;
-        while ((numberOfMoves < numberOfChanges) && (possibleInstrumentMoves.size() > 0)) {
-            int moveChoiceIndex = PRNG.nextInt(possibleInstrumentMoves.size());
-            ArrayList<Integer> moveChoice = possibleInstrumentMoves.get(moveChoiceIndex);
+        while ((numberOfMoves < numberOfChanges) && (possibleUniqueInstrumentMoves.size() > 0)) {
+            int numberOfTries = 0;
+            boolean feasibleMove = false;
+            while ((!feasibleMove) && (numberOfTries < 5) && (possibleUniqueInstrumentMoves.size() > 0)) {
+                int moveChoiceIndex = PRNG.nextInt(possibleUniqueInstrumentMoves.size());
+                ArrayList<Integer> moveChoice = possibleUniqueInstrumentMoves.get(moveChoiceIndex);
 
-            // Update payloads
-            ArrayList<String> removalOrbitPayload = payloads.get(moveChoice.get(1));
-            String instrumentToMove = removalOrbitPayload.get(moveChoice.get(0));
-            removalOrbitPayload.remove(moveChoice.get(0));
+                // Update payloads
+                ArrayList<String> removalOrbitPayload = payloads.get(moveChoice.get(1));
+                String instrumentToMove = removalOrbitPayload.get(moveChoice.get(0));
+                removalOrbitPayload.remove(instrumentToMove);
 
-            ArrayList<String> additionOrbitPayload = payloads.get(moveChoice.get(2));
-            additionOrbitPayload.add(instrumentToMove);
+                payloads.set(moveChoice.get(1), removalOrbitPayload);
 
-            payloads.set(moveChoice.get(1), removalOrbitPayload);
-            payloads.set(moveChoice.get(2), additionOrbitPayload);
+                ArrayList<String> additionOrbitPayload = payloads.get(moveChoice.get(2));
+                additionOrbitPayload.add(instrumentToMove);
 
-            possibleInstrumentMoves.remove(moveChoiceIndex);
+                payloads.set(moveChoice.get(2), additionOrbitPayload);
+
+                // Check if instrument movement improves heuristic satisfaction
+                PartitioningArchitecture candidateChild = getArchitectureFromPayloadsAndOrbits(payloads, orbits);
+                AbstractArchitecture candidateChild_abs = problem.getAbstractArchitecture(candidateChild);
+
+                try {
+                    rete.reset();
+                } catch (JessException e) {
+                    e.printStackTrace();
+                }
+                evaluator.assertMissions(params, rete, candidateChild_abs, m);
+                ArrayList<ArrayList<Double>> satelliteHeuristics;
+                ArrayList<Double> archHeuristics = null;
+                try {
+                    evaluator.evaluateHeuristicParameters(rete, candidateChild_abs, queryBuilder, m);
+                    satelliteHeuristics = evaluator.computeHeuristics(rete, candidateChild_abs, queryBuilder, params);
+                    archHeuristics = evaluator.computeHeuristicsArchitecture(satelliteHeuristics);
+                } catch (JessException e) {
+                    e.printStackTrace();
+                }
+
+                // archHeuristics -> [dutyCycleViolation, instrumentOrbitAssignmentViolation, interferenceViolation, packingEfficiencyViolation, spacecraftMassViolation, synergyViolation]
+                assert archHeuristics != null;
+                double childSynergy = archHeuristics.get(5);
+
+                if (childSynergy < (double) parent.getAttribute("SynergyViolation")) {
+                    feasibleMove = true; // instrument move is feasible
+
+                    possibleUniqueInstrumentMoves.remove(moveChoiceIndex);
+                    numberOfMoves += 1;
+                } else  {
+                    // Replace moved instrument and try again
+                    removalOrbitPayload.add(instrumentToMove);
+                    payloads.set(moveChoice.get(1), removalOrbitPayload);
+
+                    additionOrbitPayload.remove(instrumentToMove);
+                    payloads.set(moveChoice.get(2), additionOrbitPayload);
+
+                    possibleUniqueInstrumentMoves.remove(moveChoiceIndex);
+                    numberOfTries += 1;
+                }
+            }
             numberOfMoves += 1;
         }
+        this.resourcePool.freeResource(res);
         PartitioningArchitecture child = getArchitectureFromPayloadsAndOrbits(payloads, orbits);
 
         return new Solution[]{child};
@@ -160,7 +196,7 @@ public class RepairSynergyPartitioning implements Variation {
                                 continue;
                             }
                             ValueVector otherSatelliteInstruments = allSatellites.get(k).getSlotValue("instruments").listValue(r.getGlobalContext());
-                            ArrayList<Integer> presentValueIntegers = checkInstrumentsinSatellite(r, satelliteInstruments, synergyInstruments);
+                            ArrayList<Integer> presentValueIntegers = checkInstrumentsinSatellite(r, otherSatelliteInstruments, synergyInstruments);
                             if (presentValueIntegers.size() > 0) {
                                 for (int m = 0; m < presentValueIntegers.size(); m++) {
                                     ArrayList<Integer> shiftingChoice = new ArrayList<>();
@@ -217,30 +253,6 @@ public class RepairSynergyPartitioning implements Variation {
         return true;
     }
 
-    /**
-     * Creates instrument synergy map used to compute the instrument synergy violation heuristic (only formulated for the
-     * Climate Centric problem for now) (added by roshansuresh)
-     * @param params
-     * @return Instrument synergy hashmap
-     */
-    protected HashMap<String, String[]> getInstrumentSynergyNameMap(BaseParams params) {
-        HashMap<String, String[]> synergyNameMap = new HashMap<>();
-        if (params.getProblemName().equalsIgnoreCase("ClimateCentric")) {
-            synergyNameMap.put("ACE_ORCA", new String[]{"DESD_LID", "GACM_VIS", "ACE_POL", "HYSP_TIR", "ACE_LID"});
-            synergyNameMap.put("DESD_LID", new String[]{"ACE_ORCA", "ACE_LID", "ACE_POL"});
-            synergyNameMap.put("GACM_VIS", new String[]{"ACE_ORCA", "ACE_LID"});
-            synergyNameMap.put("HYSP_TIR", new String[]{"ACE_ORCA", "POSTEPS_IRS"});
-            synergyNameMap.put("ACE_POL", new String[]{"ACE_ORCA", "DESD_LID"});
-            synergyNameMap.put("ACE_LID", new String[]{"ACE_ORCA", "CNES_KaRIN", "DESD_LID", "GACM_VIS"});
-            synergyNameMap.put("POSTEPS_IRS", new String[]{"HYSP_TIR"});
-            synergyNameMap.put("CNES_KaRIN", new String[]{"ACE_LID"});
-        }
-        else {
-            System.out.println("Synergy Map for current problem not formulated");
-        }
-        return synergyNameMap;
-    }
-
     private ArrayList<ArrayList<String>> getSatellitePayloadsFromSatelliteFacts (Rete r, ArrayList<Fact> allSatellites) throws JessException {
         ArrayList<ArrayList<String>> satellitePayloads = new ArrayList<>();
         for (int i = 0; i < allSatellites.size(); i++) {
@@ -278,11 +290,10 @@ public class RepairSynergyPartitioning implements Variation {
     }
 
     private PartitioningArchitecture getArchitectureFromPayloadsAndOrbits (ArrayList<ArrayList<String>> currentPayloads, ArrayList<String> currentOrbits) {
-        // ORDER ORBITS AND INSTRUMENTS BASED ON CLIMATECENTRICPARAMS
         ArrayList<String> instrumentList = new ArrayList<>(Arrays.asList(params.getInstrumentList()));
         ArrayList<String> orbitList = new ArrayList<>(Arrays.asList(params.getOrbitList()));
 
-        PartitioningArchitecture arch = new PartitioningArchitecture(instrumentList.size(), orbitList.size(), 2);
+        PartitioningArchitecture arch = new PartitioningArchitecture(instrumentList.size(), orbitList.size(), 2, params);
 
         for (int i = 0; i < currentOrbits.size(); i++) {
             ArrayList<String> currentOrbitPayloads = currentPayloads.get(i);

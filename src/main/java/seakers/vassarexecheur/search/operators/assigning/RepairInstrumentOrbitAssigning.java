@@ -3,22 +3,24 @@ package seakers.vassarexecheur.search.operators.assigning;
 import jess.Fact;
 import jess.JessException;
 import jess.ValueVector;
+import jxl.Workbook;
+import jxl.read.biff.BiffException;
 import org.moeaframework.core.PRNG;
 import org.moeaframework.core.Solution;
 import org.moeaframework.core.Variation;
 import jess.Rete;
 import org.moeaframework.core.variable.BinaryVariable;
-import seakers.vassarheur.BaseParams;
-import seakers.vassarheur.QueryBuilder;
+import org.moeaframework.core.variable.RealVariable;
+import seakers.vassarheur.*;
 import seakers.vassarexecheur.search.problems.assigning.AssigningArchitecture;
-import seakers.vassarheur.Resource;
-import seakers.vassarheur.ResourcePool;
 import seakers.vassarheur.architecture.AbstractArchitecture;
 import seakers.vassarheur.problems.Assigning.Architecture;
 import seakers.vassarheur.problems.Assigning.ArchitectureEvaluator;
 import seakers.vassarheur.problems.Assigning.ClimateCentricAssigningParams;
 import seakers.vassarheur.utils.MatlabFunctions;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -49,11 +51,26 @@ public class RepairInstrumentOrbitAssigning implements Variation {
 
     private final BaseParams params;
 
+    /**
+     * Toggles movement of removed instruments into other spacecraft
+     */
+    private boolean moveInstruments;
+
     public RepairInstrumentOrbitAssigning(int numChanges, ResourcePool resourcePool, ArchitectureEvaluator evaluator, BaseParams params) {
         this.numberOfChanges = numChanges;
         this.resourcePool = resourcePool;
         this.evaluator = evaluator;
         this.params = params;
+        this.moveInstruments = true;
+        //this.pprng = new PRNG();
+    }
+
+    public RepairInstrumentOrbitAssigning(int numChanges, ResourcePool resourcePool, ArchitectureEvaluator evaluator, BaseParams params, boolean moveInstruments) {
+        this.numberOfChanges = numChanges;
+        this.resourcePool = resourcePool;
+        this.evaluator = evaluator;
+        this.params = params;
+        this.moveInstruments = moveInstruments;
         //this.pprng = new PRNG();
     }
 
@@ -82,23 +99,23 @@ public class RepairInstrumentOrbitAssigning implements Variation {
         ArrayList<Fact> satellites = queryBuilder.makeQuery("MANIFEST::Satellite");
 
         //// METHOD 1 - Get payloads and orbits from Satellite facts
-        //ArrayList<ArrayList<String>> payloads = new ArrayList<>();
-        //ArrayList<String> orbits = new ArrayList<>();
-        //try {
-            //payloads = getSatellitePayloadsFromSatelliteFacts(satellites);
-            //orbits = getSatelliteOrbitsFromSatelliteFacts(satellites);
-        //} catch (JessException e) {
-            //e.printStackTrace();
-        //}
+        ArrayList<ArrayList<String>> payloads = new ArrayList<>();
+        ArrayList<String> orbits = new ArrayList<>();
+        try {
+            payloads = getSatellitePayloadsFromSatelliteFacts(rete, satellites);
+            orbits = getSatelliteOrbitsFromSatelliteFacts(rete, satellites);
+        } catch (JessException e) {
+            e.printStackTrace();
+        }
 
         //// METHOD 2 - Get payloads and satellites from inherent methods
-        ArrayList<ArrayList<String>> payloads = parent.getSatellitePayloads();
-        ArrayList<String> orbits = parent.getSatelliteOrbits();
+        //ArrayList<ArrayList<String>> payloads = parent.getSatellitePayloads();
+        //ArrayList<String> orbits = parent.getSatelliteOrbits();
 
         ArrayList<String> instrumentList = new ArrayList<>(Arrays.asList(params.getInstrumentList()));
         //ArrayList<String> orbitList = new ArrayList<>(Arrays.asList(params.getOrbitList()));
 
-        ArrayList<Fact> instrumentFacts = queryBuilder.makeQuery("CAPABILITIES::Manifested-instrument");
+        ArrayList<Fact> instrumentFacts = queryBuilder.makeQuery("DATABASE::Instrument");
 
         // Find the valid instrument moves that can be made
         ArrayList<ArrayList<Integer>> candidateInstrumentMoves = getValidMoves(rete, satellites, instrumentFacts, instrumentList);
@@ -106,7 +123,8 @@ public class RepairInstrumentOrbitAssigning implements Variation {
         // Make the required moves at random
         int numberOfMoves = 0;
         while ((numberOfMoves < numberOfChanges) && (candidateInstrumentMoves.size() != 0)) {
-            ArrayList<Integer> selectedMove = candidateInstrumentMoves.get(PRNG.nextInt(candidateInstrumentMoves.size()));
+            int selectedMoveIndex = PRNG.nextInt(candidateInstrumentMoves.size());
+            ArrayList<Integer> selectedMove = candidateInstrumentMoves.get(selectedMoveIndex);
             String selectedRemovalOrbit = orbits.get(selectedMove.get(1));
 
             // Remove instrument from selected satellite
@@ -117,16 +135,19 @@ public class RepairInstrumentOrbitAssigning implements Variation {
             // Update payloads
             payloads.set(selectedMove.get(1), removalOrbitPayload);
 
-            // Add instrument to selected satellite
-            ArrayList<String> additionOrbitPayload = payloads.get(selectedMove.get(2));
-            additionOrbitPayload.add(selectedInstrument);
+            if (moveInstruments) {
+                // Add instrument to selected satellite
+                ArrayList<String> additionOrbitPayload = payloads.get(selectedMove.get(2));
+                additionOrbitPayload.add(selectedInstrument);
 
-            // Update payloads
-            payloads.set(selectedMove.get(2), additionOrbitPayload);
+                // Update payloads
+                payloads.set(selectedMove.get(2), additionOrbitPayload);
+            }
 
             numberOfMoves += 1;
+            candidateInstrumentMoves.remove(selectedMoveIndex);
         }
-
+        this.resourcePool.freeResource(res);
         AssigningArchitecture child = getArchitectureFromPayloadsAndOrbits(payloads, orbits);
 
         return new Solution[]{child};
@@ -161,7 +182,7 @@ public class RepairInstrumentOrbitAssigning implements Variation {
                             ArrayList<String> otherSatellitePayload = new ArrayList<>();
                             ValueVector otherSatelliteInstruments = otherSatellite.getSlotValue("instruments").listValue(r.getGlobalContext());
                             for (int m = 0; m < otherSatelliteInstruments.size(); m++) {
-                                otherSatellitePayload.add(otherSatelliteInstruments.get(j).stringValue(r.getGlobalContext()));
+                                otherSatellitePayload.add(otherSatelliteInstruments.get(m).stringValue(r.getGlobalContext()));
                             }
                             if (!chemistryInstrumentInPMOrbit(instrumentConcept, otherOrbitRAAN) && !otherSatellitePayload.contains(currentInstrument)) {
                                 ArrayList<Integer> validMove = new ArrayList<>();
@@ -183,7 +204,7 @@ public class RepairInstrumentOrbitAssigning implements Variation {
                             ArrayList<String> otherSatellitePayload = new ArrayList<>();
                             ValueVector otherSatelliteInstruments = otherSatellite.getSlotValue("instruments").listValue(r.getGlobalContext());
                             for (int m = 0; m < otherSatelliteInstruments.size(); m++) {
-                                otherSatellitePayload.add(otherSatelliteInstruments.get(j).stringValue(r.getGlobalContext()));
+                                otherSatellitePayload.add(otherSatelliteInstruments.get(m).stringValue(r.getGlobalContext()));
                             }
                             if (!passiveInstrumentInDDOribt(instrumentIllumination, otherOrbitRAAN) && !otherSatellitePayload.contains(currentInstrument)) {
                                 ArrayList<Integer> validMove = new ArrayList<>();
@@ -205,7 +226,7 @@ public class RepairInstrumentOrbitAssigning implements Variation {
                             ArrayList<String> otherSatellitePayload = new ArrayList<>();
                             ValueVector otherSatelliteInstruments = otherSatellite.getSlotValue("instruments").listValue(r.getGlobalContext());
                             for (int m = 0; m < otherSatelliteInstruments.size(); m++) {
-                                otherSatellitePayload.add(otherSatelliteInstruments.get(j).stringValue(r.getGlobalContext()));
+                                otherSatellitePayload.add(otherSatelliteInstruments.get(m).stringValue(r.getGlobalContext()));
                             }
                             if (!slantInstrumentInLowAltitudeOrbit(instrumentGeometry, otherOrbitAltitude) && !otherSatellitePayload.contains(currentInstrument)) {
                                 ArrayList<Integer> validMove = new ArrayList<>();
@@ -284,19 +305,22 @@ public class RepairInstrumentOrbitAssigning implements Variation {
 
         AssigningArchitecture arch = new AssigningArchitecture(new int[]{1}, params.getNumInstr(), params.getNumOrbits(), 2);
 
+        RealVariable var0 = new RealVariable(0.0, 0.0, 0.0);
+        arch.setVariable(0, var0);
         for (int i = 0; i < params.getNumOrbits(); i++) {
             if (!currentOrbits.contains(orbitList.get(i))) {
                 for (int j = 0; j < params.getNumInstr(); j++) {
                     BinaryVariable var = new BinaryVariable(1);
                     var.set(0, false);
-                    int decisionIndex = params.getNumInstr()*i + j;
+                    int decisionIndex = params.getNumInstr()*i + j + 1;
                     arch.setVariable(decisionIndex, var);
                 }
             } else {
-                ArrayList<String> currentInstruments = currentPayloads.get(i);
+                int orbitIndex = currentOrbits.indexOf(orbitList.get(i));
+                ArrayList<String> currentInstruments = currentPayloads.get(orbitIndex);
                 for (int j = 0; j < params.getNumInstr(); j++) {
                     BinaryVariable var = new BinaryVariable(1);
-                    int decisionIndex = params.getNumInstr()*i + j;
+                    int decisionIndex = params.getNumInstr()*i + j + 1;
                     if (!currentInstruments.contains(instrumentList.get(j))) {
                         var.set(0, false);
                     } else {

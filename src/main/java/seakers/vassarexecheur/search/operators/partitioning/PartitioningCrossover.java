@@ -39,8 +39,8 @@ public class PartitioningCrossover implements Variation {
         int[] assigning1 = Arrays.copyOfRange(intVars1, params.getNumInstr(), 2 * params.getNumInstr());
         int[] assigning2 = Arrays.copyOfRange(intVars2, params.getNumInstr(), 2 * params.getNumInstr());
 
-        Architecture newArch1 = new PartitioningArchitecture(params.getNumInstr(), params.getNumOrbits(), 2);
-        Architecture newArch2 = new PartitioningArchitecture(params.getNumInstr(), params.getNumOrbits(), 2);
+        Architecture newArch1 = new PartitioningArchitecture(params.getNumInstr(), params.getNumOrbits(), 2, params);
+        Architecture newArch2 = new PartitioningArchitecture(params.getNumInstr(), params.getNumOrbits(), 2, params);
         int[] newPartitioning1 = new int[partitioning1.length];
         int[] newPartitioning2 = new int[partitioning2.length];
         int[] newAssigning1 = new int[assigning1.length];

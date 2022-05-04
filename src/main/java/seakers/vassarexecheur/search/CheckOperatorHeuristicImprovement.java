@@ -16,6 +16,7 @@ import seakers.vassarheur.BaseParams;
 import seakers.vassarheur.evaluation.AbstractArchitectureEvaluator;
 import seakers.vassarheur.evaluation.ArchitectureEvaluationManager;
 import seakers.vassarheur.problems.Assigning.ArchitectureEvaluator;
+//import seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator;
 import seakers.vassarheur.problems.Assigning.ClimateCentricAssigningParams;
 import seakers.vassarheur.problems.PartitioningAndAssigning.Architecture;
 import seakers.vassarheur.problems.PartitioningAndAssigning.ClimateCentricPartitioningParams;
@@ -25,6 +26,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.StringJoiner;
 
 /**
@@ -92,6 +94,15 @@ public class CheckOperatorHeuristicImprovement {
             }
         }
 
+        // Toggle whether assigning operators move on remove instruments
+        boolean moveMode = true;
+        String fileSaveNameMode = "";
+        if (moveMode) {
+            fileSaveNameMode = "_move";
+        } else {
+            fileSaveNameMode = "_remove";
+        }
+
         BaseParams params;
         AbstractArchitectureEvaluator evaluator;
         if (assigningProblem) {
@@ -103,6 +114,9 @@ public class CheckOperatorHeuristicImprovement {
         }
         ArchitectureEvaluationManager evaluationManager = new ArchitectureEvaluationManager(params, evaluator);
         evaluationManager.init(numCPU);
+
+        HashMap<String, String[]> instrumentSynergyMap = getInstrumentSynergyNameMap(params);
+        HashMap<String, String[]> interferingInstrumentsMap = getInstrumentInterferenceNameMap(params);
 
         String fileSaveNameProblem  = "";
         if (assigningProblem) {
@@ -134,28 +148,39 @@ public class CheckOperatorHeuristicImprovement {
         Variation repairSynergy;
 
         if (assigningProblem) {
-            repairDutyCycle = new RepairDutyCycleAssigning(dcThreshold, 1, params);
-            repairInstrumentOrbitRelations = new RepairInstrumentOrbitAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, params);
-            repairInterference = new RepairInterferenceAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, params);
-            repairPackingEfficiency = new RepairPackingEfficiencyAssigning(packEffThreshold, 1, params);
-            repairMass = new RepairMassAssigning(massThreshold, 1, params);
-            repairSynergy = new RepairSynergyAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, params);
+            repairDutyCycle = new RepairDutyCycleAssigning(dcThreshold, 1, params, moveMode, (AssigningProblem) satelliteProblem, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator);
+            repairInstrumentOrbitRelations = new RepairInstrumentOrbitAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, params, moveMode);
+            repairInterference = new RepairInterferenceAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, params, (AssigningProblem) satelliteProblem, interferingInstrumentsMap, moveMode);
+            repairPackingEfficiency = new RepairPackingEfficiencyAssigning(packEffThreshold, 1, params, moveMode, (AssigningProblem) satelliteProblem, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator);
+            repairMass = new RepairMassAssigning(massThreshold, 1, params, moveMode, (AssigningProblem) satelliteProblem, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator);
+            repairSynergy = new RepairSynergyAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, params, (AssigningProblem) satelliteProblem, interferingInstrumentsMap, moveMode);
         } else {
-            repairDutyCycle = new RepairDutyCyclePartitioning(dcThreshold, 1, params);
+            repairDutyCycle = new RepairDutyCyclePartitioning(dcThreshold, 1, params, (PartitioningProblem) satelliteProblem, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator);
             repairInstrumentOrbitRelations = new RepairInstrumentOrbitPartitioning(1, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator, params);
-            repairInterference = new RepairInterferencePartitioning(1, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator, params);
-            repairPackingEfficiency = new RepairPackingEfficiencyAssigning(packEffThreshold, 1, params);
-            repairMass = new RepairMassPartitioning(massThreshold, 1, params);
-            repairSynergy = new RepairSynergyPartitioning(1, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator, params);
+            repairInterference = new RepairInterferencePartitioning(1, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator, params, (PartitioningProblem) satelliteProblem, interferingInstrumentsMap);
+            repairPackingEfficiency = new RepairPackingEfficiencyPartitioning(packEffThreshold, 1, params, (PartitioningProblem) satelliteProblem, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator);
+            repairMass = new RepairMassPartitioning(massThreshold, 1, params, (PartitioningProblem) satelliteProblem, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator);
+            repairSynergy = new RepairSynergyPartitioning(1, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator, params, (PartitioningProblem) satelliteProblem, instrumentSynergyMap);
         }
 
         // Randomly generate test architectures
         initialization = new RandomInitialization(satelliteProblem, 1);
 
-        int designCounter = 0;
+        int archCounter = 0; // viable architectures found
+        int archsEvaluated = 0; // total architectures found
 
         // Initialize csv file
-        String csvFilename = savePath + File.separator + "operator_heuristic_satisfaction" + fileSaveNameProblem + ".csv";
+        String csvFilename = "";
+        if (assigningProblem) {
+            if (moveMode) {
+                csvFilename = savePath + File.separator + "operator_heuristic_satisfaction" + fileSaveNameProblem + fileSaveNameMode + ".csv";
+            } else {
+                csvFilename = savePath + File.separator + "operator_heuristic_satisfaction" + fileSaveNameProblem + fileSaveNameMode + ".csv";
+            }
+        } else {
+            csvFilename = savePath + File.separator + "operator_heuristic_satisfaction" + fileSaveNameProblem + ".csv";
+        }
+
         File csvFile = new File(csvFilename);
 
         try (FileWriter csvWriter = new FileWriter(csvFile)) {
@@ -183,7 +208,7 @@ public class CheckOperatorHeuristicImprovement {
             csvWriter.append(headings.toString());
             csvWriter.append("\n");
 
-            while (designCounter < numArchs) {
+            while (archCounter < numArchs) {
                 Solution currentSolution = initialization.initialize()[0];
 
                 // Evaluate current solution to obtain prior heuristic values
@@ -197,9 +222,14 @@ public class CheckOperatorHeuristicImprovement {
 
                 // Only accept architectures that can be improved by the heuristic operator
                 if ((currentDutyCycleViolation == 0) || (currentInstrumentOrbitRelationsViolation == 0) || (currentInterferenceViolation == 0) || (currentPackingEfficiencyViolation == 0) || (currentSpacecraftMassViolation == 0) || (currentSynergyViolation == 0)) {
+                    archsEvaluated++;
+                    if (archsEvaluated % 100 == 0) {
+                        evaluationManager.getResourcePool().poolClean();
+                        System.out.println("Rete clean initiated");
+                    }
                     continue;
                 } else {
-                    System.out.println("Viable architecture found");
+                    System.out.println("Viable architecture found, no. " + (archCounter+1));
 
                     // Pass through duty cycle violation operator and evaluate new architecture to obtain post heuristic values
                     Solution dutyCycleSolution = repairDutyCycle.evolve(new Solution[]{currentSolution})[0];
@@ -236,21 +266,21 @@ public class CheckOperatorHeuristicImprovement {
                     String spMassSolutionString;
                     String synergySolutionString;
                     if (assigningProblem) {
-                        currentSolutionString = getBitStringFromAssigningArchitecture(currentSolution);
-                        dutyCycleSolutionString = getBitStringFromAssigningArchitecture(dutyCycleSolution);
-                        instrOrbSolutionString = getBitStringFromAssigningArchitecture(instrOrbSolution);
-                        interferenceSolutionString = getBitStringFromAssigningArchitecture(interferenceSolution);
-                        packEffSolutionString = getBitStringFromAssigningArchitecture(packEffSolution);
-                        spMassSolutionString = getBitStringFromAssigningArchitecture(spMassSolution);
-                        synergySolutionString = getBitStringFromAssigningArchitecture(synergySolution);
+                        currentSolutionString = ((AssigningArchitecture) currentSolution).getBitString();
+                        dutyCycleSolutionString = ((AssigningArchitecture) dutyCycleSolution).getBitString();
+                        instrOrbSolutionString = ((AssigningArchitecture) instrOrbSolution).getBitString();
+                        interferenceSolutionString = ((AssigningArchitecture) interferenceSolution).getBitString();
+                        packEffSolutionString = ((AssigningArchitecture) packEffSolution).getBitString();
+                        spMassSolutionString = ((AssigningArchitecture) spMassSolution).getBitString();
+                        synergySolutionString = ((AssigningArchitecture) synergySolution).getBitString();
                     } else {
-                        currentSolutionString = getBitStringFromPartitioningArchitecture(currentSolution, params);
-                        dutyCycleSolutionString = getBitStringFromPartitioningArchitecture(dutyCycleSolution, params);
-                        instrOrbSolutionString = getBitStringFromPartitioningArchitecture(instrOrbSolution, params);
-                        interferenceSolutionString = getBitStringFromPartitioningArchitecture(interferenceSolution, params);
-                        packEffSolutionString = getBitStringFromPartitioningArchitecture(packEffSolution, params);
-                        spMassSolutionString = getBitStringFromPartitioningArchitecture(spMassSolution, params);
-                        synergySolutionString = getBitStringFromPartitioningArchitecture(synergySolution, params);
+                        currentSolutionString = ((PartitioningArchitecture) currentSolution).getString();
+                        dutyCycleSolutionString = ((PartitioningArchitecture) dutyCycleSolution).getString();
+                        instrOrbSolutionString = ((PartitioningArchitecture) instrOrbSolution).getString();
+                        interferenceSolutionString = ((PartitioningArchitecture) interferenceSolution).getString();
+                        packEffSolutionString = ((PartitioningArchitecture) packEffSolution).getString();
+                        spMassSolutionString = ((PartitioningArchitecture) spMassSolution).getString();
+                        synergySolutionString = ((PartitioningArchitecture) synergySolution).getString();
                     }
 
                     sj.add(currentSolutionString);
@@ -282,44 +312,65 @@ public class CheckOperatorHeuristicImprovement {
                     csvWriter.append(sj.toString());
                     csvWriter.append("\n");
 
-                    designCounter++;
+                    archCounter++;
+                    archsEvaluated++;
+                    if (archsEvaluated % 100 == 0) {
+                        evaluationManager.getResourcePool().poolClean();
+                        System.out.println("Rete clean initiated");
+                    }
                 }
-
             }
             csvWriter.flush();
+            evaluationManager.clear();
+            System.out.println("DONE");
         }
     }
 
-    private static String getBitStringFromAssigningArchitecture(Solution sol) {
-        AssigningArchitecture arch = (AssigningArchitecture) sol;
-
-        String bitString = "";
-        for (int i = 1; i < arch.getNumberOfVariables(); ++i) {
-            bitString += arch.getVariable(i).toString();
+    /**
+     * Creates instrument synergy map used to compute the instrument synergy violation heuristic (only formulated for the
+     * Climate Centric problem for now) (added by roshansuresh)
+     * @param params
+     * @return Instrument synergy hashmap
+     */
+    protected static HashMap<String, String[]> getInstrumentSynergyNameMap(BaseParams params) {
+        HashMap<String, String[]> synergyNameMap = new HashMap<>();
+        if (params.getProblemName().equalsIgnoreCase("ClimateCentric")) {
+            synergyNameMap.put("ACE_ORCA", new String[]{"DESD_LID", "GACM_VIS", "ACE_POL", "HYSP_TIR", "ACE_LID"});
+            synergyNameMap.put("DESD_LID", new String[]{"ACE_ORCA", "ACE_LID", "ACE_POL"});
+            synergyNameMap.put("GACM_VIS", new String[]{"ACE_ORCA", "ACE_LID"});
+            synergyNameMap.put("HYSP_TIR", new String[]{"ACE_ORCA", "POSTEPS_IRS"});
+            synergyNameMap.put("ACE_POL", new String[]{"ACE_ORCA", "DESD_LID"});
+            synergyNameMap.put("ACE_LID", new String[]{"ACE_ORCA", "CNES_KaRIN", "DESD_LID", "GACM_VIS"});
+            synergyNameMap.put("POSTEPS_IRS", new String[]{"HYSP_TIR"});
+            synergyNameMap.put("CNES_KaRIN", new String[]{"ACE_LID"});
         }
-
-        return bitString;
+        else {
+            System.out.println("Synergy Map for current problem not formulated");
+        }
+        return synergyNameMap;
     }
 
-    private static String getBitStringFromPartitioningArchitecture(Solution sol, BaseParams params) {
-        PartitioningArchitecture arch = (PartitioningArchitecture) sol;
-
-        int numPartitioningVariables = params.getNumInstr();
-        int numAssignmentVariables = params.getNumInstr();
-
-        int[] instrumentPartitioning = new int[numPartitioningVariables];
-        int[] orbitAssignment = new int[numAssignmentVariables];
-
-        for (int i = 0; i < numPartitioningVariables; i++) {
-            instrumentPartitioning[i] = ((IntegerVariable)arch.getVariable(i)).getValue();
+    /**
+     * Creates instrument interference map used to compute the instrument interference violation heuristic (only formulated for the
+     * Climate Centric problem for now)
+     * @param params
+     * @return Instrument interference hashmap
+     */
+    protected static HashMap<String, String[]> getInstrumentInterferenceNameMap(BaseParams params) {
+        HashMap<String, String[]> interferenceNameMap = new HashMap<>();
+        if (params.getProblemName().equalsIgnoreCase("ClimateCentric")) {
+            interferenceNameMap.put("ACE_LID", new String[]{"ACE_CPR", "DESD_SAR", "CLAR_ERB", "GACM_SWIR"});
+            interferenceNameMap.put("ACE_CPR", new String[]{"ACE_LID", "DESD_SAR", "CNES_KaRIN", "CLAR_ERB", "ACE_POL", "ACE_ORCA", "GACM_SWIR"});
+            interferenceNameMap.put("DESD_SAR", new String[]{"ACE_LID", "ACE_CPR"});
+            interferenceNameMap.put("CLAR_ERB", new String[]{"ACE_LID", "ACE_CPR"});
+            interferenceNameMap.put("CNES_KaRIN", new String[]{"ACE_CPR"});
+            interferenceNameMap.put("ACE_POL", new String[]{"ACE_CPR"});
+            interferenceNameMap.put("ACE_ORCA", new String[]{"ACE_CPR"});
+            interferenceNameMap.put("GACM_SWIR", new String[]{"ACE_LID", "ACE_CPR"});
         }
-
-        for (int i = 0; i < numAssignmentVariables; i++) {
-            orbitAssignment[i] = ((IntegerVariable) arch.getVariable(numPartitioningVariables + i)).getValue();
+        else {
+            System.out.println("Interference Map fpr current problem not formulated");
         }
-
-        Architecture arch_abs= new Architecture(instrumentPartitioning, orbitAssignment, 1, params);
-
-        return arch_abs.toString("");
+        return interferenceNameMap;
     }
 }

@@ -102,23 +102,23 @@ public class RepairInstrumentOrbitPartitioning implements Variation {
         ArrayList<Fact> satellites = queryBuilder.makeQuery("MANIFEST::Satellite");
 
         //// METHOD 1 - Get payloads and orbits from Satellite facts
-        //ArrayList<ArrayList<String>> payloads = new ArrayList<>();
-        //ArrayList<String> orbits = new ArrayList<>();
-        //try {
-            //payloads = getSatellitePayloadsFromSatelliteFacts(satellites);
-            //orbits = getSatelliteOrbitsFromSatelliteFacts(satellites);
-        //} catch (JessException e) {
-            //e.printStackTrace();
-        //}
+        ArrayList<ArrayList<String>> payloads = new ArrayList<>();
+        ArrayList<String> orbits = new ArrayList<>();
+        try {
+            payloads = getSatellitePayloadsFromSatelliteFacts(rete, satellites);
+            orbits = getSatelliteOrbitsFromSatelliteFacts(rete, satellites);
+        } catch (JessException e) {
+            e.printStackTrace();
+        }
 
         //// METHOD 2 - Get payloads and satellites from inherent methods
-        ArrayList<ArrayList<String>> payloads = parent.getSatellitePayloads();
-        ArrayList<String> orbits = parent.getSatelliteOrbits();
+        //ArrayList<ArrayList<String>> payloads = parent.getSatellitePayloads();
+        //ArrayList<String> orbits = parent.getSatelliteOrbits();
 
         ArrayList<String> instrumentList = new ArrayList<>(Arrays.asList(params.getInstrumentList()));
         //ArrayList<String> orbitList = new ArrayList<>(Arrays.asList(params.getOrbitList()));
 
-        ArrayList<Fact> instrumentFacts = queryBuilder.makeQuery("CAPABILITIES::Manifested-instrument");
+        ArrayList<Fact> instrumentFacts = queryBuilder.makeQuery("DATABASE::Instrument");
 
         // Find the valid instrument moves that can be made
         ArrayList<ArrayList<Integer>> candidateInstrumentMoves = getValidMoves(rete, satellites, instrumentFacts, instrumentList);
@@ -126,7 +126,8 @@ public class RepairInstrumentOrbitPartitioning implements Variation {
         // Make the required moves at random
         int numberOfMoves = 0;
         while ((numberOfMoves < numberOfChanges) && (candidateInstrumentMoves.size() != 0)) {
-            ArrayList<Integer> selectedMove = candidateInstrumentMoves.get(PRNG.nextInt(candidateInstrumentMoves.size()));
+            int selectedMoveIndex = PRNG.nextInt(candidateInstrumentMoves.size());
+            ArrayList<Integer> selectedMove = candidateInstrumentMoves.get(selectedMoveIndex);
             String selectedRemovalOrbit = orbits.get(selectedMove.get(1));
 
             // Remove instrument from selected satellite
@@ -145,7 +146,9 @@ public class RepairInstrumentOrbitPartitioning implements Variation {
             payloads.set(selectedMove.get(2), additionOrbitPayload);
 
             numberOfMoves += 1;
+            candidateInstrumentMoves.remove(selectedMoveIndex);
         }
+        this.resourcePool.freeResource(res);
         PartitioningArchitecture child = getArchitectureFromPayloadsAndOrbits(payloads, orbits);
 
         return new Solution[]{child};
@@ -180,7 +183,7 @@ public class RepairInstrumentOrbitPartitioning implements Variation {
                             ArrayList<String> otherSatellitePayload = new ArrayList<>();
                             ValueVector otherSatelliteInstruments = otherSatellite.getSlotValue("instruments").listValue(r.getGlobalContext());
                             for (int m = 0; m < otherSatelliteInstruments.size(); m++) {
-                                otherSatellitePayload.add(otherSatelliteInstruments.get(j).stringValue(r.getGlobalContext()));
+                                otherSatellitePayload.add(otherSatelliteInstruments.get(m).stringValue(r.getGlobalContext()));
                             }
                             if (!chemistryInstrumentInPMOrbit(instrumentConcept, otherOrbitRAAN) && !otherSatellitePayload.contains(currentInstrument)) {
                                 ArrayList<Integer> validMove = new ArrayList<>();
@@ -202,7 +205,7 @@ public class RepairInstrumentOrbitPartitioning implements Variation {
                             ArrayList<String> otherSatellitePayload = new ArrayList<>();
                             ValueVector otherSatelliteInstruments = otherSatellite.getSlotValue("instruments").listValue(r.getGlobalContext());
                             for (int m = 0; m < otherSatelliteInstruments.size(); m++) {
-                                otherSatellitePayload.add(otherSatelliteInstruments.get(j).stringValue(r.getGlobalContext()));
+                                otherSatellitePayload.add(otherSatelliteInstruments.get(m).stringValue(r.getGlobalContext()));
                             }
                             if (!passiveInstrumentInDDOribt(instrumentIllumination, otherOrbitRAAN) && !otherSatellitePayload.contains(currentInstrument)) {
                                 ArrayList<Integer> validMove = new ArrayList<>();
@@ -224,7 +227,7 @@ public class RepairInstrumentOrbitPartitioning implements Variation {
                             ArrayList<String> otherSatellitePayload = new ArrayList<>();
                             ValueVector otherSatelliteInstruments = otherSatellite.getSlotValue("instruments").listValue(r.getGlobalContext());
                             for (int m = 0; m < otherSatelliteInstruments.size(); m++) {
-                                otherSatellitePayload.add(otherSatelliteInstruments.get(j).stringValue(r.getGlobalContext()));
+                                otherSatellitePayload.add(otherSatelliteInstruments.get(m).stringValue(r.getGlobalContext()));
                             }
                             if (!slantInstrumentInLowAltitudeOrbit(instrumentGeometry, otherOrbitAltitude) && !otherSatellitePayload.contains(currentInstrument)) {
                                 ArrayList<Integer> validMove = new ArrayList<>();
@@ -329,11 +332,10 @@ public class RepairInstrumentOrbitPartitioning implements Variation {
     }
 
     private PartitioningArchitecture getArchitectureFromPayloadsAndOrbits (ArrayList<ArrayList<String>> currentPayloads, ArrayList<String> currentOrbits) {
-        // ORDER ORBITS AND INSTRUMENTS BASED ON CLIMATECENTRICPARAMS
         ArrayList<String> instrumentList = new ArrayList<>(Arrays.asList(params.getInstrumentList()));
         ArrayList<String> orbitList = new ArrayList<>(Arrays.asList(params.getOrbitList()));
 
-        PartitioningArchitecture arch = new PartitioningArchitecture(instrumentList.size(), orbitList.size(), 2);
+        PartitioningArchitecture arch = new PartitioningArchitecture(instrumentList.size(), orbitList.size(), 2, params);
 
         for (int i = 0; i < currentOrbits.size(); i++) {
             ArrayList<String> currentOrbitPayloads = currentPayloads.get(i);

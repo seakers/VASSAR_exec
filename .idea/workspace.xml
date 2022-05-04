@@ -100,7 +100,20 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Application.CheckOperators">
+  <component name="RunManager" selected="Gradle.VASSAR_exec_heur [build]">
+    <configuration name="CheckHeuristicImprovement2" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="seakers.vassarexecheur.search.CheckHeuristicImprovement2" />
+      <module name="vassarexecheur.main" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="seakers.vassarexecheur.search.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="CheckOperatorHeuristicImprovement" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="seakers.vassarexecheur.search.CheckOperatorHeuristicImprovement" />
       <module name="vassarexecheur.main" />
@@ -116,19 +129,6 @@
     </configuration>
     <configuration name="CheckOperators" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="seakers.vassarexecheur.search.CheckOperators" />
-      <module name="vassarexecheur.main" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="seakers.vassarexecheur.search.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="Example" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="seakers.vassarexecheur.search.Example" />
       <module name="vassarexecheur.main" />
       <extension name="coverage">
         <pattern>
@@ -181,7 +181,7 @@
     <recent_temporary>
       <list>
         <item itemvalue="Application.CheckOperators" />
-        <item itemvalue="Application.Example" />
+        <item itemvalue="Application.CheckHeuristicImprovement2" />
         <item itemvalue="Gradle.VASSAR_exec_heur [clean]" />
         <item itemvalue="Gradle.VASSAR_exec_heur [build]" />
         <item itemvalue="Application.CheckOperatorHeuristicImprovement" />
@@ -205,31 +205,45 @@
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/seakers/vassarexecheur/search/operators/assigning/RepairDutyCycleAssigning.java</url>
-          <line>66</line>
-          <option name="timeStamp" value="44" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
           <url>jar://$MAVEN_REPOSITORY$/seakers/mopAOS/1.0/mopAOS-1.0.jar!/seakers/aos/aos/AOSMOEA.class</url>
           <line>38</line>
           <option name="timeStamp" value="45" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/seakers/vassarexecheur/search/operators/assigning/RepairDutyCycleAssigning.java</url>
-          <line>139</line>
-          <option name="timeStamp" value="51" />
+          <url>file://$PROJECT_DIR$/src/main/java/seakers/vassarexecheur/search/operators/assigning/RepairMassAssigning.java</url>
+          <line>97</line>
+          <option name="timeStamp" value="141" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/seakers/vassarexecheur/search/operators/assigning/RepairMassAssigning.java</url>
+          <line>118</line>
+          <option name="timeStamp" value="142" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/seakers/vassarexecheur/search/operators/assigning/RepairPackingEfficiencyAssigning.java</url>
+          <line>96</line>
+          <option name="timeStamp" value="143" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/seakers/vassarexecheur/search/operators/assigning/RepairPackingEfficiencyAssigning.java</url>
+          <line>117</line>
+          <option name="timeStamp" value="144" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
     <watches-manager>
       <configuration name="Remote">
         <watch expression="((HashMap)satIndex2InstrumentSet).entrySet().toArray()[2]" custom="java.util.HashMap" />
-        <watch expression="((HashMap)satIndex2InstrumentSet).entrySet().toArray()[2]" language="JAVA" custom="java.util.HashMap" />
         <watch expression="assigning1" />
+        <watch expression="((HashMap)satIndex2InstrumentSet).entrySet().toArray()[2]" language="JAVA" custom="java.util.HashMap" />
         <watch expression="inputs" />
         <watch expression="satIndex2Orbit" />
         <watch expression="partitioning" />
         <watch expression="orbitsUsed" />
+        <watch expression="currentPayloads" />
+        <watch expression="instrumentFacts" />
+        <watch expression="candidateInstrumentMoves.get(5)" />
+        <watch expression="selectedMove" />
       </configuration>
     </watches-manager>
   </component>

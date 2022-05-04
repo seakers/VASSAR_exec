@@ -32,7 +32,7 @@ public class PartitioningMutation extends IntegerUM {
         int[] partitioning = Arrays.copyOfRange(inputs, 0, params.getNumInstr());
         int[] assigning = Arrays.copyOfRange(inputs, params.getNumInstr(), 2 * params.getNumInstr());
 
-        Architecture newArch = new PartitioningArchitecture(params.getNumInstr(), params.getNumOrbits(), 2);
+        Architecture newArch = new PartitioningArchitecture(params.getNumInstr(), params.getNumOrbits(), 2, params);
         int[] newPartitioning = new int[partitioning.length];
         int[] newAssigning = new int[assigning.length];
 
@@ -101,7 +101,7 @@ public class PartitioningMutation extends IntegerUM {
 
         int[] newIntVars = repair(intVars);
 
-        Architecture newArch = new PartitioningArchitecture(params.getNumInstr(), params.getNumOrbits(), 2);
+        Architecture newArch = new PartitioningArchitecture(params.getNumInstr(), params.getNumOrbits(), 2, params);
         setIntVariables(newArch, newIntVars);
         return newArch;
     }

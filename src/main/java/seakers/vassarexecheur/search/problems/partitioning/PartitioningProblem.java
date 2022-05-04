@@ -49,37 +49,10 @@ public class PartitioningProblem extends AbstractProblem implements SystemArchit
 
     public void evaluateArch (PartitioningArchitecture arch) {
         if (!arch.getAlreadyEvaluated()) {
-            int numPartitioningVariables = params.getNumInstr();
-            int numAssignmentVariables = params.getNumInstr();
-
-            int[] instrumentPartitioning = new int[numPartitioningVariables];
-            int[] orbitAssignment = new int[numAssignmentVariables];
-
-            for (int i = 0; i < numPartitioningVariables; i++) {
-                instrumentPartitioning[i] = ((IntegerVariable)arch.getVariable(i)).getValue();
-            }
-
-            for (int i = 0; i < numAssignmentVariables; i++) {
-                orbitAssignment[i] = ((IntegerVariable) arch.getVariable(numPartitioningVariables + i)).getValue();
-            }
-
-            // Check constraint
-            double constraint = 1.0;
-            if (!isFeasible(instrumentPartitioning, orbitAssignment)) {
-                constraint = 0.0;
-            }
-            arch.setConstraint(0, constraint);
-
-            AbstractArchitecture arch_abs;
-            if (problem.equalsIgnoreCase("ClimateCentric")) {
-                arch_abs= new Architecture(instrumentPartitioning, orbitAssignment, 1, params);
-            }
-            else {
-                throw new IllegalArgumentException("Unrecognizable problem type: " + problem);
-            }
+            AbstractArchitecture abs_arch = getAbstractArchitecture(arch);
 
             try {
-                Result result = evaluationManager.evaluateArchitectureSync(arch_abs, "Slow", dcThreshold, massThreshold, packingEffThreshold);
+                Result result = evaluationManager.evaluateArchitectureSync(abs_arch, "Slow", dcThreshold, massThreshold, packingEffThreshold);
                 arch.setObjective(0, -result.getScience());
                 arch.setObjective(1, result.getCost());
 
@@ -106,6 +79,7 @@ public class PartitioningProblem extends AbstractProblem implements SystemArchit
                 arch.setSatellitePayloads(result.getSatellitePayloads());
 
                 arch.setSatelliteOrbits(result.getSatelliteOrbits());
+                arch.setAlreadyEvaluated(true);
             }
             catch (Exception e) {
                 e.printStackTrace();
@@ -115,7 +89,7 @@ public class PartitioningProblem extends AbstractProblem implements SystemArchit
 
     @Override
     public Solution newSolution() {
-        return new PartitioningArchitecture(params.getNumInstr(), params.getNumOrbits(), 2+numberOfHeuristicObjectives, 1+numberOfHeuristicConstraints);
+        return new PartitioningArchitecture(params.getNumInstr(), params.getNumOrbits(), 2+numberOfHeuristicObjectives, 1+numberOfHeuristicConstraints, params);
     }
 
     private boolean isFeasible(int[] instrumentPartitioning, int[] orbitAssignment){
@@ -146,7 +120,38 @@ public class PartitioningProblem extends AbstractProblem implements SystemArchit
                 }
             }
         }
-
         return true;
+    }
+
+    public AbstractArchitecture getAbstractArchitecture(PartitioningArchitecture arch) {
+        int numPartitioningVariables = params.getNumInstr();
+        int numAssignmentVariables = params.getNumInstr();
+
+        int[] instrumentPartitioning = new int[numPartitioningVariables];
+        int[] orbitAssignment = new int[numAssignmentVariables];
+
+        for (int i = 0; i < numPartitioningVariables; i++) {
+            instrumentPartitioning[i] = ((IntegerVariable)arch.getVariable(i)).getValue();
+        }
+
+        for (int i = 0; i < numAssignmentVariables; i++) {
+            orbitAssignment[i] = ((IntegerVariable) arch.getVariable(numPartitioningVariables + i)).getValue();
+        }
+
+        // Check constraint
+        double constraint = 1.0;
+        if (!isFeasible(instrumentPartitioning, orbitAssignment)) {
+            constraint = 0.0;
+        }
+        arch.setConstraint(0, constraint);
+
+        AbstractArchitecture arch_abs;
+        if (problem.equalsIgnoreCase("ClimateCentric")) {
+            arch_abs= new Architecture(instrumentPartitioning, orbitAssignment, 1, params);
+        }
+        else {
+            throw new IllegalArgumentException("Unrecognizable problem type: " + problem);
+        }
+        return arch_abs;
     }
 }

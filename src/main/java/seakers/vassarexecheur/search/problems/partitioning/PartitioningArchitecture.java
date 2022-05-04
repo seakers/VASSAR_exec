@@ -4,9 +4,13 @@ import org.moeaframework.core.Solution;
 import seakers.architecture.Architecture;
 import seakers.architecture.pattern.ArchitecturalDecision;
 import seakers.architecture.pattern.Partitioning;
+import seakers.architecture.util.IntegerVariable;
 import seakers.engineerserver.search.problems.PartitioningAndAssigning.AssigningPatternCategorical;
+import seakers.vassarheur.BaseParams;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.regex.Pattern;
 
 public class PartitioningArchitecture extends Architecture {
     /**
@@ -18,21 +22,30 @@ public class PartitioningArchitecture extends Architecture {
      */
     public static final String partitionTag = "partitioning";
     private static final long serialVersionUID = 8776271523867135862L;
+    private int numberOfInstruments;
+    private int numberOfOrbits;
+    private BaseParams params;
     private boolean alreadyEvaluated;
     private ArrayList<ArrayList<Double>> operatorParameters;
     private ArrayList<ArrayList<String>> satellitePayloads;
     private ArrayList<String> satelliteOrbits;
 
-    public PartitioningArchitecture(int numberOfInstruments, int numberOfOrbits, int numberOfObjectives) {
+    public PartitioningArchitecture(int numberOfInstruments, int numberOfOrbits, int numberOfObjectives, BaseParams params) {
         super(numberOfObjectives, 1, createDecisions(numberOfInstruments, numberOfOrbits));
+        this.numberOfInstruments = numberOfInstruments;
+        this.numberOfOrbits = numberOfOrbits;
+        this.params = params;
         this.alreadyEvaluated = false;
         this.operatorParameters = null;
         this.satellitePayloads = null;
         this.satelliteOrbits = null;
     }
 
-    public PartitioningArchitecture(int numberOfInstruments, int numberOfOrbits, int numberOfObjectives, int numberOfConstraints) {
+    public PartitioningArchitecture(int numberOfInstruments, int numberOfOrbits, int numberOfObjectives, int numberOfConstraints, BaseParams params) {
         super(numberOfObjectives, 1+numberOfConstraints, createDecisions(numberOfInstruments, numberOfOrbits));
+        this.numberOfInstruments = numberOfInstruments;
+        this.numberOfOrbits = numberOfOrbits;
+        this.params = params;
         this.alreadyEvaluated = false;
         this.operatorParameters = null;
         this.satellitePayloads = null;
@@ -66,4 +79,69 @@ public class PartitioningArchitecture extends Architecture {
 
     @Override
     public Solution copy() { return new PartitioningArchitecture(this); }
+
+    public void setVariablesFromPartitionArrays(int[] instrumentPartitions, int[] orbitAssignments) {
+        // Populate arch with assigning and partitioning values
+        for (int i = 0; i < 2*instrumentPartitions.length; i++) {
+            if (i < instrumentPartitions.length) {
+                IntegerVariable var = new IntegerVariable(instrumentPartitions[i], 0, instrumentPartitions.length);
+                this.setVariable(i, var);
+            }
+            if (i >= instrumentPartitions.length) {
+                IntegerVariable var = new IntegerVariable(orbitAssignments[i - instrumentPartitions.length], -1, numberOfOrbits);
+                this.setVariable(i, var);
+            }
+        }
+    }
+
+    public int[] getInstrumentPartitionsFromString(String archString) {
+        String[] partitionStrings = archString.split(Pattern.quote("|"),2);
+        ArrayList<Integer> instrumentPartitioningArrayList = new ArrayList<>();
+        String instrumentPartitionString = partitionStrings[0];
+        for (int i = 0; i < instrumentPartitionString.length(); i++) {
+            String val = instrumentPartitionString.substring(i,i+1);
+            if (!val.equalsIgnoreCase(" ")) {
+                instrumentPartitioningArrayList.add(Integer.parseInt(val));
+            }
+        }
+        return instrumentPartitioningArrayList.stream().mapToInt(i->i).toArray();
+    }
+
+    public int[] getOrbitAssignmentsFromString(String archString) {
+        String[] partitionStrings = archString.split(Pattern.quote("|"),2);
+        int[] orbitAssignment = new int[numberOfInstruments];
+        Arrays.fill(orbitAssignment, -1);
+        String orbitAssignmentString = partitionStrings[1];
+        int index = 0;
+        for (int i = 0; i < orbitAssignmentString.length(); i++) {
+            String val = orbitAssignmentString.substring(i,i+1);
+            if (!val.equalsIgnoreCase(" ")) {
+                if (val.equalsIgnoreCase("-")) {
+                    break;
+                } else {
+                    orbitAssignment[index] = Integer.parseInt(val);
+                    index += 1;
+                }
+            }
+        }
+        return orbitAssignment;
+    }
+
+    public String getString() {
+
+        int[] instrumentPartitioning = new int[numberOfInstruments];
+        int[] orbitAssignment = new int[numberOfInstruments];
+
+        for (int i = 0; i < numberOfInstruments; i++) {
+            instrumentPartitioning[i] = ((IntegerVariable)this.getVariable(i)).getValue();
+        }
+
+        for (int i = 0; i < numberOfInstruments; i++) {
+            orbitAssignment[i] = ((IntegerVariable) this.getVariable(numberOfInstruments + i)).getValue();
+        }
+
+        seakers.vassarheur.problems.PartitioningAndAssigning.Architecture arch_abs= new seakers.vassarheur.problems.PartitioningAndAssigning.Architecture(instrumentPartitioning, orbitAssignment, 1, params);
+
+        return arch_abs.toString("");
+    }
 }

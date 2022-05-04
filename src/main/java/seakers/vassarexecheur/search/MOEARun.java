@@ -10,6 +10,7 @@ import org.moeaframework.problem.AbstractProblem;
 import org.moeaframework.util.TypedProperties;
 import seakers.aos.aos.AOSMOEA;
 import seakers.aos.creditassignment.offspringparent.OffspringParentDomination;
+import seakers.aos.creditassignment.setcontribution.SetContributionDominance;
 import seakers.aos.creditassignment.setimprovement.SetImprovementDominance;
 import seakers.aos.operator.AOSVariation;
 import seakers.aos.operator.AOSVariationOP;
@@ -22,6 +23,7 @@ import java.util.concurrent.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.moeaframework.algorithm.EpsilonMOEA;
+import seakers.aos.operator.AOSVariationSC;
 import seakers.aos.operator.AOSVariationSI;
 import seakers.aos.operatorselectors.AdaptivePursuit;
 import seakers.aos.operatorselectors.OperatorSelector;
@@ -63,6 +65,8 @@ public class MOEARun {
 
         boolean assigningProblem = true; // True -> assigning problem, False -> partitioning problem
 
+        boolean moveInstrument = true; // For the assignment operators only (keep as true for consistency with partitioning operators)
+
         // Heuristic Enforcement Methods
         /**
          * dutyCycleConstrained = [interior_penalty, AOS, biased_init, ACH, objective, constraint]
@@ -103,7 +107,7 @@ public class MOEARun {
         }
 
         int numCPU = 4;
-        int numRuns = 4;
+        int numRuns = 21;
         pool = Executors.newFixedThreadPool(numCPU);
         ecs = new ExecutorCompletionService<>(pool);
 
@@ -145,6 +149,9 @@ public class MOEARun {
         ArchitectureEvaluationManager evaluationManager = new ArchitectureEvaluationManager(params, evaluator);
         evaluationManager.init(numCPU);
         properties.setDouble("mutationProbability", mutationProbability);
+
+        HashMap<String, String[]> instrumentSynergyMap = getInstrumentSynergyNameMap(params);
+        HashMap<String, String[]> interferingInstrumentsMap = getInstrumentInterferenceNameMap(params);
 
         Initialization initialization = null;
 
@@ -209,19 +216,19 @@ public class MOEARun {
             Variation repairSynergy;
 
             if (assigningProblem) {
-                repairDutyCycle = new RepairDutyCycleAssigning(dcThreshold, 1, params);
-                repairInstrumentOrbitRelations = new RepairInstrumentOrbitAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, params);
-                repairInterference = new RepairInterferenceAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, params);
-                repairPackingEfficiency = new RepairPackingEfficiencyAssigning(packEffThreshold, 1, params);
-                repairMass = new RepairMassAssigning(massThreshold, 1, params);
-                repairSynergy = new RepairSynergyAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, params);
+                repairDutyCycle = new RepairDutyCycleAssigning(dcThreshold, 1, params, moveInstrument, (AssigningProblem) satelliteProblem, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator);
+                repairInstrumentOrbitRelations = new RepairInstrumentOrbitAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, params, moveInstrument);
+                repairInterference = new RepairInterferenceAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, params, (AssigningProblem) satelliteProblem, interferingInstrumentsMap, moveInstrument);
+                repairPackingEfficiency = new RepairPackingEfficiencyAssigning(packEffThreshold, 1, params, moveInstrument, (AssigningProblem) satelliteProblem, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator);
+                repairMass = new RepairMassAssigning(massThreshold, 1, params, moveInstrument, (AssigningProblem) satelliteProblem, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator);
+                repairSynergy = new RepairSynergyAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, params, (AssigningProblem) satelliteProblem, interferingInstrumentsMap, moveInstrument);
             } else {
-                repairDutyCycle = new RepairDutyCyclePartitioning(dcThreshold, 1, params);
+                repairDutyCycle = new RepairDutyCyclePartitioning(dcThreshold, 1, params, (PartitioningProblem) satelliteProblem, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator);
                 repairInstrumentOrbitRelations = new RepairInstrumentOrbitPartitioning(1, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator, params);
-                repairInterference = new RepairInterferencePartitioning(1, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator, params);
-                repairPackingEfficiency = new RepairPackingEfficiencyAssigning(packEffThreshold, 1, params);
-                repairMass = new RepairMassPartitioning(massThreshold, 1, params);
-                repairSynergy = new RepairSynergyPartitioning(1, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator, params);
+                repairInterference = new RepairInterferencePartitioning(1, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator, params, (PartitioningProblem) satelliteProblem, interferingInstrumentsMap);
+                repairPackingEfficiency = new RepairPackingEfficiencyPartitioning(packEffThreshold, 1, params, (PartitioningProblem) satelliteProblem, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator);
+                repairMass = new RepairMassPartitioning(massThreshold, 1, params, (PartitioningProblem) satelliteProblem, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator);
+                repairSynergy = new RepairSynergyPartitioning(1, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator, params, (PartitioningProblem) satelliteProblem, instrumentSynergyMap);
             }
 
             Variation[] heuristicOperators ={repairDutyCycle, repairInstrumentOrbitRelations, repairInterference, repairPackingEfficiency, repairMass, repairSynergy};
@@ -274,11 +281,13 @@ public class MOEARun {
                 //OperatorSelector operatorSelector = new ProbabilityMatching(operators, 0.6, 0.03);
 
                 // Create credit assignment
-                SetImprovementDominance creditAssignment = new SetImprovementDominance(archive, 1, 0);
+                SetContributionDominance creditAssignment = new SetContributionDominance(archive, 1, 0);
+                //SetImprovementDominance creditAssignment = new SetImprovementDominance(archive, 1, 0);
                 //OffspringParentDomination creditAssignment = new OffspringParentDomination(1.0, 0.5, 0.0, comp);
 
                 // Create AOS
-                aosStrategy = new AOSVariationSI(operatorSelector, creditAssignment, popSize);
+                aosStrategy = new AOSVariationSC(operatorSelector, creditAssignment, popSize);
+                //aosStrategy = new AOSVariationSI(operatorSelector, creditAssignment, popSize);
                 //aosStrategy = new AOSVariationOP(operatorSelector, creditAssignment, popSize);
 
                 // Creating AOS MOEA object
@@ -311,6 +320,54 @@ public class MOEARun {
         }
         evaluationManager.clear();
         pool.shutdown();
+    }
+
+    /**
+     * Creates instrument synergy map used to compute the instrument synergy violation heuristic (only formulated for the
+     * Climate Centric problem for now) (added by roshansuresh)
+     * @param params
+     * @return Instrument synergy hashmap
+     */
+    protected static HashMap<String, String[]> getInstrumentSynergyNameMap(BaseParams params) {
+        HashMap<String, String[]> synergyNameMap = new HashMap<>();
+        if (params.getProblemName().equalsIgnoreCase("ClimateCentric")) {
+            synergyNameMap.put("ACE_ORCA", new String[]{"DESD_LID", "GACM_VIS", "ACE_POL", "HYSP_TIR", "ACE_LID"});
+            synergyNameMap.put("DESD_LID", new String[]{"ACE_ORCA", "ACE_LID", "ACE_POL"});
+            synergyNameMap.put("GACM_VIS", new String[]{"ACE_ORCA", "ACE_LID"});
+            synergyNameMap.put("HYSP_TIR", new String[]{"ACE_ORCA", "POSTEPS_IRS"});
+            synergyNameMap.put("ACE_POL", new String[]{"ACE_ORCA", "DESD_LID"});
+            synergyNameMap.put("ACE_LID", new String[]{"ACE_ORCA", "CNES_KaRIN", "DESD_LID", "GACM_VIS"});
+            synergyNameMap.put("POSTEPS_IRS", new String[]{"HYSP_TIR"});
+            synergyNameMap.put("CNES_KaRIN", new String[]{"ACE_LID"});
+        }
+        else {
+            System.out.println("Synergy Map for current problem not formulated");
+        }
+        return synergyNameMap;
+    }
+
+    /**
+     * Creates instrument interference map used to compute the instrument interference violation heuristic (only formulated for the
+     * Climate Centric problem for now)
+     * @param params
+     * @return Instrument interference hashmap
+     */
+    protected static HashMap<String, String[]> getInstrumentInterferenceNameMap(BaseParams params) {
+        HashMap<String, String[]> interferenceNameMap = new HashMap<>();
+        if (params.getProblemName().equalsIgnoreCase("ClimateCentric")) {
+            interferenceNameMap.put("ACE_LID", new String[]{"ACE_CPR", "DESD_SAR", "CLAR_ERB", "GACM_SWIR"});
+            interferenceNameMap.put("ACE_CPR", new String[]{"ACE_LID", "DESD_SAR", "CNES_KaRIN", "CLAR_ERB", "ACE_POL", "ACE_ORCA", "GACM_SWIR"});
+            interferenceNameMap.put("DESD_SAR", new String[]{"ACE_LID", "ACE_CPR"});
+            interferenceNameMap.put("CLAR_ERB", new String[]{"ACE_LID", "ACE_CPR"});
+            interferenceNameMap.put("CNES_KaRIN", new String[]{"ACE_CPR"});
+            interferenceNameMap.put("ACE_POL", new String[]{"ACE_CPR"});
+            interferenceNameMap.put("ACE_ORCA", new String[]{"ACE_CPR"});
+            interferenceNameMap.put("GACM_SWIR", new String[]{"ACE_LID", "ACE_CPR"});
+        }
+        else {
+            System.out.println("Interference Map fpr current problem not formulated");
+        }
+        return interferenceNameMap;
     }
 
 }

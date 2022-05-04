@@ -49,18 +49,7 @@ public class AssigningProblem  extends AbstractProblem implements SystemArchitec
 
     public void evaluateArch(AssigningArchitecture arch) {
         if (!arch.getAlreadyEvaluated()) {
-            StringBuilder bitStringBuilder = new StringBuilder(this.getNumberOfVariables());
-            for (int i = 1; i < this.getNumberOfVariables(); ++i) {
-                bitStringBuilder.append(arch.getVariable(i).toString());
-            }
-
-            AbstractArchitecture arch_abs;
-            if (problem.equalsIgnoreCase("ClimateCentric")) {
-                arch_abs = new Architecture(bitStringBuilder.toString(), ((ClimateCentricAssigningParams) params).getNumSatellites()[0], (ClimateCentricAssigningParams) params);
-            }
-            else {
-                throw new IllegalArgumentException("Unrecognizable problem type: " + problem);
-            }
+            AbstractArchitecture arch_abs = getAbstractArchitecture(arch);
 
             try {
                 Result result = evalManager.evaluateArchitectureSync(arch_abs, "Slow", dcThreshold, massThreshold, packingEfficiencyThreshold);
@@ -90,6 +79,7 @@ public class AssigningProblem  extends AbstractProblem implements SystemArchitec
                 arch.setSatellitePayloads(result.getSatellitePayloads());
 
                 arch.setSatelliteOrbits(result.getSatelliteOrbits());
+                arch.setAlreadyEvaluated(true);
             }
             catch (Exception e) {
                 e.printStackTrace();
@@ -100,5 +90,21 @@ public class AssigningProblem  extends AbstractProblem implements SystemArchitec
     @Override
     public Solution newSolution() {
         return new AssigningArchitecture(alternativesForNumberOfSatellites, params.getNumInstr(), params.getNumOrbits(), 2+numberOfHeuristicObjectives, numberOfHeuristicConstraints);
+    }
+
+    public AbstractArchitecture getAbstractArchitecture(AssigningArchitecture arch) {
+        StringBuilder bitStringBuilder = new StringBuilder(this.getNumberOfVariables());
+        for (int i = 1; i < this.getNumberOfVariables(); ++i) {
+            bitStringBuilder.append(arch.getVariable(i).toString());
+        }
+
+        AbstractArchitecture abs_arch;
+        if (problem.equalsIgnoreCase("ClimateCentric")) {
+            abs_arch = new Architecture(bitStringBuilder.toString(), ((ClimateCentricAssigningParams) params).getNumSatellites()[0], (ClimateCentricAssigningParams) params);
+        }
+        else {
+            throw new IllegalArgumentException("Unrecognizable problem type: " + problem);
+        }
+        return abs_arch;
     }
 }
