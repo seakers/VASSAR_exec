@@ -11,6 +11,7 @@ import org.moeaframework.core.Variation;
 import jess.Rete;
 import org.moeaframework.core.variable.BinaryVariable;
 import org.moeaframework.core.variable.RealVariable;
+import seakers.vassarexecheur.search.problems.assigning.AssigningProblem;
 import seakers.vassarheur.*;
 import seakers.vassarexecheur.search.problems.assigning.AssigningArchitecture;
 import seakers.vassarheur.architecture.AbstractArchitecture;
@@ -52,24 +53,31 @@ public class RepairInstrumentOrbitAssigning implements Variation {
     private final BaseParams params;
 
     /**
+     * Assigning Problem used to evaluate architectures
+     */
+    private AssigningProblem problem;
+
+    /**
      * Toggles movement of removed instruments into other spacecraft
      */
     private boolean moveInstruments;
 
-    public RepairInstrumentOrbitAssigning(int numChanges, ResourcePool resourcePool, ArchitectureEvaluator evaluator, BaseParams params) {
+    public RepairInstrumentOrbitAssigning(int numChanges, ResourcePool resourcePool, ArchitectureEvaluator evaluator, BaseParams params, AssigningProblem problem) {
         this.numberOfChanges = numChanges;
         this.resourcePool = resourcePool;
         this.evaluator = evaluator;
         this.params = params;
+        this.problem = problem;
         this.moveInstruments = true;
         //this.pprng = new PRNG();
     }
 
-    public RepairInstrumentOrbitAssigning(int numChanges, ResourcePool resourcePool, ArchitectureEvaluator evaluator, BaseParams params, boolean moveInstruments) {
+    public RepairInstrumentOrbitAssigning(int numChanges, ResourcePool resourcePool, ArchitectureEvaluator evaluator, BaseParams params, AssigningProblem problem, boolean moveInstruments) {
         this.numberOfChanges = numChanges;
         this.resourcePool = resourcePool;
         this.evaluator = evaluator;
         this.params = params;
+        this.problem = problem;
         this.moveInstruments = moveInstruments;
         //this.pprng = new PRNG();
     }
@@ -82,13 +90,8 @@ public class RepairInstrumentOrbitAssigning implements Variation {
     @Override
     public Solution[] evolve(Solution[] sols) {
         AssigningArchitecture parent = (AssigningArchitecture) sols[0];
-        StringBuilder bitStringBuilder = new StringBuilder(parent.getNumberOfVariables());
-        for (int i = 1; i < parent.getNumberOfVariables(); ++i) {
-            bitStringBuilder.append(parent.getVariable(i).toString());
-        }
 
-        AbstractArchitecture arch_abs;
-        arch_abs = new Architecture(bitStringBuilder.toString(), ((ClimateCentricAssigningParams) params).getNumSatellites()[0], (ClimateCentricAssigningParams) params);
+        AbstractArchitecture arch_abs = problem.getAbstractArchitecture(parent);
 
         Resource res = resourcePool.getResource();
         MatlabFunctions m = res.getM();

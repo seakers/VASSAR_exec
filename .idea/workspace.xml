@@ -12,7 +12,7 @@
     <option name="done" value="true" />
   </component>
   <component name="CoverageViewManager">
-    <option name="myElementSize" value="80" />
+    <option name="myElementSize" value="94" />
   </component>
   <component name="ExternalProjectsData">
     <projectState path="$PROJECT_DIR$">
@@ -68,7 +68,7 @@
   <component name="ProjectId" id="1ptd3Og4O543uCVrSK5QumnOdCO" />
   <component name="PropertiesComponent">
     <property name="last_directory_selection" value="$PROJECT_DIR$/src/main/java" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../VASSAR_lib-heur" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../VASSAR_AMOS" />
     <property name="project.structure.last.edited" value="Project" />
     <property name="project.structure.proportion" value="0.15" />
     <property name="project.structure.side.proportion" value="0.2" />
@@ -101,34 +101,34 @@
     </option>
   </component>
   <component name="RunManager" selected="Gradle.VASSAR_exec_heur [build]">
-    <configuration name="CheckHeuristicImprovement2" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="seakers.vassarexecheur.search.CheckHeuristicImprovement2" />
-      <module name="vassarexecheur.main" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="seakers.vassarexecheur.search.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="CheckOperatorHeuristicImprovement" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="seakers.vassarexecheur.search.CheckOperatorHeuristicImprovement" />
-      <module name="vassarexecheur.main" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="seakers.vassarexecheur.search.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="CheckOperators" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="seakers.vassarexecheur.search.CheckOperators" />
+      <module name="vassarexecheur.main" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="seakers.vassarexecheur.search.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="GenerateForMetricsStudyPartitioning" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="seakers.vassarexecheur.search.GenerateForMetricsStudyPartitioning" />
+      <module name="vassarexecheur.main" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="seakers.vassarexecheur.search.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="MOEARun" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="seakers.vassarexecheur.search.MOEARun" />
       <module name="vassarexecheur.main" />
       <extension name="coverage">
         <pattern>
@@ -180,11 +180,11 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Application.CheckOperators" />
-        <item itemvalue="Application.CheckHeuristicImprovement2" />
         <item itemvalue="Gradle.VASSAR_exec_heur [clean]" />
         <item itemvalue="Gradle.VASSAR_exec_heur [build]" />
-        <item itemvalue="Application.CheckOperatorHeuristicImprovement" />
+        <item itemvalue="Application.GenerateForMetricsStudyPartitioning" />
+        <item itemvalue="Application.MOEARun" />
+        <item itemvalue="Application.CheckOperators" />
       </list>
     </recent_temporary>
   </component>
@@ -205,11 +205,6 @@
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="java-line">
-          <url>jar://$MAVEN_REPOSITORY$/seakers/mopAOS/1.0/mopAOS-1.0.jar!/seakers/aos/aos/AOSMOEA.class</url>
-          <line>38</line>
-          <option name="timeStamp" value="45" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/seakers/vassarexecheur/search/operators/assigning/RepairMassAssigning.java</url>
           <line>97</line>
           <option name="timeStamp" value="141" />
@@ -229,6 +224,21 @@
           <line>117</line>
           <option name="timeStamp" value="144" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/seakers/vassarexecheur/search/operators/assigning/RepairInterferenceAssigning.java</url>
+          <line>86</line>
+          <option name="timeStamp" value="158" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/seakers/vassarexecheur/search/AssigningSearch.java</url>
+          <line>59</line>
+          <option name="timeStamp" value="161" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/seakers/vassarexecheur/search/AssigningSearch.java</url>
+          <line>43</line>
+          <option name="timeStamp" value="162" />
+        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
     <watches-manager>
@@ -244,11 +254,12 @@
         <watch expression="instrumentFacts" />
         <watch expression="candidateInstrumentMoves.get(5)" />
         <watch expression="selectedMove" />
+        <watch expression="arch.variables" />
       </configuration>
     </watches-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/vassarexecheur$MOEARun.ic" NAME="MOEARun Coverage Results" MODIFIED="1647893205611" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false">
+    <SUITE FILE_PATH="coverage/vassarexecheur$MOEARun.ic" NAME="MOEARun Coverage Results" MODIFIED="1652112326034" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false">
       <FILTER>seakers.vassarexecheur.search.*</FILTER>
     </SUITE>
   </component>

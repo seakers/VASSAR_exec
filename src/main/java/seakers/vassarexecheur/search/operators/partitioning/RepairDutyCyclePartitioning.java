@@ -80,143 +80,147 @@ public class RepairDutyCyclePartitioning implements Variation {
     @Override
     public Solution[] evolve(Solution[] solutions) {
         PartitioningArchitecture parent = (PartitioningArchitecture) solutions[0];
-        ArrayList<ArrayList<String>> payloads = parent.getSatellitePayloads();
-        ArrayList<String> orbits = parent.getSatelliteOrbits();
+        if (parent.getSatellitePayloads() != null) {
+            ArrayList<ArrayList<String>> payloads = parent.getSatellitePayloads();
+            ArrayList<String> orbits = parent.getSatelliteOrbits();
 
-        ArrayList<ArrayList<String>> childPayloads = new ArrayList<>(payloads);
-        ArrayList<String> childOrbits = new ArrayList<>(orbits);
+            ArrayList<ArrayList<String>> childPayloads = new ArrayList<>(payloads);
+            ArrayList<String> childOrbits = new ArrayList<>(orbits);
 
-        ArrayList<ArrayList<Double>> operatorParameters = parent.getOperatorParameters(); //{duty cycle, wet mass, packing efficiency} for each satellite
-        ArrayList<Integer> candidateSatellites = new ArrayList<>();
+            ArrayList<ArrayList<Double>> operatorParameters = parent.getOperatorParameters(); //{duty cycle, wet mass, packing efficiency} for each satellite
+            ArrayList<Integer> candidateSatellites = new ArrayList<>();
 
-        Resource res = resourcePool.getResource();
-        MatlabFunctions m = res.getM();
-        Rete rete = res.getRete();
-        QueryBuilder queryBuilder = res.getQueryBuilder();
+            Resource res = resourcePool.getResource();
+            MatlabFunctions m = res.getM();
+            Rete rete = res.getRete();
+            QueryBuilder queryBuilder = res.getQueryBuilder();
 
-        for (int i = 0; i < payloads.size(); i++) {
-            if ((operatorParameters.get(i).get(0)) < threshold) {
-                candidateSatellites.add(i);
-            }
-        }
-
-        if ((candidateSatellites.size() > 0) && (candidateSatellites.size() >= xInstruments)) {
-            int moveCount = 0;
-            int satelliteIndex;
-            while ((moveCount < xInstruments) && (candidateSatellites.size() > 0)) {
-                int maxFeasibleTries = 3;
-                boolean feasibleMove = false;
-                int numberOfFeasibleTries = 0;
-
-                satelliteIndex = PRNG.nextInt(candidateSatellites.size());
-                int candidateSatelliteIndex = candidateSatellites.get(satelliteIndex);
-                //ArrayList<String> currentPayloads = new ArrayList<>();
-                if (childPayloads.get(candidateSatelliteIndex).isEmpty()) {
-                    //childOrbits.remove(satelliteIndex);
-                    //childPayloads.remove(satelliteIndex);
-                    moveCount--;
-                    continue;
+            for (int i = 0; i < payloads.size(); i++) {
+                if ((operatorParameters.get(i).get(0)) < threshold) {
+                    candidateSatellites.add(i);
                 }
-                else {
-                    // Remove payload from current satellite
-                    int payloadIndex = PRNG.nextInt(childPayloads.get(candidateSatelliteIndex).size());
-                    String payload = childPayloads.get(candidateSatelliteIndex).get(payloadIndex);
-                    ArrayList<Integer> candidatePayloadSatellites = getCandidateSatellitesForPayload(childPayloads, payload);
-                    if (candidatePayloadSatellites.size() == 0) {
+            }
+
+            if ((candidateSatellites.size() > 0) && (candidateSatellites.size() >= xInstruments)) {
+                int moveCount = 0;
+                int satelliteIndex;
+                while ((moveCount < xInstruments) && (candidateSatellites.size() > 0)) {
+                    int maxFeasibleTries = 3;
+                    boolean feasibleMove = false;
+                    int numberOfFeasibleTries = 0;
+
+                    satelliteIndex = PRNG.nextInt(candidateSatellites.size());
+                    int candidateSatelliteIndex = candidateSatellites.get(satelliteIndex);
+                    //ArrayList<String> currentPayloads = new ArrayList<>();
+                    if (childPayloads.get(candidateSatelliteIndex).isEmpty()) {
+                        //childOrbits.remove(satelliteIndex);
+                        //childPayloads.remove(satelliteIndex);
                         moveCount--;
                         continue;
                     }
-                    //for (int m = 0; m < childPayloads.get(satelliteIndex).size(); m++) {
-                    //if (m != payloadIndex) {
-                    //currentPayloads.add(childPayloads.get(satelliteIndex).get(m));
-                    //}
-                    //}
-                    childPayloads.get(candidateSatelliteIndex).remove(payload);
-                    String originalPayload = payload;
-
-                    // Add payload to different satellite
-                    int candidatePayloadSatelliteIndex = PRNG.nextInt(candidatePayloadSatellites.size());
-                    int candidatePayloadSatellite = candidatePayloadSatellites.get(candidatePayloadSatelliteIndex);
-
-                    while ((!feasibleMove) && (numberOfFeasibleTries < maxFeasibleTries)) {
-
-                        //ArrayList<String> candidateSatellitePayload = childPayloads.get(candidatePayloadSatelliteIndex);
-                        //candidateSatellitePayload.add(payload);
-                        childPayloads.get(candidatePayloadSatellite).add(payload);
-                        //childPayloads.set(satelliteIndex, currentPayloads);
-
-                        PartitioningArchitecture candidateChild = getArchitectureFromPayloadsAndOrbits(childPayloads, childOrbits);
-                        AbstractArchitecture candidateChild_abs = problem.getAbstractArchitecture(candidateChild);
-
-                        try {
-                            rete.reset();
-                        } catch (JessException e) {
-                            e.printStackTrace();
+                    else {
+                        // Remove payload from current satellite
+                        int payloadIndex = PRNG.nextInt(childPayloads.get(candidateSatelliteIndex).size());
+                        String payload = childPayloads.get(candidateSatelliteIndex).get(payloadIndex);
+                        ArrayList<Integer> candidatePayloadSatellites = getCandidateSatellitesForPayload(childPayloads, payload);
+                        if (candidatePayloadSatellites.size() == 0) {
+                            moveCount--;
+                            continue;
                         }
-                        evaluator.assertMissions(params, rete, candidateChild_abs, m);
-                        ArrayList<ArrayList<Double>> satelliteHeuristics;
-                        ArrayList<Double> archHeuristics = null;
-                        try {
-                            evaluator.evaluateHeuristicParameters(rete, candidateChild_abs, queryBuilder, m);
-                            satelliteHeuristics = evaluator.computeHeuristics(rete, candidateChild_abs, queryBuilder, params);
-                            archHeuristics = evaluator.computeHeuristicsArchitecture(satelliteHeuristics);
-                        } catch (JessException e) {
-                            e.printStackTrace();
-                        }
+                        //for (int m = 0; m < childPayloads.get(satelliteIndex).size(); m++) {
+                        //if (m != payloadIndex) {
+                        //currentPayloads.add(childPayloads.get(satelliteIndex).get(m));
+                        //}
+                        //}
+                        childPayloads.get(candidateSatelliteIndex).remove(payload);
+                        String originalPayload = payload;
 
-                        // archHeuristics -> [dutyCycleViolation, instrumentOrbitAssignmentViolation, interferenceViolation, packingEfficiencyViolation, spacecraftMassViolation, synergyViolation]
-                        assert archHeuristics != null;
-                        double childDutyCycle = archHeuristics.get(0);
+                        // Add payload to different satellite
+                        int candidatePayloadSatelliteIndex = PRNG.nextInt(candidatePayloadSatellites.size());
+                        int candidatePayloadSatellite = candidatePayloadSatellites.get(candidatePayloadSatelliteIndex);
 
-                        if (childDutyCycle < (double) parent.getAttribute("DCViolation")) {
-                            feasibleMove = true;
-                        } else {
-                            // Remove the added instrument to try again
-                            childPayloads.get(candidatePayloadSatellite).remove(payload);
-                            candidatePayloadSatellites.remove(candidatePayloadSatelliteIndex);
+                        while ((!feasibleMove) && (numberOfFeasibleTries < maxFeasibleTries)) {
 
-                            if (candidatePayloadSatellites.size() == 0) { // If the candidate instrument cannot be added to other satellites, choose a different instrument from the same satellite and start again
-                                childPayloads.get(candidateSatelliteIndex).add(originalPayload);
+                            //ArrayList<String> candidateSatellitePayload = childPayloads.get(candidatePayloadSatelliteIndex);
+                            //candidateSatellitePayload.add(payload);
+                            childPayloads.get(candidatePayloadSatellite).add(payload);
+                            //childPayloads.set(satelliteIndex, currentPayloads);
 
-                                ArrayList<String> candidateSatellitePayloads = new ArrayList<>();
-                                candidateSatellitePayloads.addAll(childPayloads.get(candidateSatelliteIndex));
-                                candidateSatellitePayloads.remove(payload);
+                            PartitioningArchitecture candidateChild = getArchitectureFromPayloadsAndOrbits(childPayloads, childOrbits);
+                            AbstractArchitecture candidateChild_abs = problem.getAbstractArchitecture(candidateChild);
 
-                                if (candidateSatellitePayloads.size() == 0) { // Try again with a different instrument after replacing original instrument in its satellite
-                                    // move counter is not reset to prevent infinite looping over all instruments in all satellites  (limits to moveCounter)
-                                    break;
-                                }
-
-                                int newPayloadIndex = PRNG.nextInt(candidateSatellitePayloads.size());
-                                payload = candidateSatellitePayloads.get(newPayloadIndex);
-                                candidatePayloadSatellites = getCandidateSatellitesForPayload(childPayloads, payload);
-                                if (candidatePayloadSatellites.size() == 0) {
-                                    break;
-                                }
-                                originalPayload = payload;
-                                childPayloads.get(candidateSatelliteIndex).remove(payload);
-                                //candidatePayloadSatelliteIndex = PRNG.nextInt(candidatePayloadSatellites.size());
-                                //candidatePayloadSatellite = candidatePayloadSatellites.get(candidatePayloadSatelliteIndex);
+                            try {
+                                rete.reset();
+                            } catch (JessException e) {
+                                e.printStackTrace();
+                            }
+                            evaluator.assertMissions(params, rete, candidateChild_abs, m);
+                            ArrayList<ArrayList<Double>> satelliteHeuristics;
+                            ArrayList<Double> archHeuristics = null;
+                            try {
+                                evaluator.evaluateHeuristicParameters(rete, candidateChild_abs, queryBuilder, m);
+                                satelliteHeuristics = evaluator.computeHeuristics(rete, candidateChild_abs, queryBuilder, params);
+                                archHeuristics = evaluator.computeHeuristicsArchitecture(satelliteHeuristics);
+                            } catch (JessException e) {
+                                e.printStackTrace();
                             }
 
-                            candidatePayloadSatelliteIndex = PRNG.nextInt(candidatePayloadSatellites.size());
-                            candidatePayloadSatellite = candidatePayloadSatellites.get(candidatePayloadSatelliteIndex);
+                            // archHeuristics -> [dutyCycleViolation, instrumentOrbitAssignmentViolation, interferenceViolation, packingEfficiencyViolation, spacecraftMassViolation, synergyViolation]
+                            assert archHeuristics != null;
+                            double childDutyCycle = archHeuristics.get(0);
 
-                            numberOfFeasibleTries++;
-                            if (numberOfFeasibleTries == maxFeasibleTries) {
-                                childPayloads.get(candidateSatelliteIndex).add(originalPayload);
+                            if (childDutyCycle < (double) parent.getAttribute("DCViolation")) {
+                                feasibleMove = true;
+                            } else {
+                                // Remove the added instrument to try again
+                                childPayloads.get(candidatePayloadSatellite).remove(payload);
+                                candidatePayloadSatellites.remove(candidatePayloadSatelliteIndex);
+
+                                if (candidatePayloadSatellites.size() == 0) { // If the candidate instrument cannot be added to other satellites, choose a different instrument from the same satellite and start again
+                                    childPayloads.get(candidateSatelliteIndex).add(originalPayload);
+
+                                    ArrayList<String> candidateSatellitePayloads = new ArrayList<>();
+                                    candidateSatellitePayloads.addAll(childPayloads.get(candidateSatelliteIndex));
+                                    candidateSatellitePayloads.remove(payload);
+
+                                    if (candidateSatellitePayloads.size() == 0) { // Try again with a different instrument after replacing original instrument in its satellite
+                                        // move counter is not reset to prevent infinite looping over all instruments in all satellites  (limits to moveCounter)
+                                        break;
+                                    }
+
+                                    int newPayloadIndex = PRNG.nextInt(candidateSatellitePayloads.size());
+                                    payload = candidateSatellitePayloads.get(newPayloadIndex);
+                                    candidatePayloadSatellites = getCandidateSatellitesForPayload(childPayloads, payload);
+                                    if (candidatePayloadSatellites.size() == 0) {
+                                        break;
+                                    }
+                                    originalPayload = payload;
+                                    childPayloads.get(candidateSatelliteIndex).remove(payload);
+                                    //candidatePayloadSatelliteIndex = PRNG.nextInt(candidatePayloadSatellites.size());
+                                    //candidatePayloadSatellite = candidatePayloadSatellites.get(candidatePayloadSatelliteIndex);
+                                }
+
+                                candidatePayloadSatelliteIndex = PRNG.nextInt(candidatePayloadSatellites.size());
+                                candidatePayloadSatellite = candidatePayloadSatellites.get(candidatePayloadSatelliteIndex);
+
+                                numberOfFeasibleTries++;
+                                if (numberOfFeasibleTries == maxFeasibleTries) {
+                                    childPayloads.get(candidateSatelliteIndex).add(originalPayload);
+                                }
                             }
                         }
                     }
+                    candidateSatellites.remove(satelliteIndex);
+                    moveCount++;
                 }
-                candidateSatellites.remove(satelliteIndex);
-                moveCount++;
             }
-        }
-        this.resourcePool.freeResource(res);
-        PartitioningArchitecture child = getArchitectureFromPayloadsAndOrbits(childPayloads, childOrbits);
+            this.resourcePool.freeResource(res);
+            PartitioningArchitecture child = getArchitectureFromPayloadsAndOrbits(childPayloads, childOrbits);
 
-        return new Solution[]{child};
+            return new Solution[]{child};
+        } else {
+            return new Solution[]{parent};
+        }
     }
 
     private ArrayList<Integer> getCandidateSatellitesForPayload(ArrayList<ArrayList<String>> currentPayloads, String payload) {
@@ -234,7 +238,8 @@ public class RepairDutyCyclePartitioning implements Variation {
         ArrayList<String> instrumentList = new ArrayList<>(Arrays.asList(params.getInstrumentList()));
         ArrayList<String> orbitList = new ArrayList<>(Arrays.asList(params.getOrbitList()));
 
-        PartitioningArchitecture arch = new PartitioningArchitecture(instrumentList.size(), orbitList.size(), 2, params);
+        PartitioningArchitecture arch = new PartitioningArchitecture(instrumentList.size(), orbitList.size(), 2, params); // ADD HEURISTIC OBJECTIVES AND CONSTRAINTS
+        int partitionIndex = 0;
 
         for (int i = 0; i < currentOrbits.size(); i++) {
             ArrayList<String> currentOrbitPayloads = currentPayloads.get(i);
@@ -242,20 +247,25 @@ public class RepairDutyCyclePartitioning implements Variation {
             for (int j = 0; j < currentOrbitPayloads.size(); j++) {
                 int payloadIndex = instrumentList.indexOf(currentOrbitPayloads.get(j));
 
-                IntegerVariable instrVar = new IntegerVariable(i, 0, instrumentList.size()-1);
+                IntegerVariable instrVar = new IntegerVariable(partitionIndex, 0, instrumentList.size()-1);
                 arch.setVariable(payloadIndex, instrVar);
             }
 
-            int orbitIndex = orbitList.indexOf(currentOrbits.get(i));
+            if (currentOrbitPayloads.size() != 0) {
+                int orbitIndex = orbitList.indexOf(currentOrbits.get(i));
 
-            IntegerVariable orbitVar = new IntegerVariable(orbitIndex, 0, instrumentList.size()-1);
-            arch.setVariable(instrumentList.size()+i, orbitVar);
+                IntegerVariable orbitVar = new IntegerVariable(orbitIndex, -1, orbitList.size()-1);
+                arch.setVariable(instrumentList.size()+partitionIndex, orbitVar);
+
+                partitionIndex += 1;
+            }
         }
 
-        IntegerVariable noOrbitVar = new IntegerVariable(-1, -1, -1);
-        for (int k = 0; k < instrumentList.size()-currentOrbits.size(); k++) {
-            arch.setVariable(instrumentList.size()+currentOrbits.size()+k, noOrbitVar);
-        }
+        //// NOT REQUIRED SINCE PARTITIONING ARCHITECTURE IS INITIALIZED WITH ALL ASSIGNING VARIABLES AS -1
+        //IntegerVariable noOrbitVar = new IntegerVariable(-1, -1, orbitList.size()-1);
+        //for (int k = 0; k < instrumentList.size()-currentOrbits.size(); k++) {
+            //arch.setVariable(instrumentList.size()+currentOrbits.size()+k, noOrbitVar);
+        //}
 
         return arch;
     }

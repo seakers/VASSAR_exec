@@ -11,6 +11,7 @@ import seakers.vassarheur.BaseParams;
 import seakers.vassarheur.problems.PartitioningAndAssigning.Architecture;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -20,6 +21,8 @@ public class PartitioningProblem extends AbstractProblem implements SystemArchit
     private final String problem;
     private final ArchitectureEvaluationManager evaluationManager;
     private final BaseParams params;
+    private final HashMap<String, String[]> interferenceMap;
+    private final HashMap<String, String[]> synergyMap;
     private final double dcThreshold;
     private final double massThreshold; //[kg]
     private final double packingEffThreshold;
@@ -27,11 +30,13 @@ public class PartitioningProblem extends AbstractProblem implements SystemArchit
     private final int numberOfHeuristicConstraints;
     private final boolean[][] heuristicsConstrained;
 
-    public PartitioningProblem(String problem, ArchitectureEvaluationManager evalManager, BaseParams params, double dcThreshold, double massThreshold, double packingEfficiencyThreshold, int numberOfHeuristicObjectives, int numberOfHeuristicConstraints, boolean[][] heuristicsConstrained) {
+    public PartitioningProblem(String problem, ArchitectureEvaluationManager evalManager, BaseParams params, HashMap<String, String[]> interferenceMap, HashMap<String, String[]> synergyMap, double dcThreshold, double massThreshold, double packingEfficiencyThreshold, int numberOfHeuristicObjectives, int numberOfHeuristicConstraints, boolean[][] heuristicsConstrained) {
         super(2 * params.getNumInstr(),2);
         this.problem = problem;
         this.evaluationManager = evalManager;
         this.params = params;
+        this.interferenceMap = interferenceMap;
+        this.synergyMap = synergyMap;
         this.dcThreshold = dcThreshold;
         this.massThreshold = massThreshold;
         this.packingEffThreshold = packingEfficiencyThreshold;
@@ -52,7 +57,7 @@ public class PartitioningProblem extends AbstractProblem implements SystemArchit
             AbstractArchitecture abs_arch = getAbstractArchitecture(arch);
 
             try {
-                Result result = evaluationManager.evaluateArchitectureSync(abs_arch, "Slow", dcThreshold, massThreshold, packingEffThreshold);
+                Result result = evaluationManager.evaluateArchitectureSync(abs_arch, "Slow", interferenceMap, synergyMap, dcThreshold, massThreshold, packingEffThreshold);
                 arch.setObjective(0, -result.getScience());
                 arch.setObjective(1, result.getCost());
 

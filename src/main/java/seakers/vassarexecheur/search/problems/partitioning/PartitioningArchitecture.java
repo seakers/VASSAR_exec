@@ -1,15 +1,20 @@
 package seakers.vassarexecheur.search.problems.partitioning;
 
+import org.apache.commons.lang3.SerializationUtils;
 import org.moeaframework.core.Solution;
 import seakers.architecture.Architecture;
 import seakers.architecture.pattern.ArchitecturalDecision;
 import seakers.architecture.pattern.Partitioning;
 import seakers.architecture.util.IntegerVariable;
 import seakers.engineerserver.search.problems.PartitioningAndAssigning.AssigningPatternCategorical;
+import seakers.vassarexecheur.search.problems.assigning.AssigningArchitecture;
 import seakers.vassarheur.BaseParams;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 public class PartitioningArchitecture extends Architecture {
@@ -79,6 +84,32 @@ public class PartitioningArchitecture extends Architecture {
 
     @Override
     public Solution copy() { return new PartitioningArchitecture(this); }
+
+    public Solution deepCopy() {
+        AssigningArchitecture copy = (AssigningArchitecture) this.copy();
+
+        // Copy Variables
+        for (int i = 0; i < this.getNumberOfVariables(); i++) {
+            copy.setVariable(i, this.getVariable(i));
+        }
+
+        // Copy Objectives and Constraints
+        for (int i = 0; i < this.getNumberOfObjectives(); i++) {
+            copy.setObjective(i, this.getObjective(i));
+        }
+
+        for (int i = 0; i < this.getNumberOfConstraints(); i++) {
+            copy.setConstraint(i, this.getConstraint(i));
+        }
+
+        // Copy Attributes
+        Iterator iterator = this.getAttributes().entrySet().iterator();
+        while(iterator.hasNext()) {
+            Map.Entry entry = (Map.Entry)iterator.next();
+            copy.setAttribute((String)entry.getKey(), SerializationUtils.clone((Serializable)entry.getValue()));
+        }
+        return copy;
+    }
 
     public void setVariablesFromPartitionArrays(int[] instrumentPartitions, int[] orbitAssignments) {
         // Populate arch with assigning and partitioning values

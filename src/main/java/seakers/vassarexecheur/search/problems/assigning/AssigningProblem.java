@@ -11,6 +11,7 @@ import seakers.vassarheur.problems.Assigning.Architecture;
 import seakers.vassarheur.problems.Assigning.ClimateCentricAssigningParams;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
 
 public class AssigningProblem  extends AbstractProblem implements SystemArchitectureProblem {
@@ -19,6 +20,8 @@ public class AssigningProblem  extends AbstractProblem implements SystemArchitec
     private final String problem;
     private final ArchitectureEvaluationManager evalManager;
     private final BaseParams params;
+    private final HashMap<String, String[]> interferenceMap;
+    private final HashMap<String, String[]> synergyMap;
     private final double dcThreshold;
     private final double massThreshold; //[kg]
     private final double packingEfficiencyThreshold;
@@ -26,12 +29,14 @@ public class AssigningProblem  extends AbstractProblem implements SystemArchitec
     private final int numberOfHeuristicConstraints;
     private final boolean[][] heuristicsConstrained;
 
-    public AssigningProblem(int[] alternativesForNumberOfSatellites, String problem, ArchitectureEvaluationManager evalManager, BaseParams params, double dcThreshold, double massThreshold, double packingEfficiencyThreshold, int numberOfHeuristicObjectives, int numberOfHeuristicConstraints, boolean[][] heuristicsConstrained) {
+    public AssigningProblem(int[] alternativesForNumberOfSatellites, String problem, ArchitectureEvaluationManager evalManager, BaseParams params, HashMap<String, String[]> interferenceMap, HashMap<String, String[]> synergyMap, double dcThreshold, double massThreshold, double packingEfficiencyThreshold, int numberOfHeuristicObjectives, int numberOfHeuristicConstraints, boolean[][] heuristicsConstrained) {
         super(1 + params.getNumInstr()*params.getNumOrbits(), 2+numberOfHeuristicObjectives, numberOfHeuristicConstraints);
         this.problem = problem;
         this.evalManager = evalManager;
         this.alternativesForNumberOfSatellites = alternativesForNumberOfSatellites;
         this.params = params;
+        this.interferenceMap = interferenceMap;
+        this.synergyMap = synergyMap;
         this.dcThreshold = dcThreshold;
         this.massThreshold = massThreshold;
         this.packingEfficiencyThreshold = packingEfficiencyThreshold;
@@ -52,7 +57,7 @@ public class AssigningProblem  extends AbstractProblem implements SystemArchitec
             AbstractArchitecture arch_abs = getAbstractArchitecture(arch);
 
             try {
-                Result result = evalManager.evaluateArchitectureSync(arch_abs, "Slow", dcThreshold, massThreshold, packingEfficiencyThreshold);
+                Result result = evalManager.evaluateArchitectureSync(arch_abs, "Slow", interferenceMap, synergyMap, dcThreshold, massThreshold, packingEfficiencyThreshold);
                 arch.setObjective(0, -result.getScience());
                 arch.setObjective(1, result.getCost());
 

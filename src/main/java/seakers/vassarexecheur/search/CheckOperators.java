@@ -90,26 +90,33 @@ public class CheckOperators {
 
         BaseParams params;
         AbstractArchitectureEvaluator evaluator;
+        HashMap<String, String[]> instrumentSynergyMap;
+        HashMap<String, String[]> interferingInstrumentsMap;
         if (assigningProblem) {
             params = new ClimateCentricAssigningParams(resourcesPath, "CRISP-ATTRIBUTES","test", "normal");
-            evaluator = new ArchitectureEvaluator(considerFeasibility, dcThreshold, massThreshold, packEffThreshold);
+
+            instrumentSynergyMap = getInstrumentSynergyNameMap(params);
+            interferingInstrumentsMap = getInstrumentInterferenceNameMap(params);
+
+            evaluator = new ArchitectureEvaluator(considerFeasibility, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold);
 
         } else {
             params = new ClimateCentricPartitioningParams(resourcesPath, "CRISP-ATTRIBUTES", "test", "normal");
-            evaluator = new seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator(considerFeasibility, dcThreshold, massThreshold, packEffThreshold);
+
+            instrumentSynergyMap = getInstrumentSynergyNameMap(params);
+            interferingInstrumentsMap = getInstrumentInterferenceNameMap(params);
+
+            evaluator = new seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator(considerFeasibility, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold);
         }
         ArchitectureEvaluationManager evaluationManager = new ArchitectureEvaluationManager(params, evaluator);
         evaluationManager.init(numCPU);
 
-        HashMap<String, String[]> instrumentSynergyMap = getInstrumentSynergyNameMap(params);
-        HashMap<String, String[]> interferingInstrumentsMap = getInstrumentInterferenceNameMap(params);
-
         // Problem class
         AbstractProblem satelliteProblem;
         if (assigningProblem) {
-            satelliteProblem = new AssigningProblem(new int[]{1}, params.getProblemName(), evaluationManager, params, dcThreshold, massThreshold, packEffThreshold, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
+            satelliteProblem = new AssigningProblem(new int[]{1}, params.getProblemName(), evaluationManager, params, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
         } else {
-            satelliteProblem = new PartitioningProblem(params.getProblemName(), evaluationManager, params, dcThreshold, massThreshold, packEffThreshold, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
+            satelliteProblem = new PartitioningProblem(params.getProblemName(), evaluationManager, params, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
         }
 
         // Initialize heuristic operator
@@ -124,7 +131,7 @@ public class CheckOperators {
                     attribute = "DCViolation";
                 break;
                 case "instrOrbit":
-                    operator = new RepairInstrumentOrbitAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, params, moveInstrument);
+                    operator = new RepairInstrumentOrbitAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, params, (AssigningProblem) satelliteProblem, moveInstrument);
                     attribute = "InstrOrbViolation";
                 break;
                 case "interInstr":
@@ -153,7 +160,7 @@ public class CheckOperators {
                     attribute = "DCViolation";
                 break;
                 case "instrOrbit":
-                    operator = new RepairInstrumentOrbitPartitioning(1, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator, params);
+                    operator = new RepairInstrumentOrbitPartitioning(1, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator, params, (PartitioningProblem) satelliteProblem);
                     attribute = "InstrOrbViolation";
                 break;
                 case "interInstr":

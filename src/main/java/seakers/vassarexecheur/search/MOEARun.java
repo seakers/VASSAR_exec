@@ -30,6 +30,7 @@ import seakers.aos.operatorselectors.OperatorSelector;
 import seakers.aos.operatorselectors.ProbabilityMatching;
 import seakers.vassarexecheur.search.constrainthandling.KnowledgeStochasticRanking;
 import seakers.vassarexecheur.search.intialization.SynchronizedMersenneTwister;
+import seakers.vassarexecheur.search.intialization.partitioning.RandomPartitioningAndAssigning;
 import seakers.vassarexecheur.search.operators.assigning.*;
 import seakers.vassarexecheur.search.operators.partitioning.*;
 import seakers.vassarexecheur.search.problems.assigning.AssigningProblem;
@@ -78,12 +79,12 @@ public class MOEARun {
          *
          * heuristicsConstrained = [dutyCycleConstrained, instrumentOrbitRelationsConstrained, interferenceConstrained, packingEfficiencyConstrained, spacecraftMassConstrained, synergyConstrained]
          */
-        boolean[] dutyCycleConstrained = {false, false, false, false, false, false};
-        boolean[] instrumentOrbitRelationsConstrained = {false, false, false, false, false, false};
-        boolean[] interferenceConstrained = {false, false, false, false, false, false};
-        boolean[] packingEfficiencyConstrained = {false, false, false, false, false, false};
-        boolean[] spacecraftMassConstrained = {false, false, false, false, false, false};
-        boolean[] synergyConstrained = {false, false, false, false, false, false};
+        boolean[] dutyCycleConstrained = {false, true, false, false, false, false};
+        boolean[] instrumentOrbitRelationsConstrained = {false, true, false, false, false, false};
+        boolean[] interferenceConstrained = {false, true, false, false, false, false};
+        boolean[] packingEfficiencyConstrained = {false, true, false, false, false, false};
+        boolean[] spacecraftMassConstrained = {false, true, false, false, false, false};
+        boolean[] synergyConstrained = {false, true, false, false, false, false};
 
         boolean[][] heuristicsConstrained = new boolean[6][6];
         for (int i = 0; i < 6; i++) {
@@ -106,8 +107,8 @@ public class MOEARun {
             }
         }
 
-        int numCPU = 4;
-        int numRuns = 21;
+        int numCPU = 1;
+        int numRuns = 1;
         pool = Executors.newFixedThreadPool(numCPU);
         ecs = new ExecutorCompletionService<>(pool);
 
@@ -137,21 +138,30 @@ public class MOEARun {
         double mutationProbability;
         BaseParams params;
         AbstractArchitectureEvaluator evaluator;
+        HashMap<String, String[]> instrumentSynergyMap;
+        HashMap<String, String[]> interferingInstrumentsMap;
         if (assigningProblem) {
             mutationProbability = 1. / 60.;
             params = new ClimateCentricAssigningParams(resourcesPath, "CRISP-ATTRIBUTES","test", "normal");
-            evaluator = new ArchitectureEvaluator(considerFeasibility, dcThreshold, massThreshold, packEffThreshold);
+
+            instrumentSynergyMap = getInstrumentSynergyNameMap(params);
+            interferingInstrumentsMap = getInstrumentInterferenceNameMap(params);
+
+            evaluator = new ArchitectureEvaluator(considerFeasibility, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold);
         } else {
             mutationProbability = 1. / 24.; // Based on the 12 instruments for the ClimateCentric Problem
             params = new ClimateCentricPartitioningParams(resourcesPath, "CRISP-ATTRIBUTES", "test", "normal");
-            evaluator = new seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator(considerFeasibility, dcThreshold, massThreshold, packEffThreshold);
+
+            instrumentSynergyMap = getInstrumentSynergyNameMap(params);
+            interferingInstrumentsMap = getInstrumentInterferenceNameMap(params);
+
+            evaluator = new seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator(considerFeasibility, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold);
         }
         ArchitectureEvaluationManager evaluationManager = new ArchitectureEvaluationManager(params, evaluator);
         evaluationManager.init(numCPU);
         properties.setDouble("mutationProbability", mutationProbability);
 
-        HashMap<String, String[]> instrumentSynergyMap = getInstrumentSynergyNameMap(params);
-        HashMap<String, String[]> interferingInstrumentsMap = getInstrumentInterferenceNameMap(params);
+
 
         Initialization initialization = null;
 
@@ -184,16 +194,20 @@ public class MOEARun {
             // Problem class
             AbstractProblem satelliteProblem;
             if (assigningProblem) {
-                satelliteProblem = new AssigningProblem(new int[]{1}, params.getProblemName(), evaluationManager, params, dcThreshold, massThreshold, packEffThreshold, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
+                satelliteProblem = new AssigningProblem(new int[]{1}, params.getProblemName(), evaluationManager, params, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
             } else {
-                satelliteProblem = new PartitioningProblem(params.getProblemName(), evaluationManager, params, dcThreshold, massThreshold, packEffThreshold, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
+                satelliteProblem = new PartitioningProblem(params.getProblemName(), evaluationManager, params, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
             }
 
             // Initial population
             if (dutyCycleConstrained[2] || instrumentOrbitRelationsConstrained[2] || interferenceConstrained[2] || packingEfficiencyConstrained[2] || spacecraftMassConstrained[2] || synergyConstrained[2]) {
                 System.out.println("Biased Initialization not programmed yet");
             } else {
-                initialization = new RandomInitialization(satelliteProblem, popSize);
+                if (assigningProblem) {
+                    initialization = new RandomInitialization(satelliteProblem, popSize);
+                } else {
+                    initialization = new RandomPartitioningAndAssigning(popSize, (PartitioningProblem) satelliteProblem, params.getInstrumentList(), params.getOrbitList());
+                }
             }
 
             // Initialize the population
@@ -216,19 +230,19 @@ public class MOEARun {
             Variation repairSynergy;
 
             if (assigningProblem) {
-                repairDutyCycle = new RepairDutyCycleAssigning(dcThreshold, 1, params, moveInstrument, (AssigningProblem) satelliteProblem, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator);
-                repairInstrumentOrbitRelations = new RepairInstrumentOrbitAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, params, moveInstrument);
-                repairInterference = new RepairInterferenceAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, params, (AssigningProblem) satelliteProblem, interferingInstrumentsMap, moveInstrument);
-                repairPackingEfficiency = new RepairPackingEfficiencyAssigning(packEffThreshold, 1, params, moveInstrument, (AssigningProblem) satelliteProblem, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator);
-                repairMass = new RepairMassAssigning(massThreshold, 1, params, moveInstrument, (AssigningProblem) satelliteProblem, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator);
-                repairSynergy = new RepairSynergyAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, params, (AssigningProblem) satelliteProblem, interferingInstrumentsMap, moveInstrument);
+                repairDutyCycle = new CompoundVariation(new RepairDutyCycleAssigning(dcThreshold, 1, params, moveInstrument, (AssigningProblem) satelliteProblem, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator), new BitFlip(mutationProbability));
+                repairInstrumentOrbitRelations = new CompoundVariation(new RepairInstrumentOrbitAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, params, (AssigningProblem) satelliteProblem, moveInstrument), new BitFlip(mutationProbability));
+                repairInterference = new CompoundVariation(new RepairInterferenceAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, params, (AssigningProblem) satelliteProblem, interferingInstrumentsMap, moveInstrument), new BitFlip(mutationProbability));
+                repairPackingEfficiency = new CompoundVariation(new RepairPackingEfficiencyAssigning(packEffThreshold, 1, params, moveInstrument, (AssigningProblem) satelliteProblem, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator), new BitFlip(mutationProbability));
+                repairMass = new CompoundVariation(new RepairMassAssigning(massThreshold, 1, params, moveInstrument, (AssigningProblem) satelliteProblem, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator), new BitFlip(mutationProbability));
+                repairSynergy = new CompoundVariation(new RepairSynergyAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, params, (AssigningProblem) satelliteProblem, interferingInstrumentsMap, moveInstrument), new BitFlip(mutationProbability));
             } else {
-                repairDutyCycle = new RepairDutyCyclePartitioning(dcThreshold, 1, params, (PartitioningProblem) satelliteProblem, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator);
-                repairInstrumentOrbitRelations = new RepairInstrumentOrbitPartitioning(1, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator, params);
-                repairInterference = new RepairInterferencePartitioning(1, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator, params, (PartitioningProblem) satelliteProblem, interferingInstrumentsMap);
-                repairPackingEfficiency = new RepairPackingEfficiencyPartitioning(packEffThreshold, 1, params, (PartitioningProblem) satelliteProblem, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator);
-                repairMass = new RepairMassPartitioning(massThreshold, 1, params, (PartitioningProblem) satelliteProblem, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator);
-                repairSynergy = new RepairSynergyPartitioning(1, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator, params, (PartitioningProblem) satelliteProblem, instrumentSynergyMap);
+                repairDutyCycle = new CompoundVariation(new RepairDutyCyclePartitioning(dcThreshold, 1, params, (PartitioningProblem) satelliteProblem, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator), new PartitioningMutation(mutationProbability, params));
+                repairInstrumentOrbitRelations = new CompoundVariation(new RepairInstrumentOrbitPartitioning(1, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator, params, (PartitioningProblem) satelliteProblem), new PartitioningMutation(mutationProbability, params));
+                repairInterference = new CompoundVariation(new RepairInterferencePartitioning(1, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator, params, (PartitioningProblem) satelliteProblem, interferingInstrumentsMap), new PartitioningMutation(mutationProbability, params));
+                repairPackingEfficiency = new CompoundVariation(new RepairPackingEfficiencyPartitioning(packEffThreshold, 1, params, (PartitioningProblem) satelliteProblem, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator), new PartitioningMutation(mutationProbability, params));
+                repairMass = new CompoundVariation(new RepairMassPartitioning(massThreshold, 1, params, (PartitioningProblem) satelliteProblem, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator), new PartitioningMutation(mutationProbability, params));
+                repairSynergy = new CompoundVariation(new RepairSynergyPartitioning(1, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator, params, (PartitioningProblem) satelliteProblem, instrumentSynergyMap), new PartitioningMutation(mutationProbability, params));
             }
 
             Variation[] heuristicOperators ={repairDutyCycle, repairInstrumentOrbitRelations, repairInterference, repairPackingEfficiency, repairMass, repairSynergy};

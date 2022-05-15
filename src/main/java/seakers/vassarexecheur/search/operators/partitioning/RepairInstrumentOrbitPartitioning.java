@@ -10,6 +10,7 @@ import jess.Rete;
 import org.moeaframework.core.variable.BinaryVariable;
 import seakers.architecture.util.IntegerVariable;
 import seakers.vassarexecheur.search.problems.partitioning.PartitioningArchitecture;
+import seakers.vassarexecheur.search.problems.partitioning.PartitioningProblem;
 import seakers.vassarheur.BaseParams;
 import seakers.vassarheur.QueryBuilder;
 import seakers.vassarexecheur.search.problems.assigning.AssigningArchitecture;
@@ -51,13 +52,19 @@ public class RepairInstrumentOrbitPartitioning implements Variation {
 
     //private final PRNG pprng;
 
+    /**
+     * Assigning Problem used to evaluate architectures
+     */
+    private PartitioningProblem problem;
+
     private final BaseParams params;
 
-    public RepairInstrumentOrbitPartitioning(int numChanges, ResourcePool resourcePool, ArchitectureEvaluator evaluator, BaseParams params) {
+    public RepairInstrumentOrbitPartitioning(int numChanges, ResourcePool resourcePool, ArchitectureEvaluator evaluator, BaseParams params, PartitioningProblem problem) {
         this.numberOfChanges = numChanges;
         this.resourcePool = resourcePool;
         this.evaluator = evaluator;
         this.params = params;
+        this.problem = problem;
         //this.pprng = new PRNG();
     }
 
@@ -69,89 +76,71 @@ public class RepairInstrumentOrbitPartitioning implements Variation {
     @Override
     public Solution[] evolve(Solution[] solutions) {
         PartitioningArchitecture parent = (PartitioningArchitecture) solutions[0];
+        if (parent.getSatellitePayloads() != null) {
+            AbstractArchitecture arch_abs = problem.getAbstractArchitecture(parent);
 
-        int numPartitioningVariables = params.getNumInstr();
-        int numAssignmentVariables = params.getNumInstr();
+            Resource res = resourcePool.getResource();
+            MatlabFunctions m = res.getM();
+            Rete rete = res.getRete();
+            QueryBuilder queryBuilder = res.getQueryBuilder();
 
-        int[] instrumentPartitioning = new int[numPartitioningVariables];
-        int[] orbitAssignment = new int[numAssignmentVariables];
+            evaluator.assertMissions(params, rete, arch_abs, m);
+            ArrayList<Fact> satellites = queryBuilder.makeQuery("MANIFEST::Satellite");
 
-        for (int i = 0; i < numPartitioningVariables; i++) {
-            instrumentPartitioning[i] = ((IntegerVariable) parent.getVariable(i)).getValue();
+            //// METHOD 1 - Get payloads and orbits from Satellite facts
+            ArrayList<ArrayList<String>> payloads = new ArrayList<>();
+            ArrayList<String> orbits = new ArrayList<>();
+            try {
+                payloads = getSatellitePayloadsFromSatelliteFacts(rete, satellites);
+                orbits = getSatelliteOrbitsFromSatelliteFacts(rete, satellites);
+            } catch (JessException e) {
+                e.printStackTrace();
+            }
+
+            //// METHOD 2 - Get payloads and satellites from inherent methods
+            //ArrayList<ArrayList<String>> payloads = parent.getSatellitePayloads();
+            //ArrayList<String> orbits = parent.getSatelliteOrbits();
+
+            ArrayList<String> instrumentList = new ArrayList<>(Arrays.asList(params.getInstrumentList()));
+            //ArrayList<String> orbitList = new ArrayList<>(Arrays.asList(params.getOrbitList()));
+
+            ArrayList<Fact> instrumentFacts = queryBuilder.makeQuery("DATABASE::Instrument");
+
+            // Find the valid instrument moves that can be made
+            ArrayList<ArrayList<Integer>> candidateInstrumentMoves = getValidMoves(rete, satellites, instrumentFacts, instrumentList);
+
+            // Make the required moves at random
+            int numberOfMoves = 0;
+            while ((numberOfMoves < numberOfChanges) && (candidateInstrumentMoves.size() != 0)) {
+                int selectedMoveIndex = PRNG.nextInt(candidateInstrumentMoves.size());
+                ArrayList<Integer> selectedMove = candidateInstrumentMoves.get(selectedMoveIndex);
+                String selectedRemovalOrbit = orbits.get(selectedMove.get(1));
+
+                // Remove instrument from selected satellite
+                String selectedInstrument = instrumentList.get(selectedMove.get(0));
+                ArrayList<String> removalOrbitPayload = payloads.get(selectedMove.get(1));
+                removalOrbitPayload.remove(selectedInstrument);
+
+                // Update payloads
+                payloads.set(selectedMove.get(1), removalOrbitPayload);
+
+                // Add instrument to selected satellite
+                ArrayList<String> additionOrbitPayload = payloads.get(selectedMove.get(2));
+                additionOrbitPayload.add(selectedInstrument);
+
+                // Update payloads
+                payloads.set(selectedMove.get(2), additionOrbitPayload);
+
+                numberOfMoves += 1;
+                candidateInstrumentMoves.remove(selectedMoveIndex);
+            }
+            this.resourcePool.freeResource(res);
+            PartitioningArchitecture child = getArchitectureFromPayloadsAndOrbits(payloads, orbits);
+
+            return new Solution[]{child};
+        } else {
+            return new Solution[]{parent};
         }
-
-        for (int i = 0; i < numAssignmentVariables; i++) {
-            orbitAssignment[i] = ((IntegerVariable) parent.getVariable(numPartitioningVariables + i)).getValue();
-        }
-
-        // Check constraint
-        double constraint = 1.0;
-        if (!isFeasible(instrumentPartitioning, orbitAssignment)) {
-            constraint = 0.0;
-        }
-        parent.setConstraint(0, constraint);
-
-        AbstractArchitecture arch_abs = new Architecture(instrumentPartitioning, orbitAssignment, 1, params);
-
-        Resource res = resourcePool.getResource();
-        MatlabFunctions m = res.getM();
-        Rete rete = res.getRete();
-        QueryBuilder queryBuilder = res.getQueryBuilder();
-
-        evaluator.assertMissions(params, rete, arch_abs, m);
-        ArrayList<Fact> satellites = queryBuilder.makeQuery("MANIFEST::Satellite");
-
-        //// METHOD 1 - Get payloads and orbits from Satellite facts
-        ArrayList<ArrayList<String>> payloads = new ArrayList<>();
-        ArrayList<String> orbits = new ArrayList<>();
-        try {
-            payloads = getSatellitePayloadsFromSatelliteFacts(rete, satellites);
-            orbits = getSatelliteOrbitsFromSatelliteFacts(rete, satellites);
-        } catch (JessException e) {
-            e.printStackTrace();
-        }
-
-        //// METHOD 2 - Get payloads and satellites from inherent methods
-        //ArrayList<ArrayList<String>> payloads = parent.getSatellitePayloads();
-        //ArrayList<String> orbits = parent.getSatelliteOrbits();
-
-        ArrayList<String> instrumentList = new ArrayList<>(Arrays.asList(params.getInstrumentList()));
-        //ArrayList<String> orbitList = new ArrayList<>(Arrays.asList(params.getOrbitList()));
-
-        ArrayList<Fact> instrumentFacts = queryBuilder.makeQuery("DATABASE::Instrument");
-
-        // Find the valid instrument moves that can be made
-        ArrayList<ArrayList<Integer>> candidateInstrumentMoves = getValidMoves(rete, satellites, instrumentFacts, instrumentList);
-
-        // Make the required moves at random
-        int numberOfMoves = 0;
-        while ((numberOfMoves < numberOfChanges) && (candidateInstrumentMoves.size() != 0)) {
-            int selectedMoveIndex = PRNG.nextInt(candidateInstrumentMoves.size());
-            ArrayList<Integer> selectedMove = candidateInstrumentMoves.get(selectedMoveIndex);
-            String selectedRemovalOrbit = orbits.get(selectedMove.get(1));
-
-            // Remove instrument from selected satellite
-            String selectedInstrument = instrumentList.get(selectedMove.get(0));
-            ArrayList<String> removalOrbitPayload = payloads.get(selectedMove.get(1));
-            removalOrbitPayload.remove(selectedInstrument);
-
-            // Update payloads
-            payloads.set(selectedMove.get(1), removalOrbitPayload);
-
-            // Add instrument to selected satellite
-            ArrayList<String> additionOrbitPayload = payloads.get(selectedMove.get(2));
-            additionOrbitPayload.add(selectedInstrument);
-
-            // Update payloads
-            payloads.set(selectedMove.get(2), additionOrbitPayload);
-
-            numberOfMoves += 1;
-            candidateInstrumentMoves.remove(selectedMoveIndex);
-        }
-        this.resourcePool.freeResource(res);
-        PartitioningArchitecture child = getArchitectureFromPayloadsAndOrbits(payloads, orbits);
-
-        return new Solution[]{child};
     }
 
     private ArrayList<ArrayList<Integer>> getValidMoves (Rete r, ArrayList<Fact> allSatellites, ArrayList<Fact> allInstruments, ArrayList<String> listOfInstruments) {
@@ -335,7 +324,8 @@ public class RepairInstrumentOrbitPartitioning implements Variation {
         ArrayList<String> instrumentList = new ArrayList<>(Arrays.asList(params.getInstrumentList()));
         ArrayList<String> orbitList = new ArrayList<>(Arrays.asList(params.getOrbitList()));
 
-        PartitioningArchitecture arch = new PartitioningArchitecture(instrumentList.size(), orbitList.size(), 2, params);
+        PartitioningArchitecture arch = new PartitioningArchitecture(instrumentList.size(), orbitList.size(), 2, params); // ADD HEURISTIC OBJECTIVES AND CONSTRAINTS
+        int partitionIndex = 0;
 
         for (int i = 0; i < currentOrbits.size(); i++) {
             ArrayList<String> currentOrbitPayloads = currentPayloads.get(i);
@@ -343,20 +333,25 @@ public class RepairInstrumentOrbitPartitioning implements Variation {
             for (int j = 0; j < currentOrbitPayloads.size(); j++) {
                 int payloadIndex = instrumentList.indexOf(currentOrbitPayloads.get(j));
 
-                IntegerVariable instrVar = new IntegerVariable(i, 0, instrumentList.size()-1);
+                IntegerVariable instrVar = new IntegerVariable(partitionIndex, 0, instrumentList.size()-1);
                 arch.setVariable(payloadIndex, instrVar);
             }
 
-            int orbitIndex = orbitList.indexOf(currentOrbits.get(i));
+            if (currentOrbitPayloads.size() != 0) {
+                int orbitIndex = orbitList.indexOf(currentOrbits.get(i));
 
-            IntegerVariable orbitVar = new IntegerVariable(orbitIndex, 0, instrumentList.size()-1);
-            arch.setVariable(instrumentList.size()+i, orbitVar);
+                IntegerVariable orbitVar = new IntegerVariable(orbitIndex, -1, orbitList.size()-1);
+                arch.setVariable(instrumentList.size()+partitionIndex, orbitVar);
+
+                partitionIndex += 1;
+            }
         }
 
-        IntegerVariable noOrbitVar = new IntegerVariable(-1, -1, -1);
-        for (int k = 0; k < instrumentList.size()-currentOrbits.size(); k++) {
-            arch.setVariable(instrumentList.size()+currentOrbits.size()+k, noOrbitVar);
-        }
+        //// NOT REQUIRED SINCE PARTITIONING ARCHITECTURE IS INITIALIZED WITH ALL ASSIGNING VARIABLES AS -1
+        //IntegerVariable noOrbitVar = new IntegerVariable(-1, -1, orbitList.size()-1);
+        //for (int k = 0; k < instrumentList.size()-currentOrbits.size(); k++) {
+            //arch.setVariable(instrumentList.size()+currentOrbits.size()+k, noOrbitVar);
+        //}
 
         return arch;
     }

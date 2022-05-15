@@ -15,6 +15,7 @@ import seakers.vassarexecheur.search.operators.partitioning.PartitioningCrossove
 import seakers.vassarexecheur.search.operators.partitioning.PartitioningMutation;
 import seakers.vassarexecheur.search.problems.partitioning.PartitioningArchitecture;
 import seakers.vassarexecheur.search.problems.partitioning.PartitioningProblem;
+import seakers.vassarheur.BaseParams;
 import seakers.vassarheur.evaluation.AbstractArchitectureEvaluator;
 import seakers.vassarheur.evaluation.ArchitectureEvaluationManager;
 import seakers.vassarheur.problems.PartitioningAndAssigning.Architecture;
@@ -116,7 +117,10 @@ public class GenerateForMetricsStudyPartitioning {
 
         ClimateCentricPartitioningParams params = new ClimateCentricPartitioningParams(resourcesPath, "CRISP-ATTRIBUTES", "test", "normal");
 
-        AbstractArchitectureEvaluator evaluator = new ArchitectureEvaluator(considerFeasibility, dcThreshold, massThreshold, packEffThreshold);
+        HashMap<String, String[]> instrumentSynergyMap = getInstrumentSynergyNameMap(params);
+        HashMap<String, String[]> interferingInstrumentsMap = getInstrumentInterferenceNameMap(params);
+
+        AbstractArchitectureEvaluator evaluator = new ArchitectureEvaluator(considerFeasibility, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold);
         ArchitectureEvaluationManager evaluationManager = new ArchitectureEvaluationManager(params, evaluator);
         evaluationManager.init(numCpus);
 
@@ -130,7 +134,7 @@ public class GenerateForMetricsStudyPartitioning {
 
                 for (int i = 0; i < numRuns; i++) {
 
-                    PartitioningProblem problem = new PartitioningProblem(params.getProblemName(), evaluationManager, params, dcThreshold, massThreshold, packEffThreshold, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
+                    PartitioningProblem problem = new PartitioningProblem(params.getProblemName(), evaluationManager, params, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
 
                     switch (initializationMode) {
                         case InitializeRandom:
@@ -215,7 +219,7 @@ public class GenerateForMetricsStudyPartitioning {
                 break;
 
             case RandomPopulation:
-                PartitioningProblem problem = new PartitioningProblem(params.getProblemName(), evaluationManager, params, dcThreshold, massThreshold, packEffThreshold, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
+                PartitioningProblem problem = new PartitioningProblem(params.getProblemName(), evaluationManager, params, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
 
                 switch (randomMode) {
                     case FullyRandom:
@@ -469,6 +473,54 @@ public class GenerateForMetricsStudyPartitioning {
             arch.setVariable(params.getNumInstr() + q, var);
         }
         return arch;
+    }
+
+    /**
+     * Creates instrument synergy map used to compute the instrument synergy violation heuristic (only formulated for the
+     * Climate Centric problem for now) (added by roshansuresh)
+     * @param params
+     * @return Instrument synergy hashmap
+     */
+    protected static HashMap<String, String[]> getInstrumentSynergyNameMap(BaseParams params) {
+        HashMap<String, String[]> synergyNameMap = new HashMap<>();
+        if (params.getProblemName().equalsIgnoreCase("ClimateCentric")) {
+            synergyNameMap.put("ACE_ORCA", new String[]{"DESD_LID", "GACM_VIS", "ACE_POL", "HYSP_TIR", "ACE_LID"});
+            synergyNameMap.put("DESD_LID", new String[]{"ACE_ORCA", "ACE_LID", "ACE_POL"});
+            synergyNameMap.put("GACM_VIS", new String[]{"ACE_ORCA", "ACE_LID"});
+            synergyNameMap.put("HYSP_TIR", new String[]{"ACE_ORCA", "POSTEPS_IRS"});
+            synergyNameMap.put("ACE_POL", new String[]{"ACE_ORCA", "DESD_LID"});
+            synergyNameMap.put("ACE_LID", new String[]{"ACE_ORCA", "CNES_KaRIN", "DESD_LID", "GACM_VIS"});
+            synergyNameMap.put("POSTEPS_IRS", new String[]{"HYSP_TIR"});
+            synergyNameMap.put("CNES_KaRIN", new String[]{"ACE_LID"});
+        }
+        else {
+            System.out.println("Synergy Map for current problem not formulated");
+        }
+        return synergyNameMap;
+    }
+
+    /**
+     * Creates instrument interference map used to compute the instrument interference violation heuristic (only formulated for the
+     * Climate Centric problem for now)
+     * @param params
+     * @return Instrument interference hashmap
+     */
+    protected static HashMap<String, String[]> getInstrumentInterferenceNameMap(BaseParams params) {
+        HashMap<String, String[]> interferenceNameMap = new HashMap<>();
+        if (params.getProblemName().equalsIgnoreCase("ClimateCentric")) {
+            interferenceNameMap.put("ACE_LID", new String[]{"ACE_CPR", "DESD_SAR", "CLAR_ERB", "GACM_SWIR"});
+            interferenceNameMap.put("ACE_CPR", new String[]{"ACE_LID", "DESD_SAR", "CNES_KaRIN", "CLAR_ERB", "ACE_POL", "ACE_ORCA", "GACM_SWIR"});
+            interferenceNameMap.put("DESD_SAR", new String[]{"ACE_LID", "ACE_CPR"});
+            interferenceNameMap.put("CLAR_ERB", new String[]{"ACE_LID", "ACE_CPR"});
+            interferenceNameMap.put("CNES_KaRIN", new String[]{"ACE_CPR"});
+            interferenceNameMap.put("ACE_POL", new String[]{"ACE_CPR"});
+            interferenceNameMap.put("ACE_ORCA", new String[]{"ACE_CPR"});
+            interferenceNameMap.put("GACM_SWIR", new String[]{"ACE_LID", "ACE_CPR"});
+        }
+        else {
+            System.out.println("Interference Map fpr current problem not formulated");
+        }
+        return interferenceNameMap;
     }
 
     public enum RunMode{

@@ -120,26 +120,29 @@ public class CheckHeuristicImprovement2 {
 
         if (assigningProblem) {
             assigningParams = new ClimateCentricAssigningParams(resourcesPath, "CRISP-ATTRIBUTES","test", "normal");
-            evaluator = new ArchitectureEvaluator(considerFeasibility, dcThreshold, massThreshold, packEffThreshold);
+
+            instrumentSynergyMap = getInstrumentSynergyNameMap(assigningParams);
+            interferingInstrumentsMap = getInstrumentInterferenceNameMap(assigningParams);
+
+            evaluator = new ArchitectureEvaluator(considerFeasibility, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold);
             numberOfSatellites = assigningParams.getNumSatellites()[0];
 
             evaluationManager = new ArchitectureEvaluationManager(assigningParams, evaluator);
             evaluationManager.init(numCPU);
 
-            instrumentSynergyMap = getInstrumentSynergyNameMap(assigningParams);
-            interferingInstrumentsMap = getInstrumentInterferenceNameMap(assigningParams);
+
         } else {
             partitionParams = new ClimateCentricPartitioningParams(resourcesPath, "CRISP-ATTRIBUTES", "test", "normal");
-            evaluator = new seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator(considerFeasibility, dcThreshold, massThreshold, packEffThreshold);
+
+            instrumentSynergyMap = getInstrumentSynergyNameMap(partitionParams);
+            interferingInstrumentsMap = getInstrumentInterferenceNameMap(partitionParams);
+
+            evaluator = new seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator(considerFeasibility, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold);
             numberOfSatellites = partitionParams.getNumSatellites()[0];
 
             evaluationManager = new ArchitectureEvaluationManager(partitionParams, evaluator);
             evaluationManager.init(numCPU);
-
-            instrumentSynergyMap = getInstrumentSynergyNameMap(partitionParams);
-            interferingInstrumentsMap = getInstrumentInterferenceNameMap(partitionParams);
         }
-
 
         String fileSaveNameProblem  = "";
         if (assigningProblem) {
@@ -171,9 +174,9 @@ public class CheckHeuristicImprovement2 {
         // Problem class
         AbstractProblem satelliteProblem;
         if (assigningProblem) {
-            satelliteProblem = new AssigningProblem(new int[]{1}, assigningParams.getProblemName(), evaluationManager, assigningParams, dcThreshold, massThreshold, packEffThreshold, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
+            satelliteProblem = new AssigningProblem(new int[]{1}, assigningParams.getProblemName(), evaluationManager, assigningParams, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
         } else {
-            satelliteProblem = new PartitioningProblem(partitionParams.getProblemName(), evaluationManager, partitionParams, dcThreshold, massThreshold, packEffThreshold, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
+            satelliteProblem = new PartitioningProblem(partitionParams.getProblemName(), evaluationManager, partitionParams, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
         }
 
         // Initialize heuristic operators
@@ -186,14 +189,14 @@ public class CheckHeuristicImprovement2 {
 
         if (assigningProblem) {
             repairDutyCycle = new RepairDutyCycleAssigning(dcThreshold, 1, assigningParams, moveMode, (AssigningProblem) satelliteProblem, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator);
-            repairInstrumentOrbitRelations = new RepairInstrumentOrbitAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, assigningParams, moveMode);
+            repairInstrumentOrbitRelations = new RepairInstrumentOrbitAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, assigningParams, (AssigningProblem) satelliteProblem, moveMode);
             repairInterference = new RepairInterferenceAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, assigningParams, (AssigningProblem) satelliteProblem, interferingInstrumentsMap, moveMode);
             repairPackingEfficiency = new RepairPackingEfficiencyAssigning(packEffThreshold, 1, assigningParams, moveMode, (AssigningProblem) satelliteProblem, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator);
             repairMass = new RepairMassAssigning(massThreshold, 1, assigningParams, moveMode, (AssigningProblem) satelliteProblem, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator);
             repairSynergy = new RepairSynergyAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, assigningParams, (AssigningProblem) satelliteProblem, interferingInstrumentsMap, moveMode);
         } else {
             repairDutyCycle = new RepairDutyCyclePartitioning(dcThreshold, 1, partitionParams, (PartitioningProblem) satelliteProblem, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator);
-            repairInstrumentOrbitRelations = new RepairInstrumentOrbitPartitioning(1, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator, partitionParams);
+            repairInstrumentOrbitRelations = new RepairInstrumentOrbitPartitioning(1, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator, partitionParams, (PartitioningProblem) satelliteProblem);
             repairInterference = new RepairInterferencePartitioning(1, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator, partitionParams, (PartitioningProblem) satelliteProblem, interferingInstrumentsMap);
             repairPackingEfficiency = new RepairPackingEfficiencyPartitioning(packEffThreshold, 1, partitionParams, (PartitioningProblem) satelliteProblem, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator);
             repairMass = new RepairMassPartitioning(massThreshold, 1, partitionParams, (PartitioningProblem) satelliteProblem, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator);
