@@ -115,7 +115,7 @@ public class RepairDutyCyclePartitioning implements Variation {
                     if (childPayloads.get(candidateSatelliteIndex).isEmpty()) {
                         //childOrbits.remove(satelliteIndex);
                         //childPayloads.remove(satelliteIndex);
-                        candidateSatellites.remove(candidateSatelliteIndex);
+                        candidateSatellites.remove(satelliteIndex);
                         continue;
                     }
                     else {
