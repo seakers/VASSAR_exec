@@ -96,6 +96,8 @@ public class RepairMassAssigning implements Variation {
     @Override
     public Solution[] evolve(Solution[] solutions) {
         AssigningArchitecture parent = (AssigningArchitecture) solutions[0];
+        //System.out.println("parent");
+        //System.out.println(parent.getBitString());
         ArrayList<ArrayList<String>> payloads = parent.getSatellitePayloads();
         ArrayList<String> orbits = parent.getSatelliteOrbits();
 
@@ -119,11 +121,17 @@ public class RepairMassAssigning implements Variation {
         if ((candidateSatellites.size() > 0) && (candidateSatellites.size() >= xInstruments)) {
             int moveCount = 0;
             int satelliteIndex;
+            //int continueCounter = 0;
             while ((moveCount < xInstruments) && (candidateSatellites.size() > 0)) {
                 if (moveInstruments) {
+                    //System.out.println("Move Count: " + moveCount);
                     int maxFeasibleTries = 3;
                     boolean feasibleMove = false;
                     int numberOfFeasibleTries = 0;
+
+                    if (candidateSatellites.isEmpty()) {
+                        break;
+                    }
 
                     satelliteIndex = PRNG.nextInt(candidateSatellites.size());
                     int candidateSatelliteIndex = candidateSatellites.get(satelliteIndex);
@@ -131,7 +139,7 @@ public class RepairMassAssigning implements Variation {
                     if (childPayloads.get(candidateSatelliteIndex).isEmpty()) {
                         //childOrbits.remove(satelliteIndex);
                         //childPayloads.remove(satelliteIndex);
-                        moveCount--;
+                        candidateSatellites.remove(candidateSatelliteIndex);
                         continue;
                     }
                     else {
@@ -140,7 +148,7 @@ public class RepairMassAssigning implements Variation {
                         String payload = childPayloads.get(candidateSatelliteIndex).get(payloadIndex);
                         ArrayList<Integer> candidatePayloadSatellites = getCandidateSatellitesForPayload(childPayloads, payload);
                         if (candidatePayloadSatellites.size() == 0) {
-                            moveCount--;
+                            //System.out.println("Candidate Payload cannot be moved to other satellites");
                             continue;
                         }
                         //for (int m = 0; m < childPayloads.get(satelliteIndex).size(); m++) {
@@ -150,15 +158,26 @@ public class RepairMassAssigning implements Variation {
                         //}
                         childPayloads.get(candidateSatelliteIndex).remove(payload);
                         String originalPayload = payload;
+                        //System.out.println("Move choice");
+                        //System.out.println("Removal satellite: " + candidateSatelliteIndex);
+                        //System.out.println("Payload: " + payload);
 
                         // Add payload to different satellite
                         int candidatePayloadSatelliteIndex = PRNG.nextInt(candidatePayloadSatellites.size());
                         int candidatePayloadSatellite = candidatePayloadSatellites.get(candidatePayloadSatelliteIndex);
 
+                        boolean breakNest = false;
+
                         while ((!feasibleMove) && (numberOfFeasibleTries < maxFeasibleTries)) {
+                            //System.out.println("Number of feasible tries: " + numberOfFeasibleTries);
+                            if (breakNest) {
+                                moveCount--;
+                                break;
+                            }
 
                             //ArrayList<String> candidateSatellitePayload = childPayloads.get(candidatePayloadSatelliteIndex);
                             //candidateSatellitePayload.add(payload);
+                            //System.out.println("Addition satellite: " + candidatePayloadSatellite);
                             childPayloads.get(candidatePayloadSatellite).add(payload);
                             //childPayloads.set(satelliteIndex, currentPayloads);
 
@@ -187,12 +206,15 @@ public class RepairMassAssigning implements Variation {
 
                             if (childMass < (double) parent.getAttribute("SpMassViolation")) {
                                 feasibleMove = true;
+                                //System.out.println("Feasible Move");
                             } else {
+                                //System.out.println("Infeasible Move");
                                 // Remove the added instrument to try again
                                 childPayloads.get(candidatePayloadSatellite).remove(payload);
                                 candidatePayloadSatellites.remove(candidatePayloadSatelliteIndex);
 
                                 if (candidatePayloadSatellites.size() == 0) { // If the candidate instrument cannot be added to other satellites, choose a different instrument from the same satellite and start again
+                                    //System.out.println("New Payload choice");
                                     childPayloads.get(candidateSatelliteIndex).add(originalPayload);
 
                                     ArrayList<String> candidateSatellitePayloads = new ArrayList<>();
@@ -201,14 +223,16 @@ public class RepairMassAssigning implements Variation {
 
                                     if (candidateSatellitePayloads.size() == 0) { // Try again with a different instrument after replacing original instrument in its satellite
                                         // move counter is not reset to prevent infinite looping over all instruments in all satellites  (limits to moveCounter)
-                                        break;
+                                        breakNest = true;
+                                        continue;
                                     }
 
                                     int newPayloadIndex = PRNG.nextInt(candidateSatellitePayloads.size());
                                     payload = candidateSatellitePayloads.get(newPayloadIndex);
+                                    //System.out.println("New Payload choice: " + payload);
                                     candidatePayloadSatellites = getCandidateSatellitesForPayload(childPayloads, payload);
                                     if (candidatePayloadSatellites.size() == 0) {
-                                        moveCount--;
+                                        breakNest = true;
                                         continue;
                                     }
                                     originalPayload = payload;
@@ -219,6 +243,7 @@ public class RepairMassAssigning implements Variation {
 
                                 candidatePayloadSatelliteIndex = PRNG.nextInt(candidatePayloadSatellites.size());
                                 candidatePayloadSatellite = candidatePayloadSatellites.get(candidatePayloadSatelliteIndex);
+                                //System.out.println("New Satellite choice: " + candidatePayloadSatellite);
 
                                 numberOfFeasibleTries++;
                                 if (numberOfFeasibleTries == maxFeasibleTries) {
@@ -234,7 +259,6 @@ public class RepairMassAssigning implements Variation {
                     if (childPayloads.get(candidateSatelliteIndex).isEmpty()) {
                         //childOrbits.remove(satelliteIndex);
                         //childPayloads.remove(satelliteIndex);
-                        moveCount--;
                         continue;
                     }
 
@@ -243,7 +267,6 @@ public class RepairMassAssigning implements Variation {
                     String payload = childPayloads.get(candidateSatelliteIndex).get(payloadIndex);
                     ArrayList<Integer> candidatePayloadSatellites = getCandidateSatellitesForPayload(childPayloads, payload);
                     if (candidatePayloadSatellites.size() == 0) {
-                        moveCount--;
                         continue;
                     }
                     //for (int m = 0; m < childPayloads.get(satelliteIndex).size(); m++) {

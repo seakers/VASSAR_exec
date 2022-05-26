@@ -55,6 +55,9 @@
       </state>
     </system>
   </component>
+  <component name="FavoritesManager">
+    <favorites_list name="vassarexecheur" />
+  </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
@@ -114,31 +117,24 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="GenerateForMetricsStudyPartitioning" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="seakers.vassarexecheur.search.GenerateForMetricsStudyPartitioning" />
-      <module name="vassarexecheur.main" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="seakers.vassarexecheur.search.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="MOEARun" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="seakers.vassarexecheur.search.MOEARun" />
-      <module name="vassarexecheur.main" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="seakers.vassarexecheur.search.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
+    <configuration name="VASSAR_exec_heur [buildDependents]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="buildDependents" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <GradleScriptDebugEnabled>true</GradleScriptDebugEnabled>
+      <method v="2" />
     </configuration>
     <configuration name="VASSAR_exec_heur [build]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
@@ -178,13 +174,32 @@
       <GradleScriptDebugEnabled>true</GradleScriptDebugEnabled>
       <method v="2" />
     </configuration>
+    <configuration name="VASSAR_exec_heur [jar]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="jar" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <GradleScriptDebugEnabled>true</GradleScriptDebugEnabled>
+      <method v="2" />
+    </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Gradle.VASSAR_exec_heur [clean]" />
         <item itemvalue="Gradle.VASSAR_exec_heur [build]" />
-        <item itemvalue="Application.GenerateForMetricsStudyPartitioning" />
-        <item itemvalue="Application.MOEARun" />
+        <item itemvalue="Gradle.VASSAR_exec_heur [clean]" />
         <item itemvalue="Application.CheckOperators" />
+        <item itemvalue="Gradle.VASSAR_exec_heur [buildDependents]" />
+        <item itemvalue="Gradle.VASSAR_exec_heur [jar]" />
       </list>
     </recent_temporary>
   </component>
@@ -200,63 +215,6 @@
       <updated>1616006120698</updated>
     </task>
     <servers />
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/seakers/vassarexecheur/search/operators/assigning/RepairMassAssigning.java</url>
-          <line>97</line>
-          <option name="timeStamp" value="141" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/seakers/vassarexecheur/search/operators/assigning/RepairMassAssigning.java</url>
-          <line>118</line>
-          <option name="timeStamp" value="142" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/seakers/vassarexecheur/search/operators/assigning/RepairPackingEfficiencyAssigning.java</url>
-          <line>96</line>
-          <option name="timeStamp" value="143" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/seakers/vassarexecheur/search/operators/assigning/RepairPackingEfficiencyAssigning.java</url>
-          <line>117</line>
-          <option name="timeStamp" value="144" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/seakers/vassarexecheur/search/operators/assigning/RepairInterferenceAssigning.java</url>
-          <line>86</line>
-          <option name="timeStamp" value="158" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/seakers/vassarexecheur/search/AssigningSearch.java</url>
-          <line>59</line>
-          <option name="timeStamp" value="161" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/seakers/vassarexecheur/search/AssigningSearch.java</url>
-          <line>43</line>
-          <option name="timeStamp" value="162" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
-    <watches-manager>
-      <configuration name="Remote">
-        <watch expression="((HashMap)satIndex2InstrumentSet).entrySet().toArray()[2]" custom="java.util.HashMap" />
-        <watch expression="assigning1" />
-        <watch expression="((HashMap)satIndex2InstrumentSet).entrySet().toArray()[2]" language="JAVA" custom="java.util.HashMap" />
-        <watch expression="inputs" />
-        <watch expression="satIndex2Orbit" />
-        <watch expression="partitioning" />
-        <watch expression="orbitsUsed" />
-        <watch expression="currentPayloads" />
-        <watch expression="instrumentFacts" />
-        <watch expression="candidateInstrumentMoves.get(5)" />
-        <watch expression="selectedMove" />
-        <watch expression="arch.variables" />
-      </configuration>
-    </watches-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/vassarexecheur$MOEARun.ic" NAME="MOEARun Coverage Results" MODIFIED="1652112326034" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false">

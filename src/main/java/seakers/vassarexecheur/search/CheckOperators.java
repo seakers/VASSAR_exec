@@ -36,13 +36,13 @@ public class CheckOperators {
 
     public static void main(String[] args) {
         // Define problem parameters
-        boolean assigningProblem = true; // True -> assigning problem, False -> partitioning problem
+        boolean assigningProblem = false; // True -> assigning problem, False -> partitioning problem
 
         boolean moveInstrument = true; // For the assignment operators only
 
         double dcThreshold = 0.5;
         double massThreshold = 3000.0; // [kg]
-        double packEffThreshold = 0.4;
+        double packEffThreshold = 0.7;
         boolean considerFeasibility = true;
 
         int numCPU = 1;
@@ -120,7 +120,7 @@ public class CheckOperators {
         }
 
         // Initialize heuristic operator
-        String operatorChoice = "instrOrbit"; // can be dutyCycle, instrOrbit, interInstr, packEff, spMass or instrSyn
+        String operatorChoice = "packEff"; // can be dutyCycle, instrOrbit, interInstr, packEff, spMass or instrSyn
         Variation operator = null;
         String attribute = "";
 
@@ -187,7 +187,7 @@ public class CheckOperators {
         // Initialize architecture
         Solution child = null;
         if (assigningProblem) {
-            String architectureString = "101110110101110101101110010111011011011101110110101101011101";
+            String architectureString = "101110110101010101111110100101010000111001110110101101101101";
             AssigningArchitecture arch = new AssigningArchitecture(new int[]{1}, params.getNumInstr(), params.getNumOrbits(), 2);
             arch.setVariablesfromString(architectureString);
 

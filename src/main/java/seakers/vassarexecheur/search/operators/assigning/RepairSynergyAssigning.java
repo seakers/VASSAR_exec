@@ -92,6 +92,8 @@ public class RepairSynergyAssigning implements Variation {
     @Override
     public Solution[] evolve(Solution[] sols) {
         AssigningArchitecture parent = (AssigningArchitecture) sols[0];
+        //System.out.println("parent");
+        //System.out.println(parent.getBitString());
         AbstractArchitecture arch_abs = problem.getAbstractArchitecture(parent);
 
         Resource res = resourcePool.getResource();
@@ -124,12 +126,13 @@ public class RepairSynergyAssigning implements Variation {
         // Make choices of instrument move randomly
         int numberOfMoves = 0;
         while ((numberOfMoves < numberOfChanges) && (possibleUniqueInstrumentMoves.size() > 0)) {
-
+            //System.out.println("Move Count: " + numberOfMoves);
             int numberOfTries = 0;
             boolean feasibleMove = false;
             while ((!feasibleMove) && (numberOfTries < 5) && (possibleUniqueInstrumentMoves.size() > 0)) {
                 int moveChoiceIndex = PRNG.nextInt(possibleUniqueInstrumentMoves.size());
                 ArrayList<Integer> moveChoice = possibleUniqueInstrumentMoves.get(moveChoiceIndex);
+                //System.out.println("Selected Move: " + moveChoice);
 
                 // Update payloads
                 ArrayList<String> removalOrbitPayload = payloads.get(moveChoice.get(1));

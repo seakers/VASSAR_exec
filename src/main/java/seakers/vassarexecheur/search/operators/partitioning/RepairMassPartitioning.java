@@ -113,7 +113,7 @@ public class RepairMassPartitioning implements Variation {
                     if (childPayloads.get(candidateSatelliteIndex).isEmpty()) {
                         //childOrbits.remove(satelliteIndex);
                         //childPayloads.remove(satelliteIndex);
-                        moveCount--;
+                        candidateSatellites.remove(candidateSatelliteIndex);
                         continue;
                     }
                     else {
@@ -122,7 +122,6 @@ public class RepairMassPartitioning implements Variation {
                         String payload = childPayloads.get(candidateSatelliteIndex).get(payloadIndex);
                         ArrayList<Integer> candidatePayloadSatellites = getCandidateSatellitesForPayload(childPayloads, payload);
                         if (candidatePayloadSatellites.size() == 0) {
-                            moveCount--;
                             continue;
                         }
                         //for (int m = 0; m < childPayloads.get(satelliteIndex).size(); m++) {
@@ -137,7 +136,13 @@ public class RepairMassPartitioning implements Variation {
                         int candidatePayloadSatelliteIndex = PRNG.nextInt(candidatePayloadSatellites.size());
                         int candidatePayloadSatellite = candidatePayloadSatellites.get(candidatePayloadSatelliteIndex);
 
+                        boolean breakNest = false;
+
                         while ((!feasibleMove) && (numberOfFeasibleTries < maxFeasibleTries)) {
+                            if (breakNest) {
+                                moveCount--;
+                                break;
+                            }
 
                             //ArrayList<String> candidateSatellitePayload = childPayloads.get(candidatePayloadSatelliteIndex);
                             //candidateSatellitePayload.add(payload);
@@ -183,14 +188,16 @@ public class RepairMassPartitioning implements Variation {
 
                                     if (candidateSatellitePayloads.size() == 0) { // Try again with a different instrument after replacing original instrument in its satellite
                                         // move counter is not reset to prevent infinite looping over all instruments in all satellites  (limits to moveCounter)
-                                        break;
+                                        breakNest = true;
+                                        continue;
                                     }
 
                                     int newPayloadIndex = PRNG.nextInt(candidateSatellitePayloads.size());
                                     payload = candidateSatellitePayloads.get(newPayloadIndex);
                                     candidatePayloadSatellites = getCandidateSatellitesForPayload(childPayloads, payload);
                                     if (candidatePayloadSatellites.size() == 0) {
-                                        break;
+                                        breakNest = true;
+                                        continue;
                                     }
                                     originalPayload = payload;
                                     childPayloads.get(candidateSatelliteIndex).remove(payload);

@@ -107,8 +107,8 @@ public class MOEARun {
             }
         }
 
-        int numCPU = 1;
-        int numRuns = 1;
+        int numCPU = 4;
+        int numRuns = 4;
         pool = Executors.newFixedThreadPool(numCPU);
         ecs = new ExecutorCompletionService<>(pool);
 
@@ -117,7 +117,7 @@ public class MOEARun {
 
         double dcThreshold = 0.5;
         double massThreshold = 3000.0; // [kg]
-        double packEffThreshold = 0.4;
+        double packEffThreshold = 0.7;
         boolean considerFeasibility = true;
 
         // Get time

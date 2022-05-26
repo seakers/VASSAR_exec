@@ -90,6 +90,8 @@ public class RepairInstrumentOrbitAssigning implements Variation {
     @Override
     public Solution[] evolve(Solution[] sols) {
         AssigningArchitecture parent = (AssigningArchitecture) sols[0];
+        //System.out.println("parent");
+        //System.out.println(parent.getBitString());
 
         AbstractArchitecture arch_abs = problem.getAbstractArchitecture(parent);
 
@@ -126,8 +128,10 @@ public class RepairInstrumentOrbitAssigning implements Variation {
         // Make the required moves at random
         int numberOfMoves = 0;
         while ((numberOfMoves < numberOfChanges) && (candidateInstrumentMoves.size() != 0)) {
+            //System.out.println("Move Count: " + numberOfMoves);
             int selectedMoveIndex = PRNG.nextInt(candidateInstrumentMoves.size());
             ArrayList<Integer> selectedMove = candidateInstrumentMoves.get(selectedMoveIndex);
+            //System.out.println("Selected Move: " + selectedMove);
             String selectedRemovalOrbit = orbits.get(selectedMove.get(1));
 
             // Remove instrument from selected satellite
