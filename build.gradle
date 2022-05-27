@@ -18,12 +18,12 @@ dependencies {
     compile 'seakers:vassarheur:1.0'
     compile 'seakers:engineer-server:1.0'
     compile 'seakers:mopAOS:1.0'
-    compile files('C:\\SEAK Lab\\SEAK Lab Github\\VASSAR\\jess.jar') // for workstation
-    //compile files('C:\\Users\\rosha\\Documents\\SEAK Lab Github\\VASSAR\\jess.jar') // for laptop
+    //compile files('C:\\SEAK Lab\\SEAK Lab Github\\VASSAR\\jess.jar') // for workstation
+    compile files('C:\\Users\\rosha\\Documents\\SEAK Lab Github\\VASSAR\\jess.jar') // for laptop
     //compile 'seakers:EOSS:1.0'
     compile 'seakers:EOSSAIAA:1.0-SNAPSHOT'
-    compile files('C:\\SEAK Lab\\SEAK Lab Github\\EOSS\\EOSS-AIAA\\java\\mopAOS.jar') // for workstation
-    //compile files('C:\\Users\\rosha\\Documents\\SEAK Lab Github\\EOSS\\java\\mopAOS.jar') // for laptop
+    //compile files('C:\\SEAK Lab\\SEAK Lab Github\\EOSS\\EOSS-AIAA\\java\\mopAOS.jar') // for workstation
+    compile files('C:\\Users\\rosha\\Documents\\SEAK Lab Github\\EOSS\\java\\mopAOS.jar') // for laptop
     //compile 'seakers:mopAOS:1.0'
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }

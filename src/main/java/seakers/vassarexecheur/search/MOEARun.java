@@ -64,7 +64,7 @@ public class MOEARun {
         // Define problem parameters
         String csvPath = System.getProperty("user.dir");
 
-        boolean assigningProblem = true; // True -> assigning problem, False -> partitioning problem
+        boolean assigningProblem = false; // True -> assigning problem, False -> partitioning problem
 
         boolean moveInstrument = true; // For the assignment operators only (keep as true for consistency with partitioning operators)
 
@@ -108,7 +108,7 @@ public class MOEARun {
         }
 
         int numCPU = 4;
-        int numRuns = 4;
+        int numRuns = 36;
         pool = Executors.newFixedThreadPool(numCPU);
         ecs = new ExecutorCompletionService<>(pool);
 
@@ -117,7 +117,7 @@ public class MOEARun {
 
         double dcThreshold = 0.5;
         double massThreshold = 3000.0; // [kg]
-        double packEffThreshold = 0.7;
+        double packEffThreshold = 0.4;
         boolean considerFeasibility = true;
 
         // Get time
@@ -132,7 +132,8 @@ public class MOEARun {
         double crossoverProbability = 1.0;
         properties.setDouble("crossoverProbability", crossoverProbability);
 
-        String resourcesPath = "C:\\SEAK Lab\\SEAK Lab Github\\VASSAR\\VASSAR_resources-heur";
+        //String resourcesPath = "C:\\SEAK Lab\\SEAK Lab Github\\VASSAR\\VASSAR_resources-heur";
+        String resourcesPath = "C:\\Users\\rosha\\Documents\\SEAK Lab Github\\VASSAR\\VASSAR_resources-heur";
         String savePath = System.getProperty("user.dir") + File.separator + "results";
 
         double mutationProbability;
