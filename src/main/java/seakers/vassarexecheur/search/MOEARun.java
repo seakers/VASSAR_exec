@@ -65,7 +65,7 @@ public class MOEARun {
         // Define problem parameters
         String csvPath = System.getProperty("user.dir");
 
-        boolean assigningProblem = true; // True -> assigning problem, False -> partitioning problem
+        boolean assigningProblem = false; // True -> assigning problem, False -> partitioning problem
 
         boolean moveInstrument = true; // For the assignment operators only (keep as true for consistency with partitioning operators)
 
@@ -108,8 +108,8 @@ public class MOEARun {
             }
         }
 
-        int numCPU = 4;
-        int numRuns = 15;
+        int numCPU = 1;
+        int numRuns = 1;
         pool = Executors.newFixedThreadPool(numCPU);
         ecs = new ExecutorCompletionService<>(pool);
 

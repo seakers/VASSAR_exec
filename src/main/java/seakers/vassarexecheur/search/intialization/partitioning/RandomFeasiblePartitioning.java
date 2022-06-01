@@ -26,7 +26,7 @@ public class RandomFeasiblePartitioning implements Initialization {
         for (int i = 0; i < populationSize; i++) {
             Solution newSolution = problem.newSolution();
 
-            int maxPartition = 0;
+            int maxPartition = 1;
 
             IntegerVariable newVar = new IntegerVariable(0, 0, instrumentList.length-1);
             newSolution.setVariable(0, newVar);
@@ -34,8 +34,8 @@ public class RandomFeasiblePartitioning implements Initialization {
                 int currentInstrumentPartition = PRNG.nextInt(maxPartition + 1);
                 newVar = new IntegerVariable(currentInstrumentPartition, 0, instrumentList.length-1);
                 newSolution.setVariable(j, newVar);
-                if (currentInstrumentPartition > maxPartition) {
-                    maxPartition = currentInstrumentPartition;
+                if (currentInstrumentPartition == maxPartition) {
+                    maxPartition++;
                 }
             }
 
