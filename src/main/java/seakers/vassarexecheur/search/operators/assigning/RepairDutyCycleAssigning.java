@@ -104,22 +104,41 @@ public class RepairDutyCycleAssigning implements Variation {
         AssigningArchitecture parent = (AssigningArchitecture) solutions[0];
         //System.out.println("parent");
         //System.out.println(parent.getBitString());
-        ArrayList<ArrayList<String>> payloads = parent.getSatellitePayloads();
-        ArrayList<String> orbits = parent.getSatelliteOrbits();
-
-        ArrayList<ArrayList<String>> childPayloads = new ArrayList<>(payloads);
-        ArrayList<String> childOrbits = new ArrayList<>(orbits);
-
-        ArrayList<ArrayList<Double>> operatorParameters = parent.getOperatorParameters(); //{duty cycle, wet mass, packing efficiency} for each satellite
-        ArrayList<Integer> candidateSatellites = new ArrayList<>();
+        AbstractArchitecture arch_abs = problem.getAbstractArchitecture(parent);
 
         Resource res = resourcePool.getResource();
         MatlabFunctions m = res.getM();
         Rete rete = res.getRete();
         QueryBuilder queryBuilder = res.getQueryBuilder();
 
-        for (int i = 0; i < payloads.size(); i++) {
-            if ((operatorParameters.get(i).get(0)) < threshold) {
+        evaluator.assertMissions(params, rete, arch_abs, m);
+        ArrayList<Fact> satellites = queryBuilder.makeQuery("MANIFEST::Satellite");
+
+        //// METHOD 1 - Get payloads and orbits from Satellite facts
+        ArrayList<ArrayList<String>> payloads = new ArrayList<>();
+        ArrayList<String> orbits = new ArrayList<>();
+        try {
+            payloads = getSatellitePayloadsFromSatelliteFacts(rete, satellites);
+            orbits = getSatelliteOrbitsFromSatelliteFacts(rete, satellites);
+        } catch (JessException e) {
+            e.printStackTrace();
+        }
+
+        //ArrayList<ArrayList<String>> payloads = parent.getSatellitePayloads();
+        //ArrayList<String> orbits = parent.getSatelliteOrbits();
+
+        ArrayList<String> allOrbits = addEmptyOrbits(orbits, params.getOrbitList());
+        ArrayList<ArrayList<String>> allPayloads = addEmptyPayloads(payloads, orbits, params.getOrbitList());
+
+        ArrayList<ArrayList<String>> childPayloads = new ArrayList<>(allPayloads);
+        ArrayList<String> childOrbits = new ArrayList<>(allOrbits);
+
+        ArrayList<ArrayList<Double>> operatorParameters = parent.getOperatorParameters(); //{duty cycle, wet mass, packing efficiency} for each satellite
+        ArrayList<ArrayList<Double>> allOperatorParameters = orderOperatorParameters(operatorParameters, orbits, params.getOrbitList());
+        ArrayList<Integer> candidateSatellites = new ArrayList<>();
+
+        for (int i = 0; i < allPayloads.size(); i++) {
+            if ((allOperatorParameters.get(i).get(0)) < threshold) {
                 candidateSatellites.add(i);
             }
         }
@@ -292,6 +311,49 @@ public class RepairDutyCycleAssigning implements Variation {
         return new Solution[]{child};
     }
 
+    private ArrayList<String> addEmptyOrbits(ArrayList<String> archOrbits, String[] orbitsList) {
+        ArrayList<String> allOrbits = new ArrayList<>();
+        for (int i = 0; i < orbitsList.length; i++) {
+            if (archOrbits.contains(orbitsList[i])) {
+                int orbitIndex = archOrbits.indexOf(orbitsList[i]);
+                allOrbits.add(archOrbits.get(orbitIndex));
+            } else {
+                allOrbits.add(orbitsList[i]);
+            }
+        }
+        return allOrbits;
+    }
+
+    private ArrayList<ArrayList<String>> addEmptyPayloads(ArrayList<ArrayList<String>> archPayloads, ArrayList<String> archOrbits, String[] orbitsList) {
+        ArrayList<ArrayList<String>> allPayloads = new ArrayList<>();
+        for (int i = 0; i < orbitsList.length; i++) {
+            if (archOrbits.contains(orbitsList[i])) {
+                int orbitIndex = archOrbits.indexOf(orbitsList[i]);
+                allPayloads.add(archPayloads.get(orbitIndex));
+            } else {
+                allPayloads.add(new ArrayList<>());
+            }
+        }
+        return allPayloads;
+    }
+
+    private ArrayList<ArrayList<Double>> orderOperatorParameters(ArrayList<ArrayList<Double>> archOperatorParameters, ArrayList<String> archOrbits, String[] orbitsList) {
+        ArrayList<ArrayList<Double>> allOperatorParameters = new ArrayList<>();
+        for (int i = 0; i < orbitsList.length; i++) {
+            if (archOrbits.contains(orbitsList[i])) {
+                int orbitIndex = archOrbits.indexOf(orbitsList[i]);
+                allOperatorParameters.add(archOperatorParameters.get(orbitIndex));
+            } else {
+                ArrayList<Double> emptyOrbitParameters = new ArrayList<>();
+                emptyOrbitParameters.add(1.0); // duty cycle
+                emptyOrbitParameters.add(0.0); // wet mass in kg
+                emptyOrbitParameters.add(1.0); // packing efficiency
+                allOperatorParameters.add(emptyOrbitParameters);
+            }
+        }
+        return allOperatorParameters;
+    }
+
     @Override
     public int getArity() {
         return 1;
@@ -342,5 +404,27 @@ public class RepairDutyCycleAssigning implements Variation {
         return arch;
     }
 
+    private ArrayList<ArrayList<String>> getSatellitePayloadsFromSatelliteFacts (Rete r, ArrayList<Fact> allSatellites) throws JessException {
+        ArrayList<ArrayList<String>> satellitePayloads = new ArrayList<>();
+        for (int i = 0; i < allSatellites.size(); i++) {
+            ArrayList<String> currentSatellitePayload = new ArrayList<>();
+            ValueVector instrumentsString = allSatellites.get(i).getSlotValue("instruments").listValue(r.getGlobalContext());
+            for (int j = 0; j < instrumentsString.size(); j++) {
+                currentSatellitePayload.add(instrumentsString.get(j).stringValue(r.getGlobalContext()));
+            }
+            satellitePayloads.add(currentSatellitePayload);
+        }
+        return satellitePayloads;
+    }
+
+    private ArrayList<String> getSatelliteOrbitsFromSatelliteFacts (Rete r, ArrayList<Fact> allSatellites) throws JessException {
+        ArrayList<String> satelliteOrbits = new ArrayList<>();
+
+        for (int i = 0; i < allSatellites.size(); i++) {
+            satelliteOrbits.add(allSatellites.get(i).getSlotValue("orbit-string").stringValue(r.getGlobalContext()));
+        }
+
+        return satelliteOrbits;
+    }
 
 }

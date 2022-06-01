@@ -27,8 +27,8 @@ import java.util.concurrent.*;
 public class GenerateForMetricsStudyAssigning {
 
     public static void main(String[] args) {
-        int numRuns = 30;
-        int numCpus = 1;
+        int numRuns = 10;
+        int numCpus = 4;
 
         RunMode runMode  = RunMode.EpsilonMOEA;
         InitializationMode initializationMode = InitializationMode.InitializeRandom;

@@ -98,16 +98,6 @@ public class RepairPackingEfficiencyAssigning implements Variation {
 
         AbstractArchitecture arch_abs = problem.getAbstractArchitecture(parent);
 
-        ArrayList<ArrayList<String>> payloads = parent.getSatellitePayloads();
-        ArrayList<String> orbits = parent.getSatelliteOrbits();
-
-        ArrayList<ArrayList<String>> childPayloads = new ArrayList<>(payloads);
-        ArrayList<String> childOrbits = new ArrayList<>(orbits);
-
-        ArrayList<ArrayList<Double>> operatorParameters = parent.getOperatorParameters(); //{duty cycle, wet mass, packing efficiency} for each satellite
-        //ArrayList<Integer> candidateSatellites = new ArrayList<>();
-        //HashMap<Integer, Integer> satellitesFactToList = new HashMap<>();
-
         Resource res = resourcePool.getResource();
         MatlabFunctions m = res.getM();
         Rete rete = res.getRete();
@@ -123,6 +113,23 @@ public class RepairPackingEfficiencyAssigning implements Variation {
 
         ArrayList<Fact> satellites = queryBuilder.makeQuery("MANIFEST::Satellite");
         ArrayList<Fact> instrumentFacts = queryBuilder.makeQuery("DATABASE::Instrument");
+
+        ArrayList<ArrayList<String>> payloads = new ArrayList<>();
+        ArrayList<String> orbits = new ArrayList<>();
+        try {
+            payloads = getSatellitePayloadsFromSatelliteFacts(rete, satellites);
+            orbits = getSatelliteOrbitsFromSatelliteFacts(rete, satellites);
+        } catch (JessException e) {
+            e.printStackTrace();
+        }
+
+        //ArrayList<ArrayList<String>> payloads = parent.getSatellitePayloads();
+        //ArrayList<String> orbits = parent.getSatelliteOrbits();
+
+        ArrayList<ArrayList<String>> childPayloads = new ArrayList<>(payloads);
+        ArrayList<String> childOrbits = new ArrayList<>(orbits);
+
+        ArrayList<ArrayList<Double>> operatorParameters = parent.getOperatorParameters(); //{duty cycle, wet mass, packing efficiency} for each satellite
 
         // Store satellites which violate heuristic
         //for (int i = 0; i < payloads.size(); i++) {
@@ -147,7 +154,7 @@ public class RepairPackingEfficiencyAssigning implements Variation {
 
         // Determine worst heuristic violating satellite
         int worstSatelliteListIndex = getWorstSatellite(operatorParameters, payloads);
-        System.out.println("Worst Satellite: " + worstSatelliteListIndex);
+        //System.out.println("Worst Satellite: " + worstSatelliteListIndex);
         if (worstSatelliteListIndex != -1) {
             int worstSatelliteFactIndex = 0;
             for (int j = 0; j < satellites.size(); j++) {
@@ -355,5 +362,28 @@ public class RepairPackingEfficiencyAssigning implements Variation {
             }
         }
         return arch;
+    }
+
+    private ArrayList<ArrayList<String>> getSatellitePayloadsFromSatelliteFacts (Rete r, ArrayList<Fact> allSatellites) throws JessException {
+        ArrayList<ArrayList<String>> satellitePayloads = new ArrayList<>();
+        for (int i = 0; i < allSatellites.size(); i++) {
+            ArrayList<String> currentSatellitePayload = new ArrayList<>();
+            ValueVector instrumentsString = allSatellites.get(i).getSlotValue("instruments").listValue(r.getGlobalContext());
+            for (int j = 0; j < instrumentsString.size(); j++) {
+                currentSatellitePayload.add(instrumentsString.get(j).stringValue(r.getGlobalContext()));
+            }
+            satellitePayloads.add(currentSatellitePayload);
+        }
+        return satellitePayloads;
+    }
+
+    private ArrayList<String> getSatelliteOrbitsFromSatelliteFacts (Rete r, ArrayList<Fact> allSatellites) throws JessException {
+        ArrayList<String> satelliteOrbits = new ArrayList<>();
+
+        for (int i = 0; i < allSatellites.size(); i++) {
+            satelliteOrbits.add(allSatellites.get(i).getSlotValue("orbit-string").stringValue(r.getGlobalContext()));
+        }
+
+        return satelliteOrbits;
     }
 }

@@ -30,6 +30,7 @@ import seakers.aos.operatorselectors.OperatorSelector;
 import seakers.aos.operatorselectors.ProbabilityMatching;
 import seakers.vassarexecheur.search.constrainthandling.KnowledgeStochasticRanking;
 import seakers.vassarexecheur.search.intialization.SynchronizedMersenneTwister;
+import seakers.vassarexecheur.search.intialization.partitioning.RandomFeasiblePartitioning;
 import seakers.vassarexecheur.search.intialization.partitioning.RandomPartitioningAndAssigning;
 import seakers.vassarexecheur.search.operators.assigning.*;
 import seakers.vassarexecheur.search.operators.partitioning.*;
@@ -64,7 +65,7 @@ public class MOEARun {
         // Define problem parameters
         String csvPath = System.getProperty("user.dir");
 
-        boolean assigningProblem = false; // True -> assigning problem, False -> partitioning problem
+        boolean assigningProblem = true; // True -> assigning problem, False -> partitioning problem
 
         boolean moveInstrument = true; // For the assignment operators only (keep as true for consistency with partitioning operators)
 
@@ -108,7 +109,7 @@ public class MOEARun {
         }
 
         int numCPU = 4;
-        int numRuns = 36;
+        int numRuns = 15;
         pool = Executors.newFixedThreadPool(numCPU);
         ecs = new ExecutorCompletionService<>(pool);
 
@@ -132,8 +133,8 @@ public class MOEARun {
         double crossoverProbability = 1.0;
         properties.setDouble("crossoverProbability", crossoverProbability);
 
-        //String resourcesPath = "C:\\SEAK Lab\\SEAK Lab Github\\VASSAR\\VASSAR_resources-heur";
-        String resourcesPath = "C:\\Users\\rosha\\Documents\\SEAK Lab Github\\VASSAR\\VASSAR_resources-heur";
+        String resourcesPath = "C:\\SEAK Lab\\SEAK Lab Github\\VASSAR\\VASSAR_resources-heur";
+        //String resourcesPath = "C:\\Users\\rosha\\Documents\\SEAK Lab Github\\VASSAR\\VASSAR_resources-heur";
         String savePath = System.getProperty("user.dir") + File.separator + "results";
 
         double mutationProbability;
@@ -207,7 +208,8 @@ public class MOEARun {
                 if (assigningProblem) {
                     initialization = new RandomInitialization(satelliteProblem, popSize);
                 } else {
-                    initialization = new RandomPartitioningAndAssigning(popSize, (PartitioningProblem) satelliteProblem, params.getInstrumentList(), params.getOrbitList());
+                    //initialization = new RandomPartitioningAndAssigning(popSize, (PartitioningProblem) satelliteProblem, params.getInstrumentList(), params.getOrbitList());
+                    initialization = new RandomFeasiblePartitioning(popSize, (PartitioningProblem) satelliteProblem, params.getInstrumentList(), params.getOrbitList());
                 }
             }
 
