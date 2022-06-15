@@ -17,7 +17,7 @@ file_loc = 'C:\\SEAK Lab\\SEAK Lab Github\\VASSAR\\VASSAR_exec_heur\\results\\'
 
 aos_heur_bools = [True, True, True, True, True, True] # [instrdc, instrorb, interinstr, packeff, spmass, instrsyn]
 
-#credit_assign = 2 # 0 -> offspring parent dominance, 1 -> set improvement dominance, 2 -> set contribution dominance
+credit_assign = 2 # 0 -> offspring parent dominance, 1 -> set improvement dominance, 2 -> set contribution dominance
 
 #run_num = 1 # run number of results to read
 num_runs = 30
@@ -50,11 +50,11 @@ else:
     if assigning_problem:
         operator_strings = ['RepairDutyCycleAssigning+BitFlip','RepairInstrumentOrbitAssigning+BitFlip','RepairInterferenceAssigning+BitFlip','RepairMassAssigning+BitFlip','RepairSynergyAssigning+BitFlip','OnePointCrossover+BitFlip']
     
-#filepath_cred = 'offspring parent dominance\\'
-#if credit_assign == 1:
-    #filepath_cred = 'set improvement dominance\\'
-#elif credit_assign == 2:
-    #filepath_cred = 'set contribution dominance\\'
+filepath_cred = 'offspring parent dominance\\'
+if credit_assign == 1:
+    filepath_cred = 'set improvement dominance\\'
+elif credit_assign == 2:
+    filepath_cred = 'set contribution dominance\\'
 
 pop_size = 300
 max_func_eval = 5000
@@ -107,7 +107,7 @@ def plot_values(val_mean_dict, val_std_dict, op_strings, labels, nfe_arr, ylab):
         plt.fill_between(nfe_arr, val_minus_err, val_plus_err, alpha=0.5)
     plt.xlabel('NFE')
     plt.ylabel(ylab)
-    plt.legend(loc="best")
+    plt.legend(labels, loc='upper center', bbox_to_anchor=(0.5,1.15), ncol=4, borderaxespad=0, prop={"size":12})
     plt.show()
 
 cred_vals = {}
@@ -115,13 +115,13 @@ qual_vals = {}
 
 ### Credit arrays for each operator for all runs
 for i in range(num_runs):
-    cred_filename = file_loc + filepath_prob + heurs_path + '\\' + 'emoea_' + str(i) + heurs + 'con1_' + filename_prob + '_credit.csv'
+    cred_filename = file_loc + filepath_prob + heurs_path + '\\' + filepath_cred + 'emoea_' + str(i) + heurs + 'con1_' + filename_prob + '_credit.csv'
     cred_vals_run = get_value_dicts_run(cred_filename, operator_strings, nfe_array)
     cred_vals[i] = cred_vals_run
             
 ### Quality arrays for each operator for all runs        
 for i in range(num_runs):
-    qual_filename = file_loc + filepath_prob + heurs_path + '\\' + 'emoea_' + str(i) + heurs + 'con1_' + filename_prob + '_qual.csv'
+    qual_filename = file_loc + filepath_prob + heurs_path + '\\' + filepath_cred + 'emoea_' + str(i) + heurs + 'con1_' + filename_prob + '_qual.csv'
     qual_vals_run = get_value_dicts_run(qual_filename, operator_strings, nfe_array)
     qual_vals[i] = qual_vals_run
 
@@ -165,8 +165,10 @@ for i in range(len(operator_strings)):
 ### Plot credits and quality values
 if all(aos_heur_bools):
     heur_labels = ['InstrDC','InstrOrb','InterInstr','PackEff','SpMass','InstrSyn','X+M']
+    colors = ['lime','red','cyan','yellow','blue','magenta','black']
 else:
     heur_labels = ['InstrDC','InstrOrb','InterInstr','SpMass','InstrSyn','X+M']
+    colors = ['lime','red','cyan','blue','magenta','black']
 
 # Credit plots
 plot_values(creds_arrays_mean, creds_arrays_std, operator_strings, heur_labels, nfe_array, 'Credit')

@@ -65,7 +65,7 @@ public class MOEARun {
         // Define problem parameters
         String csvPath = System.getProperty("user.dir");
 
-        boolean assigningProblem = false; // True -> assigning problem, False -> partitioning problem
+        boolean assigningProblem = true; // True -> assigning problem, False -> partitioning problem
 
         boolean moveInstrument = true; // For the assignment operators only (keep as true for consistency with partitioning operators)
 

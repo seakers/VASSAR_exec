@@ -15,7 +15,7 @@ file_loc = 'C:\\SEAK Lab\\SEAK Lab Github\\VASSAR\\VASSAR_exec_heur\\results\\'
 
 aos_heur_bools = [True, True, True, True, True, True] # [instrdc, instrorb, interinstr, packeff, spmass, instrsyn]
 
-#credit_assign = 2 # 0 -> offspring parent dominance, 1 -> set improvement dominance, 2 -> set contribution dominance
+credit_assign = 2 # 0 -> offspring parent dominance, 1 -> set improvement dominance, 2 -> set contribution dominance
 
 #run_num = 1 # run number of results to read
 num_runs = 30
@@ -48,11 +48,11 @@ else:
     if assigning_problem:
         operator_strings = ['RepairDutyCycleAssigning+BitFlip','RepairInstrumentOrbitAssigning+BitFlip','RepairInterferenceAssigning+BitFlip','RepairMassAssigning+BitFlip','RepairSynergyAssigning+BitFlip','OnePointCrossover+BitFlip']
     
-#filepath_cred = 'offspring parent dominance\\'
-#if credit_assign == 1:
-    #filepath_cred = 'set improvement dominance\\'
-#elif credit_assign == 2:
-    #filepath_cred = 'set contribution dominance\\'
+filepath_cred = 'offspring parent dominance\\'
+if credit_assign == 1:
+    filepath_cred = 'set improvement dominance\\'
+elif credit_assign == 2:
+    filepath_cred = 'set contribution dominance\\'
 
 pop_size = 300
 max_func_eval = 5000
@@ -89,7 +89,7 @@ def get_selection_histories_run(filename_sel, op_strings):
 ### Get operator selection histories for each run
 sel_hists_runs = {}
 for i in range(num_runs):
-    sel_filename = file_loc + filepath_prob + heurs_path + '\\' + 'emoea_' + str(i) + heurs + 'con1_' + filename_prob + '_hist.csv'
+    sel_filename = file_loc + filepath_prob + heurs_path + '\\' + filepath_cred + 'emoea_' + str(i) + heurs + 'con1_' + filename_prob + '_hist.csv'
     ops_hist_run = get_selection_histories_run(sel_filename, operator_strings)
     sel_hists_runs[i] = ops_hist_run
         
@@ -110,10 +110,10 @@ for i in range(len(operator_strings)):
 ### Plot selection frequencies as stacked bar graph
 if all(aos_heur_bools):
     heur_labels = ['InstrDC','InstrOrb','InterInstr','PackEff','SpMass','InstrSyn','X+M']
-    colors = ['lime','red','cyan','orange','yellow','magenta','black']
+    colors = ['lime','red','cyan','yellow','blue','magenta','black']
 else:
     heur_labels = ['InstrDC','InstrOrb','InterInstr','SpMass','InstrSyn','X+M']
-    colors = ['lime','red','cyan','yellow','magenta','black']
+    colors = ['lime','red','cyan','blue','magenta','black']
     
 fig = plt.figure()
 sel_freq_sum = sel_freq[operator_strings[0]]
@@ -126,5 +126,5 @@ plt.xlabel('NFE',fontsize=14)
 plt.ylabel('Selection Frequency',fontsize=14)
 plt.xticks(fontsize=14)
 plt.yticks(fontsize=14)
-plt.legend(heur_labels, loc='upper center', bbox_to_anchor=(0.5,1.15), ncol=3, borderaxespad=0, prop={"size":12})
+plt.legend(heur_labels, loc='upper center', bbox_to_anchor=(0.5,1.15), ncol=4, borderaxespad=0, prop={"size":12})
 plt.show()

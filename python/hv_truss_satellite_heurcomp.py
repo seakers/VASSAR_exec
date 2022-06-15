@@ -70,7 +70,7 @@ def get_array_element(array, index):
     return array[index]
 
 #### Determine csv filepath from given case type for one of the satellite problems
-def get_csv_filepath_satellite(instrdc_constrained, instrorb_constrained, interinstr_constrained, packeff_constrained, spmass_constrained, instrsyn_constrained, assigning, run_number):
+def get_csv_filepath_satellite(instrdc_constrained, instrorb_constrained, interinstr_constrained, packeff_constrained, spmass_constrained, instrsyn_constrained, cred_strat, assigning, run_number):
     # instrdc_constrained = [int_pen, AOS, bias_init, ACH] boolean array
     # instrorb_constrained = [int_pen, AOS, bias_init, ACH] boolean array
     # interinstr_constrained = [int_pen, AOS, bias_init, ACH] boolean array
@@ -121,8 +121,15 @@ def get_csv_filepath_satellite(instrdc_constrained, instrorb_constrained, interi
     filepath_moea = ''
     if (constr_count == len(heur_bools[0])):
         filepath_moea = 'Epsilon MOEA\\'
+        filepath_cred = ''
+    else:
+        filepath_cred = 'offspring parent dominance\\'
+        if cred_strat == 1:
+            filepath_cred = 'set improvement dominance\\'
+        elif cred_strat == 2:
+            filepath_cred = 'set contribution dominance\\'
         
-    return filepath + filepath_prob + filepath2 + filepath_moea + filename + str(run_number) + filename2 + filename_prob
+    return filepath + filepath_prob + filepath2 + filepath_moea + filepath_cred + filename + str(run_number) + filename2 + filename_prob
 
 #### Define NFE array for hypervolume computation (based on number of evaluations in optimization runs)
 np.set_printoptions(threshold=np.inf)
@@ -521,10 +528,10 @@ def plot_hypervolume_stats_allcases(hv_median_dict, hv_1q_dict, hv_3q_dict, nfe_
         
         #plt.plot(nfe_array, hv_1q_dict['case'+str(i)], '--', color=colour_array[i])#, label=casename_array[i]+' 1st Quartile')
         #plt.plot(nfe_array, hv_3q_dict['case'+str(i)], '--', color=colour_array[i])#, label=casename_array[i]+' 3rd Quartile')
-    plt.xlabel('Number of Function Evaluations',fontsize=14)
-    plt.ylabel('Hypervolume',fontsize=14)
-    plt.xticks(fontsize=14)
-    plt.yticks(fontsize=14)
+    plt.xlabel('Number of Function Evaluations',fontsize=13)
+    plt.ylabel('Hypervolume',fontsize=13)
+    plt.xticks(fontsize=13)
+    plt.yticks(fontsize=13)
     #plt.title(plot_title)
     plt.legend(loc='upper center', bbox_to_anchor=(0.5,1.10), ncol=3, borderaxespad=0, prop={"size":12})
     plt.show()
@@ -594,14 +601,14 @@ def compute_mann_whitney_Uvals(assigning_prob, hv_dict_allcases, nfe_array): # W
     return U_test_cases
 
 #### Define functions to compute and plot hypervolume for single case and all cases
-def hypervolume_computation_single_case(case_booleans, prob_assigning, run_nums, case_name):
+def hypervolume_computation_single_case(case_booleans, prob_assigning, cred_assign, run_nums, case_name):
     ## Computing the pareto fronts and normalization objectives for each run
     obj_norm_allruns = {}
     pf_allruns = {}
     max_f_evals_allruns = np.zeros(run_nums)
     for i in range(run_nums):
         print('Computing Pareto Fronts for run ' + str(i))
-        current_csvpath = get_csv_filepath_satellite(case_booleans[:4], case_booleans[4:8], case_booleans[8:12], case_booleans[12:16], case_booleans[16:20], case_booleans[20:24], prob_assigning, i)
+        current_csvpath = get_csv_filepath_satellite(case_booleans[:4], case_booleans[4:8], case_booleans[8:12], case_booleans[12:16], case_booleans[16:20], case_booleans[20:24], cred_assign, prob_assigning, i)
         heur_intpen_constr = [case_booleans[0], case_booleans[4], case_booleans[8], case_booleans[12]]
         pf_dict_i, obj_norm_full_i, max_fun_evals_i = extract_data_from_csv(current_csvpath, prob_assigning, heur_intpen_constr)
         pf_allruns['run'+str(i)] = pf_dict_i
@@ -634,7 +641,7 @@ def hypervolume_computation_single_case(case_booleans, prob_assigning, run_nums,
     plot_hypervolume_stats(hv_median_all, hv_1q_all, hv_3q_all, nfe_array, case_name+'_full')
     
     
-def hypervolume_computation_all_cases(case_bools_dict, prob_assigning, run_nums, marker_colours, alpha_vals, case_names, hv_thresh):
+def hypervolume_computation_all_cases(case_bools_dict, cred_assign, prob_assigning, run_nums, marker_colours, alpha_vals, case_names, hv_thresh):
     num_cases = len(case_bools_dict) # number of cases to compare 
 
     ## Computing the pareto fronts and normalization objectives for each run in each case
@@ -649,7 +656,7 @@ def hypervolume_computation_all_cases(case_bools_dict, prob_assigning, run_nums,
         max_f_evals_allruns = np.zeros(run_nums)
         for j in range(run_nums):
             print('Run '+str(j))
-            current_csvpath = get_csv_filepath_satellite(current_case_bools[:4], current_case_bools[4:8], current_case_bools[8:12], current_case_bools[12:16], current_case_bools[16:20], current_case_bools[20:24], prob_assigning, j)
+            current_csvpath = get_csv_filepath_satellite(current_case_bools[:4], current_case_bools[4:8], current_case_bools[8:12], current_case_bools[12:16], current_case_bools[16:20], current_case_bools[20:24], cred_assign, prob_assigning, j)
             #set_trace()
             heur_intpen_constr = [current_case_bools[0], current_case_bools[4], current_case_bools[8], current_case_bools[12]]
             pf_dict_j, obj_norm_full_j, max_fun_evals_j = extract_data_from_csv(current_csvpath, prob_assigning, heur_intpen_constr)
@@ -712,9 +719,9 @@ def plotting_all_cases(nfe_hv_attained_dict, hv_dict_med_allcases, hv_dict_1stq_
 cases_dict = {}
 assigning_problem = False
 num_runs = 30 # number of runs for each case
-threshold_hv = 0.8
+threshold_hv = 0.85
 
-#credit_assignment = 2 # 0 -> offspring parent dominance, 1 -> set improvement dominance, 2 -> set contribution dominance
+credit_assignment = 1 # 0 -> offspring parent dominance, 1 -> set improvement dominance, 2 -> set contribution dominance
 
 # bools = [int_pen_instrdc, AOS_instrdc, bias_init_instrdc, ACH_instrdc, int_pen_instrorb, AOS_instrorb, bias_init_instrorb, ACH_instrorb, int_pen_interinstr, AOS_interinstr, bias_init_interinstr, ACH_interinstr, int_pen_packeff, AOS_packeff, bias_init_packeff, ACH_packeff, int_pen_spmass, AOS_spmass, bias_init_spmass, ACH_spmass, int_pen_instrsyn, AOS_instrsyn, bias_init_instrsyn, ACH_instrsyn]
 case1_bools = [False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False] # Simple E-MOEA
@@ -739,7 +746,7 @@ else:
     
     alpha_values = [0.5,0.5] # change based on number of cases/visibility
 
-nfe_cdf_array, hv_dict_med_cases, hv_dict_1q_cases, hv_dict_3q_cases, Uvals_test, nfe_array_1 = hypervolume_computation_all_cases(cases_dict, assigning_problem, num_runs, line_colours, alpha_values, casenames, threshold_hv)
+nfe_cdf_array, hv_dict_med_cases, hv_dict_1q_cases, hv_dict_3q_cases, Uvals_test, nfe_array_1 = hypervolume_computation_all_cases(cases_dict, credit_assignment, assigning_problem, num_runs, line_colours, alpha_values, casenames, threshold_hv)
 
 ## Mann Whitney U values
 print("For optimization objectives")

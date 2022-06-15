@@ -6,7 +6,7 @@ clc
 %% Cases to consider for GA data
 random_data_bool = true;
 % Case 1 - Epsilon MOEA
-assign_case = false;
+assign_case = true;
 random_init = true;
 case_instrdc_bools = [false, false, false, false];
 case_instrorb_bools = [false, false, false, false];
