@@ -1,7 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="46c8bac3-9a98-4d2e-bede-3eb116d49ae3" name="Default Changelist" comment="" />
+    <list default="true" id="46c8bac3-9a98-4d2e-bede-3eb116d49ae3" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/python/HV_plot_averaged_allcases.png" beforeDir="false" afterPath="$PROJECT_DIR$/python/HV_plot_averaged_allcases.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/python/credit_and_quality_plots_satellite.py" beforeDir="false" afterPath="$PROJECT_DIR$/python/credit_and_quality_plots_satellite.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/python/frac_hv_attained_allcases.png" beforeDir="false" afterPath="$PROJECT_DIR$/python/frac_hv_attained_allcases.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/python/hv_truss_satellite_heurcomp.py" beforeDir="false" afterPath="$PROJECT_DIR$/python/hv_truss_satellite_heurcomp.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/python/selection_plots_satellite.py" beforeDir="false" afterPath="$PROJECT_DIR$/python/selection_plots_satellite.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/seakers/vassarexecheur/search/CheckHeuristicImprovement2.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/seakers/vassarexecheur/search/CheckHeuristicImprovement2.java" afterDir="false" />
+    </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

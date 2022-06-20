@@ -33,7 +33,7 @@ import java.util.*;
 
 /**
  * Checks to make sure each heuristic operator improves the heuristic satisfaction of a design. The csv file with the
- * architectures that don;t satisfy any heuristics is read and passed to all the repair operators. Then the heuristic
+ * architectures that don't satisfy any heuristics is read and passed to all the repair operators. Then the heuristic
  * violations before and after the operator manipulation is compared and saved to another csv.
  *
  * @author roshansuresh

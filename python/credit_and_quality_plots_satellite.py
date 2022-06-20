@@ -10,14 +10,15 @@ import csv
 import statistics
 import matplotlib.pyplot as plt
 
-assigning_problem = False
+assigning_problem = True
 
 ### Read the credit and quality csv files
-file_loc = 'C:\\SEAK Lab\\SEAK Lab Github\\VASSAR\\VASSAR_exec_heur\\results\\'
+file_loc = 'C:\\Users\\rosha\\Documents\\SEAK Lab Github\\VASSAR\\VASSAR_exec_heur\\results\\' # for laptop
+#file_loc = 'C:\\SEAK Lab\\SEAK Lab Github\\VASSAR\\VASSAR_exec_heur\\results\\' # for workstation
 
-aos_heur_bools = [True, True, True, True, True, True] # [instrdc, instrorb, interinstr, packeff, spmass, instrsyn]
+aos_heur_bools = [True, True, True, False, True, True] # [instrdc, instrorb, interinstr, packeff, spmass, instrsyn]
 
-credit_assign = 2 # 0 -> offspring parent dominance, 1 -> set improvement dominance, 2 -> set contribution dominance
+credit_assign = 1 # 0 -> offspring parent dominance, 1 -> set improvement dominance, 2 -> set contribution dominance
 
 #run_num = 1 # run number of results to read
 num_runs = 30

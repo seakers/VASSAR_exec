@@ -79,7 +79,8 @@ def get_csv_filepath_satellite(instrdc_constrained, instrorb_constrained, interi
     # instrsyn_constrained = [int_pen, AOS, bias_init, ACH] boolean array
     # assigning = True if assigning problem data is to be read, False if partitioning problem data is to be read
     
-    filepath = 'C:\\SEAK Lab\\SEAK Lab Github\\VASSAR\\VASSAR_exec_heur\\results\\'
+    #filepath = 'C:\\SEAK Lab\\SEAK Lab Github\\VASSAR\\VASSAR_exec_heur\\results\\' # for workstation
+    filepath = 'C:\\Users\\rosha\\Documents\\SEAK Lab Github\\VASSAR\\VASSAR_exec_heur\\results\\' # for laptop
     methods = ['Int Pen','AOS','Bias Init','ACH']
     heurs_list = ['Instrdc','Instrorb','Interinstr','Packeff','Spmass','Instrsyn']
     heur_abbrvs_list = ['d','o','i','p','m','s']
@@ -542,7 +543,7 @@ def compute_mann_whitney_Uvals(assigning_prob, hv_dict_allcases, nfe_array): # W
     
     if assigning_prob:
         ## For assigning problem
-        nfe_samples_array = [0, 250, 500, 750, 1000, 1500, 2000, 2500, 3000, 3500, 4000]
+        nfe_samples_array = [0, 500, 750, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000]
         n_samples = len(nfe_samples_array)
     else:
         ## For partitioning problem
@@ -717,7 +718,7 @@ def plotting_all_cases(nfe_hv_attained_dict, hv_dict_med_allcases, hv_dict_1stq_
 
 #### Comparing Simple E-MOEA with AOS - all heuristics and AOS - promising heuristics
 cases_dict = {}
-assigning_problem = False
+assigning_problem = True
 num_runs = 30 # number of runs for each case
 threshold_hv = 0.85
 
@@ -727,7 +728,7 @@ credit_assignment = 1 # 0 -> offspring parent dominance, 1 -> set improvement do
 case1_bools = [False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False] # Simple E-MOEA
 case2_bools = [False, True, False, False, False, True, False, False, False, True, False, False, False, True, False, False, False, True, False, False, False, True, False, False] #  AOS - all heuristics
 if assigning_problem:
-    case3_bools = [False, False, False, False, False, False, False, False, False, True, False, False, False, False, False, False, False, True, False, False] #  AOS - DutyCycle, InstrOrb, InterInstr, SpMass, Instrsyn
+    case3_bools = [False, True, False, False, False, True, False, False, False, True, False, False, False, False, False, False, False, True, False, False, False, True, False, False] #  AOS - DutyCycle, InstrOrb, InterInstr, SpMass, Instrsyn
     
     cases_dict['case1'] = case1_bools
     cases_dict['case2'] = case2_bools
