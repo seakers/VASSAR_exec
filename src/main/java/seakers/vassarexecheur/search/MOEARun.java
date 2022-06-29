@@ -32,6 +32,7 @@ import seakers.vassarexecheur.search.constrainthandling.KnowledgeStochasticRanki
 import seakers.vassarexecheur.search.intialization.SynchronizedMersenneTwister;
 import seakers.vassarexecheur.search.intialization.partitioning.RandomFeasiblePartitioning;
 import seakers.vassarexecheur.search.intialization.partitioning.RandomPartitioningAndAssigning;
+import seakers.vassarexecheur.search.intialization.partitioning.RandomPartitioningReadInitialization;
 import seakers.vassarexecheur.search.operators.assigning.*;
 import seakers.vassarexecheur.search.operators.partitioning.*;
 import seakers.vassarexecheur.search.problems.assigning.AssigningProblem;
@@ -67,7 +68,7 @@ public class MOEARun {
 
         boolean assigningProblem = true; // True -> assigning problem, False -> partitioning problem
 
-        boolean moveInstrument = true; // For the assignment operators only (keep as true for consistency with partitioning operators)
+        boolean moveInstrument = false; // For the assignment operators only (keep as true for consistency with partitioning operators)
 
         // Heuristic Enforcement Methods
         /**
@@ -108,8 +109,8 @@ public class MOEARun {
             }
         }
 
-        int numCPU = 1;
-        int numRuns = 1;
+        int numCPU = 4;
+        int numRuns = 20;
         pool = Executors.newFixedThreadPool(numCPU);
         ecs = new ExecutorCompletionService<>(pool);
 
@@ -144,7 +145,7 @@ public class MOEARun {
         HashMap<String, String[]> interferingInstrumentsMap;
         if (assigningProblem) {
             mutationProbability = 1. / 60.;
-            params = new ClimateCentricAssigningParams(resourcesPath, "CRISP-ATTRIBUTES","test", "normal");
+            params = new ClimateCentricAssigningParams(resourcesPath, "FUZZY-ATTRIBUTES","test", "normal");
 
             instrumentSynergyMap = getInstrumentSynergyNameMap(params);
             interferingInstrumentsMap = getInstrumentInterferenceNameMap(params);
@@ -152,7 +153,7 @@ public class MOEARun {
             evaluator = new ArchitectureEvaluator(considerFeasibility, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold);
         } else {
             mutationProbability = 1. / 24.; // Based on the 12 instruments for the ClimateCentric Problem
-            params = new ClimateCentricPartitioningParams(resourcesPath, "CRISP-ATTRIBUTES", "test", "normal");
+            params = new ClimateCentricPartitioningParams(resourcesPath, "FUZZY-ATTRIBUTES", "test", "normal");
 
             instrumentSynergyMap = getInstrumentSynergyNameMap(params);
             interferingInstrumentsMap = getInstrumentInterferenceNameMap(params);
@@ -209,7 +210,8 @@ public class MOEARun {
                     initialization = new RandomInitialization(satelliteProblem, popSize);
                 } else {
                     //initialization = new RandomPartitioningAndAssigning(popSize, (PartitioningProblem) satelliteProblem, params.getInstrumentList(), params.getOrbitList());
-                    initialization = new RandomFeasiblePartitioning(popSize, (PartitioningProblem) satelliteProblem, params.getInstrumentList(), params.getOrbitList());
+                    //initialization = new RandomFeasiblePartitioning(popSize, (PartitioningProblem) satelliteProblem, params.getInstrumentList(), params.getOrbitList());
+                    initialization = new RandomPartitioningReadInitialization(savePath, i, popSize, (PartitioningProblem) satelliteProblem, params.getInstrumentList(), params.getOrbitList());
                 }
             }
 
@@ -298,13 +300,13 @@ public class MOEARun {
                 //OperatorSelector operatorSelector = new ProbabilityMatching(operators, 0.6, 0.03);
 
                 // Create credit assignment
-                SetContributionDominance creditAssignment = new SetContributionDominance(archive, 1, 0);
-                //SetImprovementDominance creditAssignment = new SetImprovementDominance(archive, 1, 0);
+                //SetContributionDominance creditAssignment = new SetContributionDominance(archive, 1, 0);
+                SetImprovementDominance creditAssignment = new SetImprovementDominance(archive, 1, 0);
                 //OffspringParentDomination creditAssignment = new OffspringParentDomination(1.0, 0.5, 0.0, comp);
 
                 // Create AOS
-                aosStrategy = new AOSVariationSC(operatorSelector, creditAssignment, popSize);
-                //aosStrategy = new AOSVariationSI(operatorSelector, creditAssignment, popSize);
+                //aosStrategy = new AOSVariationSC(operatorSelector, creditAssignment, popSize);
+                aosStrategy = new AOSVariationSI(operatorSelector, creditAssignment, popSize);
                 //aosStrategy = new AOSVariationOP(operatorSelector, creditAssignment, popSize);
 
                 // Creating AOS MOEA object

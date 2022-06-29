@@ -37,7 +37,7 @@ public class RandomPartitioningReadInitialization implements Initialization {
 
     @Override
     public Solution[] initialize() {
-        String csvFileName = readPath + Integer.toString(runNumber) + ".csv"; // Change accordingly
+        String csvFileName = readPath + File.separator + "Partitioning" + File.separator + "Injected Initialization" + File.separator + "random_feasible_partitioning" + Integer.toString(runNumber) + ".csv"; // Change accordingly
 
         Solution[] initialPopulation = new Solution[populationSize];
 
@@ -51,14 +51,20 @@ public class RandomPartitioningReadInitialization implements Initialization {
             e.printStackTrace();
         }
         int populationCounter = 0;
+        boolean header = true;
 
         for (List<String> row : rows) {
+            if (header) {
+                header = false;
+                continue;
+            }
             PartitioningArchitecture newArch = (PartitioningArchitecture) problem.newSolution();
             int[] archInstrumentPartitioning = newArch.getInstrumentPartitionsFromString(row.get(0));
             int[] archOrbitAssigning = newArch.getOrbitAssignmentsFromString(row.get(0));
             newArch.setVariablesFromPartitionArrays(archInstrumentPartitioning, archOrbitAssigning);
 
             initialPopulation[populationCounter] = newArch;
+            populationCounter++;
         }
 
         return initialPopulation;

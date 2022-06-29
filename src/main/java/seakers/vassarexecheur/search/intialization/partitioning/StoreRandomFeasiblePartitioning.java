@@ -1,7 +1,5 @@
 package seakers.vassarexecheur.search.intialization.partitioning;
 
-import org.moeaframework.core.Algorithm;
-import org.moeaframework.core.Initialization;
 import org.moeaframework.core.Solution;
 import seakers.vassarexecheur.search.problems.partitioning.PartitioningArchitecture;
 import seakers.vassarexecheur.search.problems.partitioning.PartitioningProblem;
@@ -14,7 +12,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Random;
 
 public class StoreRandomFeasiblePartitioning {
 
