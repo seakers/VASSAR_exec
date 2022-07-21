@@ -81,12 +81,12 @@ public class MOEARun {
          *
          * heuristicsConstrained = [dutyCycleConstrained, instrumentOrbitRelationsConstrained, interferenceConstrained, packingEfficiencyConstrained, spacecraftMassConstrained, synergyConstrained]
          */
-        boolean[] dutyCycleConstrained = {false, true, false, false, false, false};
-        boolean[] instrumentOrbitRelationsConstrained = {false, true, false, false, false, false};
-        boolean[] interferenceConstrained = {false, true, false, false, false, false};
-        boolean[] packingEfficiencyConstrained = {false, true, false, false, false, false};
-        boolean[] spacecraftMassConstrained = {false, true, false, false, false, false};
-        boolean[] synergyConstrained = {false, true, false, false, false, false};
+        boolean[] dutyCycleConstrained = {false, false, false, false, false, false};
+        boolean[] instrumentOrbitRelationsConstrained = {false, false, false, false, false, false};
+        boolean[] interferenceConstrained = {false, false, false, false, false, false};
+        boolean[] packingEfficiencyConstrained = {false, false, false, false, false, false};
+        boolean[] spacecraftMassConstrained = {false, false, false, false, false, false};
+        boolean[] synergyConstrained = {false, false, false, false, false, false};
 
         boolean[][] heuristicsConstrained = new boolean[6][6];
         for (int i = 0; i < 6; i++) {
@@ -134,8 +134,8 @@ public class MOEARun {
         double crossoverProbability = 1.0;
         properties.setDouble("crossoverProbability", crossoverProbability);
 
-        String resourcesPath = "C:\\SEAK Lab\\SEAK Lab Github\\VASSAR\\VASSAR_resources-heur";
-        //String resourcesPath = "C:\\Users\\rosha\\Documents\\SEAK Lab Github\\VASSAR\\VASSAR_resources-heur";
+        //String resourcesPath = "C:\\SEAK Lab\\SEAK Lab Github\\VASSAR\\VASSAR_resources-heur";
+        String resourcesPath = "C:\\Users\\rosha\\Documents\\SEAK Lab Github\\VASSAR\\VASSAR_resources-heur";
         String savePath = System.getProperty("user.dir") + File.separator + "results";
 
         double mutationProbability;

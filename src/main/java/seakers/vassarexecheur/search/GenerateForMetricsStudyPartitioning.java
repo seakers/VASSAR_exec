@@ -33,8 +33,8 @@ import java.util.stream.IntStream;
 public class GenerateForMetricsStudyPartitioning {
 
     public static void main(String[] args) {
-        int numRuns = 30;
-        int numCpus = 1;
+        int numRuns = 10;
+        int numCpus = 4;
 
         RunMode runMode  = RunMode.EpsilonMOEA;
         RandomMode randomMode = RandomMode.FullyRandom;
@@ -112,10 +112,10 @@ public class GenerateForMetricsStudyPartitioning {
 
         String savePath = System.getProperty("user.dir") + File.separator + "results";
 
-        String resourcesPath = "C:\\SEAK Lab\\SEAK Lab Github\\VASSAR\\VASSAR_resources-heur"; // for lab system
-        //String resourcesPath = "C:\\Users\\rosha\\Documents\\SEAK Lab Github\\VASSAR\\VASSAR_resources-heur"; // for laptop
+        //String resourcesPath = "C:\\SEAK Lab\\SEAK Lab Github\\VASSAR\\VASSAR_resources-heur"; // for lab system
+        String resourcesPath = "C:\\Users\\rosha\\Documents\\SEAK Lab Github\\VASSAR\\VASSAR_resources-heur"; // for laptop
 
-        ClimateCentricPartitioningParams params = new ClimateCentricPartitioningParams(resourcesPath, "CRISP-ATTRIBUTES", "test", "normal");
+        ClimateCentricPartitioningParams params = new ClimateCentricPartitioningParams(resourcesPath, "FUZZY-ATTRIBUTES", "test", "normal");
 
         HashMap<String, String[]> instrumentSynergyMap = getInstrumentSynergyNameMap(params);
         HashMap<String, String[]> interferingInstrumentsMap = getInstrumentInterferenceNameMap(params);
@@ -373,9 +373,9 @@ public class GenerateForMetricsStudyPartitioning {
                         throw new IllegalStateException("Unrecognized random run mode");
                 }
 
-                pool.shutdown();
-                evaluationManager.clear();
-                System.out.println("DONE");
+                //pool.shutdown();
+                //evaluationManager.clear();
+                //System.out.println("DONE");
                 break;
 
             default :

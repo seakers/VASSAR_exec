@@ -8,7 +8,7 @@ from pygmo import hypervolume
 import csv
 import statistics
 import numpy as np
-import operator as op
+#import operator as op
 from scipy.stats import mannwhitneyu
 from scipy.stats import ttest_ind
 from functools import reduce
@@ -79,8 +79,8 @@ def get_csv_filepath_satellite(instrdc_constrained, instrorb_constrained, interi
     # instrsyn_constrained = [int_pen, AOS, bias_init, ACH] boolean array
     # assigning = True if assigning problem data is to be read, False if partitioning problem data is to be read
     
-    filepath = 'C:\\SEAK Lab\\SEAK Lab Github\\VASSAR\\VASSAR_exec_heur\\results\\' # for workstation
-    #filepath = 'C:\\Users\\rosha\\Documents\\SEAK Lab Github\\VASSAR\\VASSAR_exec_heur\\results\\' # for laptop
+    #filepath = 'C:\\SEAK Lab\\SEAK Lab Github\\VASSAR\\VASSAR_exec_heur\\results\\' # for workstation
+    filepath = 'C:\\Users\\rosha\\Documents\\SEAK Lab Github\\VASSAR\\VASSAR_exec_heur\\results\\' # for laptop
     methods = ['Int Pen','AOS','Bias Init','ACH']
     heurs_list = ['Instrdc','Instrorb','Interinstr','Packeff','Spmass','Instrsyn']
     heur_abbrvs_list = ['d','o','i','p','m','s']
@@ -722,7 +722,7 @@ assigning_problem = False
 num_runs = 30 # number of runs for each case
 threshold_hv = 0.85
 
-credit_assignment = 2 # 0 -> offspring parent dominance, 1 -> set improvement dominance, 2 -> set contribution dominance
+credit_assignment = 1 # 0 -> offspring parent dominance, 1 -> set improvement dominance, 2 -> set contribution dominance
 
 # bools = [int_pen_instrdc, AOS_instrdc, bias_init_instrdc, ACH_instrdc, int_pen_instrorb, AOS_instrorb, bias_init_instrorb, ACH_instrorb, int_pen_interinstr, AOS_interinstr, bias_init_interinstr, ACH_interinstr, int_pen_packeff, AOS_packeff, bias_init_packeff, ACH_packeff, int_pen_spmass, AOS_spmass, bias_init_spmass, ACH_spmass, int_pen_instrsyn, AOS_instrsyn, bias_init_instrsyn, ACH_instrsyn]
 case1_bools = [False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False] # Simple E-MOEA
@@ -739,12 +739,17 @@ if assigning_problem:
     
     alpha_values = [0.5,0.5,0.5] # change based on number of cases/visibility
 else:
+    #case3_bools = [False, True, False, False, False, True, False, False, False, True, False, False, False, False, False, False, False, True, False, False, False, True, False, False] #  AOS - DutyCycle, InstrOrb, InterInstr, SpMass, Instrsyn
+    
     cases_dict['case1'] = case1_bools
     cases_dict['case2'] = case2_bools
+    #cases_dict['case3'] = case3_bools
     
+    #line_colours = ['#000000','#E69F00','#56B4E9'] # black, yellow, blue
     line_colours = ['#000000','#E69F00'] # black, yellow
-    casenames = ['Eps. MOEA','All heurs']
+    casenames = ['Eps. MOEA','AOS - Heur']
     
+    #alpha_values = [0.5,0.5,0.5] # change based on number of cases/visibility
     alpha_values = [0.5,0.5] # change based on number of cases/visibility
 
 nfe_cdf_array, hv_dict_med_cases, hv_dict_1q_cases, hv_dict_3q_cases, Uvals_test, nfe_array_1 = hypervolume_computation_all_cases(cases_dict, credit_assignment, assigning_problem, num_runs, line_colours, alpha_values, casenames, threshold_hv)

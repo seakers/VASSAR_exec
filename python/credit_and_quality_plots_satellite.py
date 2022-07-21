@@ -10,7 +10,7 @@ import csv
 import statistics
 import matplotlib.pyplot as plt
 
-assigning_problem = True
+assigning_problem = False
 
 ### Read the credit and quality csv files
 file_loc = 'C:\\Users\\rosha\\Documents\\SEAK Lab Github\\VASSAR\\VASSAR_exec_heur\\results\\' # for laptop
@@ -50,6 +50,8 @@ if all(aos_heur_bools):
 else:
     if assigning_problem:
         operator_strings = ['RepairDutyCycleAssigning+BitFlip','RepairInstrumentOrbitAssigning+BitFlip','RepairInterferenceAssigning+BitFlip','RepairMassAssigning+BitFlip','RepairSynergyAssigning+BitFlip','OnePointCrossover+BitFlip']
+    else:
+        operator_strings = ['RepairDutyCyclePartitioning+PartitioningMutation','RepairInstrumentOrbitPartitioning+PartitioningMutation','RepairInterferencePartitioning+PartitioningMutation','RepairMassPartitioning+PartitioningMutation','RepairSynergyPartitioning+PartitioningMutation','PartitioningCrossover+PartitioningMutation']
     
 filepath_cred = 'offspring parent dominance\\'
 if credit_assign == 1:

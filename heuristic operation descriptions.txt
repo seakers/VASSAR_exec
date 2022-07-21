@@ -1,0 +1,15 @@
+1. Duty Cycle - Penalizes satellites with duty cycle less than the threshold (0.5) [dc_sat = max(data_rate_dc, power_dc)]
+	h_dc = max(0.0, (dc_threshold - dc_sat)/dc_threshold) (computed and averaged over all satellites in arch)
+2. Instrument Orbit Relations - Penalizes architectures with instruments in incompatible orbits 
+	(passive illumination instrument in DD orbit, chemistry concept instrument in PM orbit, slant geometry instrument in orbit of altitude <= 400 km)
+	h_ior = sum of violations in arch/36 (computed and averaged over all satellites in arch)
+3. Interference - Penalizes architectures that have interfering instrument pairs in the same satellite
+	violations are added for each pair of interfering instruments if any instrument could be moved to a different orbit
+	h_i = sum of violations in arch/10 (computed and averaged over all satellites in arch)
+4. Packing Efficiency - Penalizes satellites with packing efficiency less than the threshold (0.4) [packeff_sat = max(packeff_mass, packeff_vol)]
+	h_pf = max(0.0, (packeff_threshold - packeff_sat)/packeff_threshold) (computed and averaged over all satellites in arch)
+5. Spacecraft Mass - Penalizes satellites with spacecraft wet mass less than the threshold (3000 kg) 
+	h_sm = max(0.0, (sm_sat - sm_threshold)/sm_threshold) (computed and averaged over all satellites in arch)
+6. Instrument Synergy - Penalizes architectures that have synergistic instrument pairs but in different satellites
+	violations are added for each pair of synergistic instruments in different orbits
+	h_syn = sum of violations in arch/10 (computed and averaged over all satellites in arch)
