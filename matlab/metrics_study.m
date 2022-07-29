@@ -5,8 +5,9 @@ clc
 
 %% Cases to consider for GA data
 random_data_bool = true;
+
 % Case 1 - Epsilon MOEA
-assign_case = true;
+assign_case = false;
 random_init = true;
 case_instrdc_bools = [false, false, false, false];
 case_instrorb_bools = [false, false, false, false];
@@ -819,8 +820,8 @@ end
 
 function [obj_array, heur_array, design_array] = read_csv_data(assign_prob, heur_bools, random_data_read, rand_init, run_num)
     prob_name = 'ClimateCentric_';
-    filepath = 'C:\\SEAK Lab\\SEAK Lab Github\\VASSAR\\VASSAR_exec_heur\\results\\'; % for lab system
-    %filepath = 'C:\\Users\\rosha\\Documents\\SEAK Lab Github\\VASSAR\\VASSAR_exec_heur\\results\\'; % for laptop
+    %filepath = 'C:\\SEAK Lab\\SEAK Lab Github\\VASSAR\\VASSAR_exec_heur\\results\\'; % for lab system
+    filepath = 'C:\\Users\\rosha\\Documents\\SEAK Lab Github\\VASSAR\\VASSAR_exec_heur\\results\\'; % for laptop
     methods = ["Int Pen","AOS","Bias Init","ACH"];
     heuristics = ["InstrDC","InstrOrb","InterInstr","PackEff","SpMass","InstrSyn"];
     heur_abbr = ["d","o","i","p","m","s"];
