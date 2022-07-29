@@ -97,6 +97,10 @@ public class AssigningProblem  extends AbstractProblem implements SystemArchitec
         return new AssigningArchitecture(alternativesForNumberOfSatellites, params.getNumInstr(), params.getNumOrbits(), 2+numberOfHeuristicObjectives, numberOfHeuristicConstraints);
     }
 
+    public ArchitectureEvaluationManager getEvaluationManager() {
+        return evalManager;
+    }
+
     public AbstractArchitecture getAbstractArchitecture(AssigningArchitecture arch) {
         StringBuilder bitStringBuilder = new StringBuilder(this.getNumberOfVariables());
         for (int i = 1; i < this.getNumberOfVariables(); ++i) {

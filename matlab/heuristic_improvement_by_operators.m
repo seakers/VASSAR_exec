@@ -4,10 +4,11 @@ close all
 clc
 
 %% Extract and analyze data for requisite problem
-assigning_problem = true; % true -> assigning problem, false -> partitioning problem
+assigning_problem = false; % true -> assigning problem, false -> partitioning problem
 move_mode = true; % true -> operators move instruments, false -> operators remove instruments (ONLY FOR ASSIGNING OPERATORS)
 
-filepath = "C:\\SEAK Lab\\SEAK Lab Github\\VASSAR\\VASSAR_exec_heur\\results\\";
+%filepath = "C:\\SEAK Lab\\SEAK Lab Github\\VASSAR\\VASSAR_exec_heur\\results\\";
+filepath = "C:\\Users\\rosha\\Documents\\SEAK Lab Github\\VASSAR\\VASSAR_exec_heur\\results\\";
 
 filename = "operator_heuristic_satisfaction";
 if assigning_problem

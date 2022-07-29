@@ -20,7 +20,10 @@
       <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/partitioning/RepairMass.class" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/partitioning/RepairPackingEfficiency.class" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/partitioning/RepairSynergy.class" beforeDir="false" />
+<<<<<<< Updated upstream
+=======
       <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/problems/partitioning/PartitioningProblem.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/problems/partitioning/PartitioningProblem.class" afterDir="false" />
+>>>>>>> Stashed changes
       <change beforePath="$PROJECT_DIR$/build/libs/vassarexecheur-1.0-SNAPSHOT.jar" beforeDir="false" afterPath="$PROJECT_DIR$/build/libs/vassarexecheur-1.0-SNAPSHOT.jar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/matlab/heuristic_improvement_by_operators.m" beforeDir="false" afterPath="$PROJECT_DIR$/matlab/heuristic_improvement_by_operators.m" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/matlab/metrics_study.m" beforeDir="false" afterPath="$PROJECT_DIR$/matlab/metrics_study.m" afterDir="false" />
@@ -32,20 +35,16 @@
       <change beforePath="$PROJECT_DIR$/python/selection_plots_satellite.py" beforeDir="false" afterPath="$PROJECT_DIR$/python/selection_plots_satellite.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/seakers/vassarexecheur/search/GenerateForMetricsStudyPartitioning.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/seakers/vassarexecheur/search/GenerateForMetricsStudyPartitioning.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/seakers/vassarexecheur/search/MOEARun.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/seakers/vassarexecheur/search/MOEARun.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/seakers/vassarexecheur/search/operators/assigning/RepairDutyCycle.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/seakers/vassarexecheur/search/operators/assigning/RepairInstrumentOrbit.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/seakers/vassarexecheur/search/operators/assigning/RepairInterference.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/seakers/vassarexecheur/search/operators/assigning/RepairMass.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/seakers/vassarexecheur/search/operators/assigning/RepairPackingEfficiency.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/seakers/vassarexecheur/search/operators/assigning/RepairSynergy.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/seakers/vassarexecheur/search/operators/partitioning/RepairDutyCycle.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/seakers/vassarexecheur/search/operators/partitioning/RepairInstrumentOrbit.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/seakers/vassarexecheur/search/operators/partitioning/RepairInterference.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/seakers/vassarexecheur/search/operators/partitioning/RepairMass.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/seakers/vassarexecheur/search/operators/partitioning/RepairPackingEfficiency.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/seakers/vassarexecheur/search/operators/partitioning/RepairSynergy.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/seakers/vassarexecheur/search/problems/assigning/AssigningProblem.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/seakers/vassarexecheur/search/problems/assigning/AssigningProblem.java" afterDir="false" />
+<<<<<<< Updated upstream
+=======
       <change beforePath="$PROJECT_DIR$/src/main/java/seakers/vassarexecheur/search/problems/partitioning/PartitioningProblem.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/seakers/vassarexecheur/search/problems/partitioning/PartitioningProblem.java" afterDir="false" />
+>>>>>>> Stashed changes
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -146,9 +145,15 @@
       </list>
     </option>
   </component>
+<<<<<<< Updated upstream
+  <component name="RunManager" selected="Gradle.VASSAR_exec_heur [build]">
+    <configuration name="GenerateForMetricsStudyPartitioning" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="seakers.vassarexecheur.search.GenerateForMetricsStudyPartitioning" />
+=======
   <component name="RunManager" selected="Application.GenerateOperatorIndexDataPartitioning">
     <configuration name="GenerateOperatorIndexDataPartitioning" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="seakers.vassarexecheur.search.GenerateOperatorIndexDataPartitioning" />
+>>>>>>> Stashed changes
       <module name="vassarexecheur.main" />
       <extension name="coverage">
         <pattern>
@@ -232,11 +237,15 @@
     </configuration>
     <recent_temporary>
       <list>
+<<<<<<< Updated upstream
+=======
         <item itemvalue="Application.GenerateOperatorIndexDataPartitioning" />
+>>>>>>> Stashed changes
         <item itemvalue="Application.MOEARun" />
         <item itemvalue="Gradle.VASSAR_exec_heur [jar]" />
         <item itemvalue="Gradle.VASSAR_exec_heur [build]" />
         <item itemvalue="Gradle.VASSAR_exec_heur [clean]" />
+        <item itemvalue="Application.GenerateForMetricsStudyPartitioning" />
       </list>
     </recent_temporary>
   </component>

@@ -159,4 +159,8 @@ public class PartitioningProblem extends AbstractProblem implements SystemArchit
         }
         return arch_abs;
     }
+
+    public ArchitectureEvaluationManager getEvaluationManager() {
+        return evaluationManager;
+    }
 }
