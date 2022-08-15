@@ -28,7 +28,7 @@ import java.util.*;
 public class GenerateOperatorIndexDataAssigning {
 
     public static void main(String[] args) {
-        int numRuns = 10;
+        int numRuns = 6;
         RunMode runMode  = RunMode.EpsilonMOEA;
         int numCpus = 1;
 
@@ -81,8 +81,8 @@ public class GenerateOperatorIndexDataAssigning {
         TypedProperties properties = new TypedProperties();
 
         int popSize = 300;
-        int maxEvals = 5000;
-        properties.setInt("maxEvaluations", maxEvals);
+        //int maxEvals = 5000;
+        //properties.setInt("maxEvaluations", maxEvals);
         properties.setInt("populationSize", popSize);
         double crossoverProbability = 1.0;
         properties.setDouble("crossoverProbability", crossoverProbability);
@@ -99,10 +99,10 @@ public class GenerateOperatorIndexDataAssigning {
 
         String savePath = System.getProperty("user.dir") + File.separator + "results";
 
-        //String resourcesPath = "C:\\SEAK Lab\\SEAK Lab Github\\VASSAR\\VASSAR_resources-heur"; // for lab system
-        String resourcesPath = "C:\\Users\\rosha\\Documents\\SEAK Lab Github\\VASSAR\\VASSAR_resources-heur"; // for laptop
+        String resourcesPath = "C:\\SEAK Lab\\SEAK Lab Github\\VASSAR\\VASSAR_resources-heur"; // for lab system
+        //String resourcesPath = "C:\\Users\\rosha\\Documents\\SEAK Lab Github\\VASSAR\\VASSAR_resources-heur"; // for laptop
 
-        ClimateCentricAssigningParams params = new ClimateCentricAssigningParams(resourcesPath, "CRISP-ATTRIBUTES","test", "normal");
+        ClimateCentricAssigningParams params = new ClimateCentricAssigningParams(resourcesPath, "FUZZY-ATTRIBUTES","test", "normal");
 
         PRNG.setRandom(new SynchronizedMersenneTwister());
 
@@ -145,8 +145,8 @@ public class GenerateOperatorIndexDataAssigning {
             case EpsilonMOEA: // Read completed epsilon MOEA run results, pass archs through operators and store results in new csv file
                 System.out.println("Starting Epsilon MOEA data evaluation for Assigning Problem");
 
-                String filepathData = savePath + File.separator + "Epsilon MOEA - Metrics" + File.separator + "Partitioning\\";
-                String filename = "EpsilonMOEA_emoea_ClimateCentric_assigning_";
+                String filepathData = savePath + File.separator + "Epsilon MOEA - Metrics" + File.separator + "Assigning\\";
+                String filename = "EpsilonMOEA_emoea_ClimateCentric_assign_";
 
                 for (int i = 0; i < numRuns; i++) {
                     String csvFilename = "";
@@ -155,8 +155,8 @@ public class GenerateOperatorIndexDataAssigning {
                         csvFilename = filepathData + filename + "randinit_" + i + ".csv";
                         saveFilename = savePath + File.separator + filename + "operator_data_" + i + ".csv";
                     } else {
-                        csvFilename = filepathData + filename + "randinit_" + i + "_fullpop.csv";
-                        saveFilename = savePath + File.separator + filename + "operator_data_" + i + "_fullpop.csv";
+                        csvFilename = filepathData + filename + "randinit_" + (4 + i) + "_fullpop.csv";
+                        saveFilename = savePath + File.separator + filename + "operator_data_" + (4 + i) + "_fullpop.csv";
                     }
 
                     ArrayList<Solution> populationList = new ArrayList<>();

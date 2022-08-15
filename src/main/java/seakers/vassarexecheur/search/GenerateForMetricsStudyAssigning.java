@@ -100,7 +100,7 @@ public class GenerateForMetricsStudyAssigning {
 
         double dcThreshold = 0.5;
         double massThreshold = 3000.0; // [kg]
-        double packEffThreshold = 0.4;
+        double packEffThreshold = 0.7;
         boolean considerFeasibility = true;
 
         String savePath = System.getProperty("user.dir") + File.separator + "results";
@@ -108,7 +108,7 @@ public class GenerateForMetricsStudyAssigning {
         String resourcesPath = "C:\\SEAK Lab\\SEAK Lab Github\\VASSAR\\VASSAR_resources-heur"; // for lab system
         //String resourcesPath = "C:\\Users\\rosha\\Documents\\SEAK Lab Github\\VASSAR\\VASSAR_resources-heur"; // for laptop
 
-        ClimateCentricAssigningParams params = new ClimateCentricAssigningParams(resourcesPath, "CRISP-ATTRIBUTES","test", "normal");
+        ClimateCentricAssigningParams params = new ClimateCentricAssigningParams(resourcesPath, "FUZZY-ATTRIBUTES","test", "normal");
 
         PRNG.setRandom(new SynchronizedMersenneTwister());
 
