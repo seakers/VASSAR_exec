@@ -58,10 +58,23 @@ public class PartitioningProblem extends AbstractProblem implements SystemArchit
 
             try {
                 Result result = evaluationManager.evaluateArchitectureSync(abs_arch, "Slow", interferenceMap, synergyMap, dcThreshold, massThreshold, packingEffThreshold);
-                arch.setObjective(0, -result.getScience());
-                arch.setObjective(1, result.getCost());
 
                 ArrayList<Double> archHeuristics = result.getHeuristics();
+
+                // Interior Penalization
+                double[] objectives = new double[2];
+                objectives[0] = -result.getScience();
+                objectives[1] = result.getCost();
+
+                for (int i = 0; i < heuristicsConstrained.length; i++) {
+                    if (heuristicsConstrained[i][0]) {
+                        objectives[0] += archHeuristics.get(i);
+                        objectives[1] += archHeuristics.get(i)*1000;
+                    }
+                }
+
+                arch.setObjective(0, objectives[0]);
+                arch.setObjective(1, objectives[1]);
 
                 for (int i = 0; i < heuristicsConstrained.length; i++) {
                     if (heuristicsConstrained[i][4]) {

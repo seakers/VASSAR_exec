@@ -58,11 +58,25 @@ public class AssigningProblem  extends AbstractProblem implements SystemArchitec
 
             try {
                 Result result = evalManager.evaluateArchitectureSync(arch_abs, "Slow", interferenceMap, synergyMap, dcThreshold, massThreshold, packingEfficiencyThreshold);
-                arch.setObjective(0, -result.getScience());
-                arch.setObjective(1, result.getCost());
 
                 ArrayList<Double> archHeuristics = result.getHeuristics();
 
+                // Interior Penalization
+                double[] objectives = new double[2];
+                objectives[0] = -result.getScience();
+                objectives[1] = result.getCost();
+
+                for (int i = 0; i < heuristicsConstrained.length; i++) {
+                    if (heuristicsConstrained[i][0]) {
+                        objectives[0] += archHeuristics.get(i);
+                        objectives[1] += archHeuristics.get(i)*1000;
+                    }
+                }
+
+                arch.setObjective(0, objectives[0]);
+                arch.setObjective(1, objectives[1]);
+
+                // Additional Heuristic Objectives and/or Constraints
                 for (int i = 0; i < heuristicsConstrained.length; i++) {
                     if (heuristicsConstrained[i][4]) {
                         arch.setObjective(2+i, archHeuristics.get(i));

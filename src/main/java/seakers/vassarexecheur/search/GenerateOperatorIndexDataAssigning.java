@@ -28,8 +28,8 @@ import java.util.*;
 public class GenerateOperatorIndexDataAssigning {
 
     public static void main(String[] args) {
-        int numRuns = 6;
-        RunMode runMode  = RunMode.EpsilonMOEA;
+        int numRuns = 1;
+        RunMode runMode  = RunMode.RandomPopulation;
         int numCpus = 1;
 
         boolean moveInstrument = false;
@@ -99,8 +99,8 @@ public class GenerateOperatorIndexDataAssigning {
 
         String savePath = System.getProperty("user.dir") + File.separator + "results";
 
-        String resourcesPath = "C:\\SEAK Lab\\SEAK Lab Github\\VASSAR\\VASSAR_resources-heur"; // for lab system
-        //String resourcesPath = "C:\\Users\\rosha\\Documents\\SEAK Lab Github\\VASSAR\\VASSAR_resources-heur"; // for laptop
+        //String resourcesPath = "C:\\SEAK Lab\\SEAK Lab Github\\VASSAR\\VASSAR_resources-heur"; // for lab system
+        String resourcesPath = "C:\\Users\\rosha\\Documents\\SEAK Lab Github\\VASSAR\\VASSAR_resources-heur"; // for laptop
 
         ClimateCentricAssigningParams params = new ClimateCentricAssigningParams(resourcesPath, "FUZZY-ATTRIBUTES","test", "normal");
 
@@ -130,7 +130,7 @@ public class GenerateOperatorIndexDataAssigning {
             case RandomPopulation:
                 System.out.println("Starting random population evaluation for Assigning Problem");
                 for (int i = 0; i < numRuns; i++) {
-                    String runName = savePath + File.separator + "random_assign_operator_index_" + i + ".csv";
+                    String runName = savePath + File.separator + "random_assign_operator_index_" + (7 + i) + ".csv";
 
                     Solution[] population = initialization.initialize();
                     int[] nfes = new int[population.length];
@@ -155,8 +155,8 @@ public class GenerateOperatorIndexDataAssigning {
                         csvFilename = filepathData + filename + "randinit_" + i + ".csv";
                         saveFilename = savePath + File.separator + filename + "operator_data_" + i + ".csv";
                     } else {
-                        csvFilename = filepathData + filename + "randinit_" + (4 + i) + "_fullpop.csv";
-                        saveFilename = savePath + File.separator + filename + "operator_data_" + (4 + i) + "_fullpop.csv";
+                        csvFilename = filepathData + filename + "randinit_" + i + "_fullpop.csv";
+                        saveFilename = savePath + File.separator + filename + "operator_data_" + i + "_fullpop.csv";
                     }
 
                     ArrayList<Solution> populationList = new ArrayList<>();
@@ -283,25 +283,25 @@ public class GenerateOperatorIndexDataAssigning {
                 if (!randomMode) {
                     sj.add(Integer.toString(nfes[j]));
                 }
-                sj.add(currentArch.toString());
+                sj.add(currentArch.getBitString());
                 sj.add(Double.toString(currentArch.getObjective(0)));
                 sj.add(Double.toString(currentArch.getObjective(1)));
-                sj.add(instrdcArch.toString());
+                sj.add(instrdcArch.getBitString());
                 sj.add(Double.toString(instrdcArch.getObjective(0)));
                 sj.add(Double.toString(instrdcArch.getObjective(1)));
-                sj.add(instrorbArch.toString());
+                sj.add(instrorbArch.getBitString());
                 sj.add(Double.toString(instrorbArch.getObjective(0)));
                 sj.add(Double.toString(instrorbArch.getObjective(1)));
-                sj.add(interinstrArch.toString());
+                sj.add(interinstrArch.getBitString());
                 sj.add(Double.toString(interinstrArch.getObjective(0)));
                 sj.add(Double.toString(interinstrArch.getObjective(1)));
-                sj.add(packeffArch.toString());
+                sj.add(packeffArch.getBitString());
                 sj.add(Double.toString(packeffArch.getObjective(0)));
                 sj.add(Double.toString(packeffArch.getObjective(1)));
-                sj.add(spmassArch.toString());
+                sj.add(spmassArch.getBitString());
                 sj.add(Double.toString(spmassArch.getObjective(0)));
                 sj.add(Double.toString(spmassArch.getObjective(1)));
-                sj.add(instrsynArch.toString());
+                sj.add(instrsynArch.getBitString());
                 sj.add(Double.toString(instrsynArch.getObjective(0)));
                 sj.add(Double.toString(instrsynArch.getObjective(1)));
 

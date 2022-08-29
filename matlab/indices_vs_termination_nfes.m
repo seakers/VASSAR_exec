@@ -6,7 +6,7 @@ clc
 %% Cases to consider for GA data
 random_data_bool = true;
 % Case 1 - Epsilon MOEA
-assign_case = false;
+assign_case = true;
 random_init = true;
 case_instrdc_bools = [false, false, false, false];
 case_instrorb_bools = [false, false, false, false];
@@ -35,7 +35,7 @@ for i = 1:n_runs
 end
 
 %% Compute heuristic indices for different termination indices for the GA runs
-termination_nfes = [1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000];
+termination_nfes = [0, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000];
 I_instrdc = zeros(size(termination_nfes, 2), n_runs);
 I_instrorb = zeros(size(termination_nfes, 2), n_runs);
 I_interinstr = zeros(size(termination_nfes, 2), n_runs);
@@ -61,7 +61,7 @@ hold on
 plot([0, termination_nfes], zeros(1, (length(termination_nfes) +1)))
 hold off
 if assign_case
-    ylim([-0.5 1.6])
+    ylim([-2 2])
 else
     ylim([-0.25 2])
 end
@@ -74,7 +74,7 @@ hold on
 plot([0, termination_nfes], zeros(1, (length(termination_nfes) +1)))
 hold off
 if assign_case
-    ylim([-0.5 1.6])
+    ylim([-2 2])
 else
     ylim([-0.25 2])
 end
@@ -87,7 +87,7 @@ hold on
 plot([0, termination_nfes], zeros(1, (length(termination_nfes) +1)))
 hold off
 if assign_case
-    ylim([-0.5 1.6])
+    ylim([-2 2])
 else
     ylim([-0.25 2])
 end
@@ -100,7 +100,7 @@ hold on
 plot([0, termination_nfes], zeros(1, (length(termination_nfes) +1)))
 hold off
 if assign_case
-    ylim([-0.5 1.6])
+    ylim([-2 2])
 else
     ylim([-0.25 2])
 end
@@ -113,7 +113,7 @@ hold on
 plot([0, termination_nfes], zeros(1, (length(termination_nfes) +1)))
 hold off
 if assign_case
-    ylim([-0.5 1.6])
+    ylim([-2 2])
 else
     ylim([-0.25 2])
 end
@@ -126,7 +126,7 @@ hold on
 plot([0, termination_nfes], zeros(1, (length(termination_nfes) +1)))
 hold off
 if assign_case
-    ylim([-0.5 1.6])
+    ylim([-2 2])
 else
     ylim([-0.25 2])
 end

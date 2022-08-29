@@ -81,12 +81,12 @@ public class MOEARun {
          *
          * heuristicsConstrained = [dutyCycleConstrained, instrumentOrbitRelationsConstrained, interferenceConstrained, packingEfficiencyConstrained, spacecraftMassConstrained, synergyConstrained]
          */
-        boolean[] dutyCycleConstrained = {false, false, false, false, false, false};
-        boolean[] instrumentOrbitRelationsConstrained = {false, false, false, false, false, false};
-        boolean[] interferenceConstrained = {false, false, false, false, false, false};
-        boolean[] packingEfficiencyConstrained = {false, false, false, false, false, false};
-        boolean[] spacecraftMassConstrained = {false, false, false, false, false, false};
-        boolean[] synergyConstrained = {false, false, false, false, false, false};
+        boolean[] dutyCycleConstrained = {true, false, false, false, false, false};
+        boolean[] instrumentOrbitRelationsConstrained = {true, false, false, false, false, false};
+        boolean[] interferenceConstrained = {true, false, false, false, false, false};
+        boolean[] packingEfficiencyConstrained = {true, false, false, false, false, false};
+        boolean[] spacecraftMassConstrained = {true, false, false, false, false, false};
+        boolean[] synergyConstrained = {true, false, false, false, false, false};
 
         boolean[][] heuristicsConstrained = new boolean[6][6];
         for (int i = 0; i < 6; i++) {

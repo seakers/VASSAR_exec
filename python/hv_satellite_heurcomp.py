@@ -748,6 +748,7 @@ else:
     #line_colours = ['#000000','#E69F00','#56B4E9'] # black, yellow, blue
     line_colours = ['#000000','#E69F00'] # black, yellow
     casenames = ['Eps. MOEA','AOS - Heur']
+    #casenames = ['Eps. MOEA','All heurs','Promising heurs']
     
     #alpha_values = [0.5,0.5,0.5] # change based on number of cases/visibility
     alpha_values = [0.5,0.5] # change based on number of cases/visibility
