@@ -16,12 +16,6 @@ from itertools import combinations
 import matplotlib.pyplot as plt
 from IPython.core.debugger import set_trace
 
-assigning_problem = False
-num_runs = 30 # number of runs for each case
-threshold_hv = 0.85
-
-credit_assignment = 1 # 0 -> offspring parent dominance, 1 -> set improvement dominance, 2 -> set contribution dominance
-
 #### Useful functions and parameter defintions 
 def get_objectives(obj1_array, obj2_array, index):
     return obj1_array[index], obj2_array[index]
@@ -85,8 +79,8 @@ def get_csv_filepath_satellite(instrdc_constrained, instrorb_constrained, interi
     # instrsyn_constrained = [int_pen, AOS, bias_init, ACH] boolean array
     # assigning = True if assigning problem data is to be read, False if partitioning problem data is to be read
     
-    filepath = 'C:\\SEAK Lab\\SEAK Lab Github\\VASSAR\\VASSAR_exec_heur\\results\\' # for workstation
-    #filepath = 'C:\\Users\\rosha\\Documents\\SEAK Lab Github\\VASSAR\\VASSAR_exec_heur\\results\\' # for laptop
+    #filepath = 'C:\\SEAK Lab\\SEAK Lab Github\\VASSAR\\VASSAR_exec_heur\\results\\' # for workstation
+    filepath = 'C:\\Users\\rosha\\Documents\\SEAK Lab Github\\VASSAR\\VASSAR_exec_heur\\results\\' # for laptop
     methods = ['Int Pen','AOS','Bias Init','ACH']
     heurs_list = ['Instrdc','Instrorb','Interinstr','Packeff','Spmass','Instrsyn']
     heur_abbrvs_list = ['d','o','i','p','m','s']
@@ -135,32 +129,21 @@ def get_csv_filepath_satellite(instrdc_constrained, instrorb_constrained, interi
             filepath_cred = 'set improvement dominance\\'
         elif cred_strat == 2:
             filepath_cred = 'set contribution dominance\\'
-            
-    filepath_initialization = ''
-    if not assigning:
-        if any(any(row) for row in heur_bools):
-            filepath_initialization = 'injected initialization\\'
         
-    return filepath + filepath_prob + filepath2 + filepath_moea + filepath_cred + filepath_initialization +  filename + str(run_number) + filename2 + filename_prob
+    return filepath + filepath_prob + filepath2 + filepath_moea + filepath_cred + filename + str(run_number) + filename2 + filename_prob
 
 #### Define NFE array for hypervolume computation (based on number of evaluations in optimization runs)
 np.set_printoptions(threshold=np.inf)
 
-# Create array of NFE values at which to compute hypervolume 
-# Assumes max function evaluations for a) assigning problem is 5000 and b) partitioning problem is 1000
-if assigning_problem:
-    nfe_increment = 50
-else:
-    nfe_increment = 10
-    
+# Create array of NFE values at which to compute hypervolume (assumes max function evaluations is 3000)
 n_iter_total = 80 # Total number of points in NFE array (1 more than input value to incorporate 0)
-n_iter_init = 60 # Number of initial points in NFE array separated by nfe_increment (the rest after that are separated by 2*nfe_increment)
+n_iter_init = 60 # Number of initial points in NFE array separated by 50 (the rest after that are separated by 100)
 nfe_array = np.zeros(n_iter_total+1)
 for i in range(n_iter_init):
-    nfe_array[i] = nfe_increment*i
+    nfe_array[i] = 50*i
     
 for i in range(n_iter_total - n_iter_init + 1):
-    nfe_array[n_iter_init+i] = nfe_increment*n_iter_init + (2*nfe_increment)*i
+    nfe_array[n_iter_init+i] = 50*n_iter_init + 100*i
     
 #### Extract Pareto Front and normalization constants data from csv file
 def extract_data_from_csv(csv_filepath, assigning, intpen_constr_heur):
@@ -265,10 +248,7 @@ def extract_data_from_csv(csv_filepath, assigning, intpen_constr_heur):
     nfe_list_sorted = list(n_func_evals[sort_indices])
     
     #max_func_evals = nfe_list_sorted[-1]
-    if assigning_problem:
-        max_func_evals = 5000 # some runs for some cases run upto 5001 evaluations, which causes hv array length issues
-    else:
-        max_func_evals = 1000
+    max_func_evals = 5000 # some runs for some cases run upto 3001 evaluations, which causes hv array length issues
 
     pareto_front_dict = {}
     #pareto_front_instrdc_dict = {}
@@ -297,7 +277,7 @@ def extract_data_from_csv(csv_filepath, assigning, intpen_constr_heur):
                 nfe_index_previous = 0
             else:
                 nfe_index_current = find_closest_index(nfe_val, nfe_list_sorted)
-                nfe_index_previous = find_closest_index(nfe_array[i-1], nfe_list_sorted)   
+                nfe_index_previous = find_closest_index(nfe_array[i-1], nfe_list_sorted) #NEW         
         else:
             if (nfe_val <= nfe_list_sorted[0]):
                 nfe_index_previous = 0 
@@ -738,6 +718,11 @@ def plotting_all_cases(nfe_hv_attained_dict, hv_dict_med_allcases, hv_dict_1stq_
 
 #### Comparing Simple E-MOEA with AOS - all heuristics and AOS - promising heuristics
 cases_dict = {}
+assigning_problem = False
+num_runs = 30 # number of runs for each case
+threshold_hv = 0.85
+
+credit_assignment = 1 # 0 -> offspring parent dominance, 1 -> set improvement dominance, 2 -> set contribution dominance
 
 # bools = [int_pen_instrdc, AOS_instrdc, bias_init_instrdc, ACH_instrdc, int_pen_instrorb, AOS_instrorb, bias_init_instrorb, ACH_instrorb, int_pen_interinstr, AOS_interinstr, bias_init_interinstr, ACH_interinstr, int_pen_packeff, AOS_packeff, bias_init_packeff, ACH_packeff, int_pen_spmass, AOS_spmass, bias_init_spmass, ACH_spmass, int_pen_instrsyn, AOS_instrsyn, bias_init_instrsyn, ACH_instrsyn]
 case1_bools = [False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False] # Simple E-MOEA
@@ -754,19 +739,18 @@ if assigning_problem:
     
     alpha_values = [0.5,0.5,0.5] # change based on number of cases/visibility
 else:
-    case3_bools = [False, True, False, False, False, True, False, False, False, True, False, False, False, False, False, False, False, True, False, False, False, True, False, False] #  AOS - DutyCycle, InstrOrb, InterInstr, SpMass, Instrsyn
+    #case3_bools = [False, True, False, False, False, True, False, False, False, True, False, False, False, False, False, False, False, True, False, False, False, True, False, False] #  AOS - DutyCycle, InstrOrb, InterInstr, SpMass, Instrsyn
     
     cases_dict['case1'] = case1_bools
     cases_dict['case2'] = case2_bools
-    cases_dict['case3'] = case3_bools
+    #cases_dict['case3'] = case3_bools
     
-    line_colours = ['#000000','#E69F00','#56B4E9'] # black, yellow, blue
-    #line_colours = ['#000000','#E69F00'] # black, yellow
-    #casenames = ['Eps. MOEA','AOS - Heur']
-    casenames = ['Eps. MOEA','All heurs','Promising heurs']
+    #line_colours = ['#000000','#E69F00','#56B4E9'] # black, yellow, blue
+    line_colours = ['#000000','#E69F00'] # black, yellow
+    casenames = ['Eps. MOEA','AOS - Heur']
     
-    alpha_values = [0.5,0.5,0.5] # change based on number of cases/visibility
-    #alpha_values = [0.5,0.5] # change based on number of cases/visibility
+    #alpha_values = [0.5,0.5,0.5] # change based on number of cases/visibility
+    alpha_values = [0.5,0.5] # change based on number of cases/visibility
 
 nfe_cdf_array, hv_dict_med_cases, hv_dict_1q_cases, hv_dict_3q_cases, Uvals_test, nfe_array_1 = hypervolume_computation_all_cases(cases_dict, credit_assignment, assigning_problem, num_runs, line_colours, alpha_values, casenames, threshold_hv)
 

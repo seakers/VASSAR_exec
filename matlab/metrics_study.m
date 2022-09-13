@@ -64,7 +64,7 @@ n_runs = 10; % number of runs
 
 n_des = 300; % number of designs of random & epsilon MOEA each to use for correlation study
 
-add_ga_data = true;
+add_ga_data = false;
 
 min_dist_pf_all = struct;
 
@@ -383,6 +383,13 @@ correlation_pval_tablestats = [mean(pval_pearson_instrdc_pfdist), std(pval_pears
     mean(pval_pearson_spmass_pfdist), std(pval_pearson_spmass_pfdist), mean(pval_spearman_spmass_pfdist), std(pval_spearman_spmass_pfdist);
     mean(pval_pearson_instrsyn_pfdist), std(pval_pearson_instrsyn_pfdist), mean(pval_spearman_instrsyn_pfdist), std(pval_spearman_instrsyn_pfdist)];
 
+isnan_pearson_packeff = isnan(pearson_packeff_pfdist);
+isnan_spearman_packeff = isnan(spearman_packeff_pfdist);
+mean_pearson_packeff = mean(pearson_packeff_pfdist(~isnan_pearson_packeff & ~isnan_spearman_packeff));
+std_pearson_packeff = std(pearson_packeff_pfdist(~isnan_pearson_packeff & ~isnan_spearman_packeff));
+mean_spearman_packeff = mean(spearman_packeff_pfdist(~isnan_pearson_packeff & ~isnan_spearman_packeff));
+std_spearman_packeff = std(spearman_packeff_pfdist(~isnan_pearson_packeff & ~isnan_spearman_packeff));
+
 %% Heuristic indices calculation
 corr_exp_instrdc = 1; % correlation expectation with pfdist
 corr_exp_instrorb = 1; % correlation expectation with pfdist
@@ -478,12 +485,12 @@ I1_packeff = compute_heuristic_I1_contribution_run_vec(corr_avg_packeff_pfdist, 
 I1_spmass = compute_heuristic_I1_contribution_run_vec(corr_avg_spmass_pfdist, corr_exp_spmass, support_pf_runs);
 I1_instrsyn = compute_heuristic_I1_contribution_run_vec(corr_avg_instrsyn_pfdist, corr_exp_instrsyn, support_pf_runs);
 
-I1_norm_instrdc = I1_instrdc/(abs(I1_instrdc) + abs(I1_instrorb) + abs(I1_interinstr) + abs(I1_packeff) + abs(I1_spmass) + abs(I1_instrsyn));
-I1_norm_instrorb = I1_instrorb/(abs(I1_instrdc) + abs(I1_instrorb) + abs(I1_interinstr) + abs(I1_packeff) + abs(I1_spmass) + abs(I1_instrsyn));
-I1_norm_interinstr = I1_interinstr/(abs(I1_instrdc) + abs(I1_instrorb) + abs(I1_interinstr) + abs(I1_packeff) + abs(I1_spmass) + abs(I1_instrsyn));
-I1_norm_packeff = I1_packeff/(abs(I1_instrdc) + abs(I1_instrorb) + abs(I1_interinstr) + abs(I1_packeff) + abs(I1_spmass) + abs(I1_instrsyn));
-I1_norm_spmass = I1_spmass/(abs(I1_instrdc) + abs(I1_instrorb) + abs(I1_interinstr) + abs(I1_packeff) + abs(I1_spmass) + abs(I1_instrsyn));
-I1_norm_instrsyn = I1_instrsyn/(abs(I1_instrdc) + abs(I1_instrorb) + abs(I1_interinstr) + abs(I1_packeff) + abs(I1_spmass) + abs(I1_instrsyn));
+%I1_norm_instrdc = I1_instrdc/(abs(I1_instrdc) + abs(I1_instrorb) + abs(I1_interinstr) + abs(I1_packeff) + abs(I1_spmass) + abs(I1_instrsyn));
+%I1_norm_instrorb = I1_instrorb/(abs(I1_instrdc) + abs(I1_instrorb) + abs(I1_interinstr) + abs(I1_packeff) + abs(I1_spmass) + abs(I1_instrsyn));
+%I1_norm_interinstr = I1_interinstr/(abs(I1_instrdc) + abs(I1_instrorb) + abs(I1_interinstr) + abs(I1_packeff) + abs(I1_spmass) + abs(I1_instrsyn));
+%I1_norm_packeff = I1_packeff/(abs(I1_instrdc) + abs(I1_instrorb) + abs(I1_interinstr) + abs(I1_packeff) + abs(I1_spmass) + abs(I1_instrsyn));
+%I1_norm_spmass = I1_spmass/(abs(I1_instrdc) + abs(I1_instrorb) + abs(I1_interinstr) + abs(I1_packeff) + abs(I1_spmass) + abs(I1_instrsyn));
+%I1_norm_instrsyn = I1_instrsyn/(abs(I1_instrdc) + abs(I1_instrorb) + abs(I1_interinstr) + abs(I1_packeff) + abs(I1_spmass) + abs(I1_instrsyn));
 
 % Compute I2 for each heuristic
 % I2_instrdc = compute_heuristic_I2_contribution(corr_avg_instrdc_pfdist, corr_min, corr_exp_instrdc, support_pf_runs, support_full_instrdc_runs);
@@ -729,6 +736,11 @@ end
 
 function index_contribution = compute_heuristic_I1_contribution_run_vec(corr_array_heur_param, idx_corr_heur_param, supp_array_param)
     % corr_array_heur_param and supp_array_param are (n x 1) arrays where n is the number of runs
+    is_nan_vals = isnan(corr_array_heur_param); % nan values happen when all values in array are identical
+    
+    corr_array_heur_param = corr_array_heur_param(~is_nan_vals);
+    supp_array_param = supp_array_param(~is_nan_vals);
+    
     log_arg = idx_corr_heur_param.*corr_array_heur_param;
     index_contribution = log_arg.*(-1.*log10(supp_array_param));
 end
@@ -820,8 +832,8 @@ end
 
 function [obj_array, heur_array, design_array] = read_csv_data(assign_prob, heur_bools, random_data_read, rand_init, run_num)
     prob_name = 'ClimateCentric_';
-    %filepath = 'C:\\SEAK Lab\\SEAK Lab Github\\VASSAR\\VASSAR_exec_heur\\results\\'; % for lab system
-    filepath = 'C:\\Users\\rosha\\Documents\\SEAK Lab Github\\VASSAR\\VASSAR_exec_heur\\results\\'; % for laptop
+    filepath = 'C:\\SEAK Lab\\SEAK Lab Github\\VASSAR\\VASSAR_exec_heur\\results\\'; % for lab system
+    %filepath = 'C:\\Users\\rosha\\Documents\\SEAK Lab Github\\VASSAR\\VASSAR_exec_heur\\results\\'; % for laptop
     methods = ["Int Pen","AOS","Bias Init","ACH"];
     heuristics = ["InstrDC","InstrOrb","InterInstr","PackEff","SpMass","InstrSyn"];
     heur_abbr = ["d","o","i","p","m","s"];

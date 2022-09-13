@@ -27,8 +27,8 @@ import java.util.concurrent.*;
 public class GenerateForMetricsStudyAssigning {
 
     public static void main(String[] args) {
-        int numRuns = 10;
-        int numCpus = 4;
+        int numRuns = 2;
+        int numCpus = 2;
 
         RunMode runMode  = RunMode.EpsilonMOEA;
         InitializationMode initializationMode = InitializationMode.InitializeRandom;
@@ -115,7 +115,7 @@ public class GenerateForMetricsStudyAssigning {
         HashMap<String, String[]> instrumentSynergyMap = getInstrumentSynergyNameMap(params);
         HashMap<String, String[]> interferingInstrumentsMap = getInstrumentInterferenceNameMap(params);
 
-        AbstractArchitectureEvaluator evaluator = new ArchitectureEvaluator(considerFeasibility, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold);
+        ArchitectureEvaluator evaluator = new ArchitectureEvaluator(considerFeasibility, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold);
         ArchitectureEvaluationManager evaluationManager = new ArchitectureEvaluationManager(params, evaluator);
         evaluationManager.init(numCpus);
 
@@ -127,7 +127,7 @@ public class GenerateForMetricsStudyAssigning {
 
                 for (int i = 0; i < numRuns; i++) {
 
-                    AssigningProblem problem = new AssigningProblem(new int[]{1}, params.getProblemName(), evaluationManager, params, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
+                    AssigningProblem problem = new AssigningProblem(new int[]{1}, params.getProblemName(), evaluationManager, evaluator, params, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
 
                     switch (initializationMode) {
                         case InitializeRandom:
@@ -197,7 +197,7 @@ public class GenerateForMetricsStudyAssigning {
                 System.out.println("Starting random population evaluation for Assigning Problem");
 
                 for (int i = 0; i < numRuns; i++) {
-                    AssigningProblem problem = new AssigningProblem(new int[]{1}, params.getProblemName(), evaluationManager, params, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
+                    AssigningProblem problem = new AssigningProblem(new int[]{1}, params.getProblemName(), evaluationManager, evaluator, params, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
                     String runName = "random_" + params.getProblemName() + "_" + "assign" + "_" + i;
 
                     List<Solution> randomPopulation = new ArrayList<>();

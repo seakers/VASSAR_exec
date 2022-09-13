@@ -1,16 +1,24 @@
 package seakers.vassarexecheur.search.problems.assigning;
 
+import jess.Rete;
 import org.moeaframework.core.Solution;
+import org.moeaframework.core.variable.EncodingUtils;
 import org.moeaframework.problem.AbstractProblem;
 import seakers.architecture.problem.SystemArchitectureProblem;
 import seakers.vassarheur.BaseParams;
+import seakers.vassarheur.QueryBuilder;
+import seakers.vassarheur.Resource;
 import seakers.vassarheur.Result;
 import seakers.vassarheur.architecture.AbstractArchitecture;
+import seakers.vassarheur.evaluation.AbstractArchitectureEvaluator;
 import seakers.vassarheur.evaluation.ArchitectureEvaluationManager;
 import seakers.vassarheur.problems.Assigning.Architecture;
+import seakers.vassarheur.problems.Assigning.ArchitectureEvaluator;
 import seakers.vassarheur.problems.Assigning.ClimateCentricAssigningParams;
+import seakers.vassarheur.utils.MatlabFunctions;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
 
@@ -19,6 +27,7 @@ public class AssigningProblem  extends AbstractProblem implements SystemArchitec
     private final int[] alternativesForNumberOfSatellites;
     private final String problem;
     private final ArchitectureEvaluationManager evalManager;
+    private final ArchitectureEvaluator evaluator;
     private final BaseParams params;
     private final HashMap<String, String[]> interferenceMap;
     private final HashMap<String, String[]> synergyMap;
@@ -29,10 +38,11 @@ public class AssigningProblem  extends AbstractProblem implements SystemArchitec
     private final int numberOfHeuristicConstraints;
     private final boolean[][] heuristicsConstrained;
 
-    public AssigningProblem(int[] alternativesForNumberOfSatellites, String problem, ArchitectureEvaluationManager evalManager, BaseParams params, HashMap<String, String[]> interferenceMap, HashMap<String, String[]> synergyMap, double dcThreshold, double massThreshold, double packingEfficiencyThreshold, int numberOfHeuristicObjectives, int numberOfHeuristicConstraints, boolean[][] heuristicsConstrained) {
+    public AssigningProblem(int[] alternativesForNumberOfSatellites, String problem, ArchitectureEvaluationManager evalManager, ArchitectureEvaluator evaluator, BaseParams params, HashMap<String, String[]> interferenceMap, HashMap<String, String[]> synergyMap, double dcThreshold, double massThreshold, double packingEfficiencyThreshold, int numberOfHeuristicObjectives, int numberOfHeuristicConstraints, boolean[][] heuristicsConstrained) {
         super(1 + params.getNumInstr()*params.getNumOrbits(), 2+numberOfHeuristicObjectives, numberOfHeuristicConstraints);
         this.problem = problem;
         this.evalManager = evalManager;
+        this.evaluator = evaluator;
         this.alternativesForNumberOfSatellites = alternativesForNumberOfSatellites;
         this.params = params;
         this.interferenceMap = interferenceMap;
@@ -57,19 +67,60 @@ public class AssigningProblem  extends AbstractProblem implements SystemArchitec
             AbstractArchitecture arch_abs = getAbstractArchitecture(arch);
 
             try {
-                Result result = evalManager.evaluateArchitectureSync(arch_abs, "Slow", interferenceMap, synergyMap, dcThreshold, massThreshold, packingEfficiencyThreshold);
+                Result result = new Result(arch_abs, 0.0, 1.0);
+                double[] objectives = new double[2];
+                if (getNumberOfInstruments(arch) > 40) {
+                    objectives[0] = 0.0; // Normalized science score (to be maximized)
+                    objectives[1] = 1.0; // Normalized cost (to be minimized)
+
+                    Resource res = evalManager.getResourcePool().getResource();
+                    Rete r = res.getRete();
+                    QueryBuilder qb = res.getQueryBuilder();
+                    MatlabFunctions m = res.getM();
+
+                    r.reset();
+
+                    AbstractArchitectureEvaluator eval = evalManager.getEvaluator();
+                    evaluator.assertMissions(params, r, arch_abs, m);
+                    eval.evaluateHeuristicParameters(r, arch_abs, qb, m);
+
+                    // Compute and add heuristic values to result
+                    ArrayList<ArrayList<Double>> archHeuristics = eval.computeHeuristics(r, arch_abs, qb, params);
+                    ArrayList<Double> archHeuristicViolations = eval.computeHeuristicsArchitecture(archHeuristics);
+
+                    result.setHeuristics(archHeuristicViolations);
+
+                    // Add Payloads, Orbits and operator parameters to arch
+                    ArrayList<ArrayList<String>> payloads = eval.getSatellitePayloads(r, qb);
+                    ArrayList<String> orbits = eval.getSatelliteOrbits(r, qb);
+                    ArrayList<ArrayList<Double>> operatorParameters = eval.getOperatorParameters(r, qb);
+
+                    arch.setSatelliteOrbits(orbits);
+                    arch.setSatellitePayloads(payloads);
+                    arch.setOperatorParameters(operatorParameters);
+
+                    evalManager.getResourcePool().freeResource(res);
+
+                } else {
+                    result = evalManager.evaluateArchitectureSync(arch_abs, "Slow", interferenceMap, synergyMap, dcThreshold, massThreshold, packingEfficiencyThreshold);
+
+                    objectives[0] = -result.getScience()/0.425;
+                    objectives[1] = result.getCost()/2.5e4;
+
+                    arch.setOperatorParameters(result.getOperatorParameters());
+                    arch.setSatellitePayloads(result.getSatellitePayloads());
+                    arch.setSatelliteOrbits(result.getSatelliteOrbits());
+                }
 
                 ArrayList<Double> archHeuristics = result.getHeuristics();
 
                 // Interior Penalization
-                double[] objectives = new double[2];
-                objectives[0] = -result.getScience();
-                objectives[1] = result.getCost();
+                double penaltyWeight = 1;
 
                 for (int i = 0; i < heuristicsConstrained.length; i++) {
                     if (heuristicsConstrained[i][0]) {
-                        objectives[0] += archHeuristics.get(i);
-                        objectives[1] += archHeuristics.get(i)*1000;
+                        objectives[0] += penaltyWeight*archHeuristics.get(i);
+                        objectives[1] += penaltyWeight*archHeuristics.get(i);
                     }
                 }
 
@@ -93,11 +144,6 @@ public class AssigningProblem  extends AbstractProblem implements SystemArchitec
                 arch.setAttribute("SpMassViolation",archHeuristics.get(4));
                 arch.setAttribute("SynergyViolation",archHeuristics.get(5));
 
-                arch.setOperatorParameters(result.getOperatorParameters());
-
-                arch.setSatellitePayloads(result.getSatellitePayloads());
-
-                arch.setSatelliteOrbits(result.getSatelliteOrbits());
                 arch.setAlreadyEvaluated(true);
             }
             catch (Exception e) {
@@ -129,5 +175,15 @@ public class AssigningProblem  extends AbstractProblem implements SystemArchitec
             throw new IllegalArgumentException("Unrecognizable problem type: " + problem);
         }
         return abs_arch;
+    }
+
+    private int getNumberOfInstruments(AssigningArchitecture arch) {
+        int numberOfInstruments = 0;
+        for (int i = 0; i < arch.getNumberOfVariables()-1; i++) {
+            if (EncodingUtils.getBoolean(arch.getVariable(i+1))) {
+                numberOfInstruments++;
+            }
+        }
+        return numberOfInstruments;
     }
 }

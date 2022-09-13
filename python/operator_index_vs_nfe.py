@@ -11,14 +11,14 @@ import matplotlib.pyplot as plt
 
 ### Parameters
 assigning_problem = False
-random_mode = 1 # 1 - random data, 2 - epsilon MOEA
+#random_mode = 1 # 1 - random data, 2 - epsilon MOEA
 
 num_runs = 10
 
 ### Useful functions
 def get_fileloc(assign_prob, rand_mode, run_num):
-    save_path = "C:\\Users\\rosha\\Documents\\SEAK Lab Github\\VASSAR\\VASSAR_exec_heur\\results\\Operator Metrics\\" # for laptop
-    #save_path = "C:\\SEAK Lab Github\\VASSAR\\VASSAR_exec_heur\\results" # for workstation
+    #save_path = "C:\\Users\\rosha\\Documents\\SEAK Lab Github\\VASSAR\\VASSAR_exec_heur\\results\\Operator Metrics\\" # for laptop
+    save_path = "C:\\SEAK Lab\\SEAK Lab Github\\VASSAR\\VASSAR_exec_heur\\results\\Operator Metrics\\" # for workstation
 
     filepath_prob = "Assigning\\"
     if (not assign_prob):
@@ -47,6 +47,13 @@ def find_closest_index(val, search_list):
     val_diff = np.array(search_list) - val
     closest_index = np.argmin(np.abs(val_diff))
     return closest_index
+
+def find_last_index(val,search_list):
+    if val in search_list:
+        idx = len(search_list) - search_list[::-1].index(val) - 1
+    else:
+        idx = 0
+    return idx
 
 def compute_pareto_front(population):
     pop_size = len(population)
@@ -119,7 +126,7 @@ def read_csv_run(full_filename, run_mode, nfe_thresh):
         for i in range(len(data)-1):
             
             if (run_mode == 2):
-                nfe = float(data[i+1][buffer-1])
+                nfe = int(data[i+1][buffer-1])
             
             data_float = list(map(float,data[i+1][buffer+1:buffer+3]))
             data_float_instrdc = list(map(float,data[i+1][buffer+4:buffer+6]))
@@ -158,6 +165,8 @@ def read_csv_run(full_filename, run_mode, nfe_thresh):
             science_instrsyn[valid_count] = data_float_instrsyn[0]
             cost_instrsyn[valid_count] = data_float_instrsyn[1]
             
+            valid_count += 1
+            
     if (run_mode == 2):
         sort_indices = np.argsort(nfes)
         nfes_sorted = list(nfes[sort_indices])
@@ -183,7 +192,7 @@ def read_csv_run(full_filename, run_mode, nfe_thresh):
         science_instrsyn_sorted = list(science_instrsyn[sort_indices])
         cost_instrsyn_sorted = list(cost_instrsyn[sort_indices])
         
-        nfe_index = find_closest_index(nfe_thresh, nfes_sorted)
+        nfe_index = find_last_index(nfe_thresh, nfes_sorted)
         
         objs = np.column_stack((science_sorted[:nfe_index], cost_sorted[:nfe_index]))
         objs_instrdc = np.column_stack((science_instrdc_sorted[:nfe_index], cost_instrdc_sorted[:nfe_index]))

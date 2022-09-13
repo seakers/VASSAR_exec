@@ -63,13 +63,15 @@ public class PartitioningProblem extends AbstractProblem implements SystemArchit
 
                 // Interior Penalization
                 double[] objectives = new double[2];
-                objectives[0] = -result.getScience();
-                objectives[1] = result.getCost();
+                objectives[0] = -result.getScience()/0.4;
+                objectives[1] = result.getCost()/7250;
+
+                double penaltyWeight = 1;
 
                 for (int i = 0; i < heuristicsConstrained.length; i++) {
                     if (heuristicsConstrained[i][0]) {
-                        objectives[0] += archHeuristics.get(i);
-                        objectives[1] += archHeuristics.get(i)*1000;
+                        objectives[0] += penaltyWeight*archHeuristics.get(i);
+                        objectives[1] += penaltyWeight*archHeuristics.get(i);
                     }
                 }
 

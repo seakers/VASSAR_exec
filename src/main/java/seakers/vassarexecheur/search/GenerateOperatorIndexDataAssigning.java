@@ -29,7 +29,7 @@ public class GenerateOperatorIndexDataAssigning {
 
     public static void main(String[] args) {
         int numRuns = 1;
-        RunMode runMode  = RunMode.RandomPopulation;
+        RunMode runMode  = RunMode.EpsilonMOEA;
         int numCpus = 1;
 
         boolean moveInstrument = false;
@@ -99,8 +99,8 @@ public class GenerateOperatorIndexDataAssigning {
 
         String savePath = System.getProperty("user.dir") + File.separator + "results";
 
-        //String resourcesPath = "C:\\SEAK Lab\\SEAK Lab Github\\VASSAR\\VASSAR_resources-heur"; // for lab system
-        String resourcesPath = "C:\\Users\\rosha\\Documents\\SEAK Lab Github\\VASSAR\\VASSAR_resources-heur"; // for laptop
+        String resourcesPath = "C:\\SEAK Lab\\SEAK Lab Github\\VASSAR\\VASSAR_resources-heur"; // for lab system
+        //String resourcesPath = "C:\\Users\\rosha\\Documents\\SEAK Lab Github\\VASSAR\\VASSAR_resources-heur"; // for laptop
 
         ClimateCentricAssigningParams params = new ClimateCentricAssigningParams(resourcesPath, "FUZZY-ATTRIBUTES","test", "normal");
 
@@ -113,7 +113,7 @@ public class GenerateOperatorIndexDataAssigning {
         ArchitectureEvaluationManager evaluationManager = new ArchitectureEvaluationManager(params, evaluator);
         evaluationManager.init(numCpus);
 
-        AssigningProblem problem = new AssigningProblem(new int[]{1}, params.getProblemName(), evaluationManager, params, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
+        AssigningProblem problem = new AssigningProblem(new int[]{1}, params.getProblemName(), evaluationManager, evaluator, params, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
 
         Initialization initialization = new RandomInitialization(problem, popSize);
 
@@ -130,7 +130,7 @@ public class GenerateOperatorIndexDataAssigning {
             case RandomPopulation:
                 System.out.println("Starting random population evaluation for Assigning Problem");
                 for (int i = 0; i < numRuns; i++) {
-                    String runName = savePath + File.separator + "random_assign_operator_index_" + (7 + i) + ".csv";
+                    String runName = savePath + File.separator + "random_assign_operator_index_" + i + ".csv";
 
                     Solution[] population = initialization.initialize();
                     int[] nfes = new int[population.length];
@@ -155,8 +155,8 @@ public class GenerateOperatorIndexDataAssigning {
                         csvFilename = filepathData + filename + "randinit_" + i + ".csv";
                         saveFilename = savePath + File.separator + filename + "operator_data_" + i + ".csv";
                     } else {
-                        csvFilename = filepathData + filename + "randinit_" + i + "_fullpop.csv";
-                        saveFilename = savePath + File.separator + filename + "operator_data_" + i + "_fullpop.csv";
+                        csvFilename = filepathData + filename + "randinit_" + (7 + i) + "_fullpop.csv";
+                        saveFilename = savePath + File.separator + filename + "operator_data_" + (7 + i) + "_fullpop.csv";
                     }
 
                     ArrayList<Solution> populationList = new ArrayList<>();

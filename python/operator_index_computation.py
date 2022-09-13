@@ -10,16 +10,16 @@ import numpy as np
 from pygmo import hypervolume
 
 ### Parameters
-assigning_problem = False
-random_mode = 3 # 1 - only random data, 2 - only epsilon MOEA, 3 - both
+assigning_problem = True
+random_mode = 1 # 1 - only random data, 2 - only epsilon MOEA, 3 - both
 #final_pop_only = True # only specific to epsilon MOEA
 
 num_runs = 10
 
 #num_archs = 300 # only specific to random data 
 
-save_path = "C:\\Users\\rosha\\Documents\\SEAK Lab Github\\VASSAR\\VASSAR_exec_heur\\results\\Operator Metrics\\" # for laptop
-#save_path = "C:\\SEAK Lab Github\\VASSAR\\VASSAR_exec_heur\\results" # for workstation
+#save_path = "C:\\Users\\rosha\\Documents\\SEAK Lab Github\\VASSAR\\VASSAR_exec_heur\\results\\Operator Metrics\\" # for laptop
+save_path = "C:\\SEAK Lab\\SEAK Lab Github\\VASSAR\\VASSAR_exec_heur\\results\\Operator Metrics\\" # for workstation
 
 filepath_prob = "Assigning\\"
 if (not assigning_problem):
@@ -32,13 +32,12 @@ else:
     filename_mode = "random_partition_operator_index_"
 #filename_finalpop = ""    
 
-if (random_mode == 2) or (random_mode == 3):
+if (random_mode == 2):
     filepath_mode = "Epsilon MOEA\\"
     if assigning_problem:
         filename_mode = "EpsilonMOEA_emoea_ClimateCentric_assign_operator_data_"
     else:
         filename_mode = "EpsilonMOEA_emoea_ClimateCentric_partition_operator_data_"
-    filename_moea = filename_mode
     
     #if not final_pop_only:
         #filename_finalpop = "_fullpop"
@@ -191,8 +190,15 @@ for i in range(num_runs):
     data_all = read_csv_run(filepath_full, filename_full, random_mode)
     
     if (random_mode == 3):
+        if assigning_problem:
+            filename_moea = "EpsilonMOEA_emoea_ClimateCentric_assign_operator_data_"
+        else:
+            filename_moea = "EpsilonMOEA_emoea_ClimateCentric_partition_operator_data_"
+            
+        filepath_moea_full = save_path + filepath_prob + "Epsilon MOEA\\"
+            
         filename_moea_full = filename_moea + str(i) + '.csv'
-        data_moea = read_csv_run(filepath_full, filename_moea_full, random_mode)
+        data_moea = read_csv_run(filepath_moea_full, filename_moea_full, random_mode)
     
         data_orig_combined = np.vstack((data_all['original'], data_moea['original']))
         data_instrdc_combined = np.vstack((data_all['instrdc'], data_moea['instrdc']))

@@ -5,17 +5,17 @@ clc
 
 %% Extract and analyze data for requisite problem
 assigning_problem = false; % true -> assigning problem, false -> partitioning problem
-move_mode = true; % true -> operators move instruments, false -> operators remove instruments (ONLY FOR ASSIGNING OPERATORS)
+move_mode = false; % true -> operators move instruments, false -> operators remove instruments (ONLY FOR ASSIGNING OPERATORS)
 
-%filepath = "C:\\SEAK Lab\\SEAK Lab Github\\VASSAR\\VASSAR_exec_heur\\results\\";
-filepath = "C:\\Users\\rosha\\Documents\\SEAK Lab Github\\VASSAR\\VASSAR_exec_heur\\results\\";
+filepath = "C:\\SEAK Lab\\SEAK Lab Github\\VASSAR\\VASSAR_exec_heur\\results\\";
+%filepath = "C:\\Users\\rosha\\Documents\\SEAK Lab Github\\VASSAR\\VASSAR_exec_heur\\results\\";
 
 filename = "operator_heuristic_satisfaction";
 if assigning_problem
     if move_mode
         filename = strcat(filename,"_assigning_move_mod.csv");
     else
-        filename = strcat(filename,"_assigning_remove_mod.csv");
+        filename = strcat(filename,"_assigning_remove.csv");
     end
 else
     filename = strcat(filename,"_partitioning.csv");
@@ -82,3 +82,30 @@ I1_packeff = mean(packeff_new - packeff_old);
 I1_spmass = mean(spmass_new - spmass_old);
 I1_instrsyn = mean(instrsyn_new - instrsyn_old);
 
+%% Compute Cohen's d for heuristics
+n_instrdc_old = size(instrdc_old, 1);
+n_instrdc_new = size(instrdc_new, 1);
+n_instrorb_old = size(instrorb_old, 1);
+n_instrorb_new = size(instrorb_new, 1);
+n_interinstr_old = size(interinstr_old, 1);
+n_interinstr_new = size(interinstr_new, 1);
+n_packeff_old = size(packeff_old, 1);
+n_packeff_new = size(packeff_new, 1);
+n_spmass_old = size(spmass_old, 1);
+n_spmass_new = size(spmass_new, 1);
+n_instrsyn_old = size(instrsyn_old, 1);
+n_instrsyn_new = size(instrsyn_new, 1);
+
+s_pooled_instrdc = sqrt(((n_instrdc_old - 1)*var(instrdc_old) + (n_instrdc_new - 1)*var(instrdc_new))/(n_instrdc_old + n_instrdc_new - 2));
+s_pooled_instrorb = sqrt(((n_instrorb_old - 1)*var(instrorb_old) + (n_instrorb_new - 1)*var(instrorb_new))/(n_instrorb_old + n_instrorb_new - 2));
+s_pooled_interinstr = sqrt(((n_interinstr_old - 1)*var(interinstr_old) + (n_interinstr_new - 1)*var(interinstr_new))/(n_interinstr_old + n_interinstr_new - 2));
+s_pooled_packeff = sqrt(((n_packeff_old - 1)*var(packeff_old) + (n_packeff_new - 1)*var(packeff_new))/(n_packeff_old + n_packeff_new - 2));
+s_pooled_spmass = sqrt(((n_spmass_old - 1)*var(spmass_old) + (n_spmass_new - 1)*var(spmass_new))/(n_spmass_old + n_spmass_new - 2));
+s_pooled_instrsyn = sqrt(((n_instrsyn_old - 1)*var(instrsyn_old) + (n_instrsyn_new - 1)*var(instrsyn_new))/(n_instrsyn_old + n_instrsyn_new - 2));
+
+d_instrdc = (mean(instrdc_old) - mean(instrdc_new))/s_pooled_instrdc;
+d_instrorb = (mean(instrorb_old) - mean(instrorb_new))/s_pooled_instrorb;
+d_interinstr = (mean(interinstr_old) - mean(interinstr_new))/s_pooled_interinstr;
+d_packeff = (mean(packeff_old) - mean(packeff_new))/s_pooled_packeff;
+d_spmass = (mean(spmass_old) - mean(spmass_new))/s_pooled_spmass;
+d_instrsyn = (mean(instrsyn_old) - mean(instrsyn_new))/s_pooled_instrsyn;

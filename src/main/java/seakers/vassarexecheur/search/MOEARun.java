@@ -66,7 +66,7 @@ public class MOEARun {
         // Define problem parameters
         String csvPath = System.getProperty("user.dir");
 
-        boolean assigningProblem = false; // True -> assigning problem, False -> partitioning problem
+        boolean assigningProblem = true; // True -> assigning problem, False -> partitioning problem
 
         boolean moveInstrument = false; // For the assignment operators only (keep as true for consistency with partitioning operators)
 
@@ -109,8 +109,8 @@ public class MOEARun {
             }
         }
 
-        int numCPU = 4;
-        int numRuns = 30;
+        int numCPU = 1;
+        int numRuns = 1;
         pool = Executors.newFixedThreadPool(numCPU);
         ecs = new ExecutorCompletionService<>(pool);
 
@@ -119,7 +119,7 @@ public class MOEARun {
 
         double dcThreshold = 0.5;
         double massThreshold = 3000.0; // [kg]
-        double packEffThreshold = 0.4;
+        double packEffThreshold = 0.7;
         boolean considerFeasibility = true;
 
         // Get time
@@ -134,8 +134,9 @@ public class MOEARun {
         double crossoverProbability = 1.0;
         properties.setDouble("crossoverProbability", crossoverProbability);
 
-        //String resourcesPath = "C:\\SEAK Lab\\SEAK Lab Github\\VASSAR\\VASSAR_resources-heur";
-        String resourcesPath = "C:\\Users\\rosha\\Documents\\SEAK Lab Github\\VASSAR\\VASSAR_resources-heur";
+        String resourcesPath = "C:\\SEAK Lab\\SEAK Lab Github\\VASSAR\\VASSAR_resources-heur"; // for lab system
+        //String resourcesPath = "C:\\Users\\rosha\\Documents\\SEAK Lab Github\\VASSAR\\VASSAR_resources-heur"; // for laptop
+
         String savePath = System.getProperty("user.dir") + File.separator + "results";
 
         double mutationProbability;
@@ -195,7 +196,7 @@ public class MOEARun {
             // Problem class
             AbstractProblem satelliteProblem;
             if (assigningProblem) {
-                satelliteProblem = new AssigningProblem(new int[]{1}, params.getProblemName(), evaluationManager, params, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
+                satelliteProblem = new AssigningProblem(new int[]{1}, params.getProblemName(), evaluationManager, (ArchitectureEvaluator) evaluator, params, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
             } else {
                 satelliteProblem = new PartitioningProblem(params.getProblemName(), evaluationManager, params, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
             }
