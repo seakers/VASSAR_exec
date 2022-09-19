@@ -67,13 +67,18 @@ public class PartitioningProblem extends AbstractProblem implements SystemArchit
                 objectives[1] = result.getCost()/7250;
 
                 double penaltyWeight = 1;
-
+                double heuristicPenalty = 0;
+                int numHeuristicInteriorPenalty = 0;
                 for (int i = 0; i < heuristicsConstrained.length; i++) {
                     if (heuristicsConstrained[i][0]) {
-                        objectives[0] += penaltyWeight*archHeuristics.get(i);
-                        objectives[1] += penaltyWeight*archHeuristics.get(i);
+                         heuristicPenalty += archHeuristics.get(i);
+                         numHeuristicInteriorPenalty += 1;
                     }
                 }
+                heuristicPenalty /= numHeuristicInteriorPenalty;
+
+                objectives[0] += penaltyWeight*heuristicPenalty;
+                objectives[1] += penaltyWeight*heuristicPenalty;
 
                 arch.setObjective(0, objectives[0]);
                 arch.setObjective(1, objectives[1]);

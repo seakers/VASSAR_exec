@@ -69,7 +69,7 @@ public class AssigningProblem  extends AbstractProblem implements SystemArchitec
             try {
                 Result result = new Result(arch_abs, 0.0, 1.0);
                 double[] objectives = new double[2];
-                if (getNumberOfInstruments(arch) > 40) {
+                if (getNumberOfInstruments(arch) > 35) {
                     objectives[0] = 0.0; // Normalized science score (to be maximized)
                     objectives[1] = 1.0; // Normalized cost (to be minimized)
 
@@ -116,13 +116,19 @@ public class AssigningProblem  extends AbstractProblem implements SystemArchitec
 
                 // Interior Penalization
                 double penaltyWeight = 1;
+                double heuristicPenalty = 0;
+                int numHeuristicsInteriorPenalty = 0;
 
                 for (int i = 0; i < heuristicsConstrained.length; i++) {
                     if (heuristicsConstrained[i][0]) {
-                        objectives[0] += penaltyWeight*archHeuristics.get(i);
-                        objectives[1] += penaltyWeight*archHeuristics.get(i);
+                         heuristicPenalty += archHeuristics.get(i);
+                         numHeuristicsInteriorPenalty += 1;
                     }
                 }
+                heuristicPenalty /= numHeuristicsInteriorPenalty;
+
+                objectives[0] += penaltyWeight*heuristicPenalty;
+                objectives[1] += penaltyWeight*heuristicPenalty;
 
                 arch.setObjective(0, objectives[0]);
                 arch.setObjective(1, objectives[1]);
