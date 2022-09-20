@@ -36,9 +36,9 @@ public class CheckOperators {
 
     public static void main(String[] args) {
         // Define problem parameters
-        boolean assigningProblem = false; // True -> assigning problem, False -> partitioning problem
+        boolean assigningProblem = true; // True -> assigning problem, False -> partitioning problem
 
-        boolean moveInstrument = true; // For the assignment operators only
+        boolean moveInstrument = false; // For the assignment operators only
 
         double dcThreshold = 0.5;
         double massThreshold = 3000.0; // [kg]
@@ -120,7 +120,7 @@ public class CheckOperators {
         }
 
         // Initialize heuristic operator
-        String operatorChoice = "packEff"; // can be dutyCycle, instrOrbit, interInstr, packEff, spMass or instrSyn
+        String operatorChoice = "instrSyn"; // can be dutyCycle, instrOrbit, interInstr, packEff, spMass or instrSyn
         Variation operator = null;
         String attribute = "";
 
@@ -139,7 +139,8 @@ public class CheckOperators {
                     attribute = "InterInstrViolation";
                 break;
                 case "packEff":
-                    operator = new RepairPackingEfficiencyAssigning(packEffThreshold, 1, params, moveInstrument, (AssigningProblem) satelliteProblem, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator);
+                    //operator = new RepairPackingEfficiencyAssigning(packEffThreshold, 1, params, moveInstrument, (AssigningProblem) satelliteProblem, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator);
+                    operator = new RepairPackingEfficiencyAdditionAssigning(packEffThreshold, 1, 1, params, (AssigningProblem) satelliteProblem, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator);
                     attribute = "PackEffViolation";
                 break;
                 case "spMass":
@@ -147,7 +148,8 @@ public class CheckOperators {
                     attribute = "SpMassViolation";
                 break;
                 case "instrSyn":
-                    operator = new RepairSynergyAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, params, (AssigningProblem) satelliteProblem, instrumentSynergyMap, moveInstrument);
+                    //operator = new RepairSynergyAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, params, (AssigningProblem) satelliteProblem, instrumentSynergyMap, moveInstrument);
+                    operator = new RepairSynergyAdditionAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, params, (AssigningProblem) satelliteProblem, instrumentSynergyMap);
                     attribute = "SynergyViolation";
                 break;
                 default: System.out.println("Invalid operator choice");

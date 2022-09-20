@@ -101,9 +101,9 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Application.MOEARun">
-    <configuration name="GenerateForMetricsStudyAssigning" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="seakers.vassarexecheur.search.GenerateForMetricsStudyAssigning" />
+  <component name="RunManager" selected="Application.GenerateOperatorIndexDataAssigning">
+    <configuration name="CheckOperators" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="seakers.vassarexecheur.search.CheckOperators" />
       <module name="vassarexecheur.main" />
       <extension name="coverage">
         <pattern>
@@ -181,11 +181,11 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Application.MOEARun" />
-        <item itemvalue="Application.GenerateForMetricsStudyAssigning" />
         <item itemvalue="Gradle.VASSAR_exec_heur [build]" />
         <item itemvalue="Gradle.VASSAR_exec_heur [clean]" />
         <item itemvalue="Application.GenerateOperatorIndexDataAssigning" />
+        <item itemvalue="Application.CheckOperators" />
+        <item itemvalue="Application.MOEARun" />
       </list>
     </recent_temporary>
   </component>

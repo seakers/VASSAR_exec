@@ -7,7 +7,7 @@ clc
 random_data_bool = true;
 
 % Case 1 - Epsilon MOEA
-assign_case = false;
+assign_case = true;
 random_init = true;
 case_instrdc_bools = [false, false, false, false];
 case_instrorb_bools = [false, false, false, false];
@@ -527,6 +527,28 @@ indices_tablestats = [mean(I1_instrdc), std(I1_instrdc);
                     mean(I1_packeff), std(I1_packeff);
                     mean(I1_spmass), std(I1_spmass);
                     mean(I1_instrsyn), std(I1_instrsyn)];
+                
+%% Determine nth percentile for positive I 
+I_heurs_runs = [I1_instrdc, I1_instrorb, I1_interinstr, I1_packeff, I1_spmass, I1_instrsyn];
+%I_heurs_runs = [I1_instrdc, I1_instrorb, I1_interinstr, I1_spmass, I1_instrsyn];
+%I_heurs_runs = I1_packeff;
+n_percentile_heurs = zeros(size(I_heurs_runs, 2), 1);
+percentile_vals = linspace(1,100,100);
+
+for i = 1:size(I_heurs_runs, 2)
+    I_currentheur = I_heurs_runs(:, i); 
+    for j = 1:size(percentile_vals, 2)
+        pctile = prctile(I_currentheur, percentile_vals(j));
+        if (pctile > 0)
+            n_percentile_heurs(i, 1) = percentile_vals(j);
+            break;
+        end
+        if j == size(percentile_vals, 2)
+            n_percentile_heurs(i, 1) = percentile_vals(j);
+        end
+    end
+end
+               
 %% Thresholding heuristics, objectives and constraints into high and low
 instrdc_all_thresh = struct;
 instrorb_all_thresh = struct;

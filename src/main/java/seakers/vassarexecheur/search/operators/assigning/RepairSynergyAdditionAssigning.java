@@ -97,13 +97,12 @@ public class RepairSynergyAdditionAssigning implements Variation {
         }
 
         ArrayList<ArrayList<Integer>> possibleAdditionSatellites = getValidSatelliteSynergies(rete, satellites, synergyMap);
-        ArrayList<ArrayList<Integer>> possibleUniqueAdditionSatellites = (ArrayList<ArrayList<Integer>>) possibleAdditionSatellites.stream().distinct().collect(Collectors.toList());
 
         // Make choices of instrument addition randomly
         int numberOfMoves = 0;
-        while ((numberOfMoves < numberOfChanges) && (possibleUniqueAdditionSatellites.size() > 0)) {
-            int satChoiceIndex = PRNG.nextInt(possibleUniqueAdditionSatellites.size());
-            ArrayList<Integer> satChoice = possibleUniqueAdditionSatellites.get(satChoiceIndex);
+        while ((numberOfMoves < numberOfChanges) && (possibleAdditionSatellites.size() > 0)) {
+            int satChoiceIndex = PRNG.nextInt(possibleAdditionSatellites.size());
+            ArrayList<Integer> satChoice = possibleAdditionSatellites.get(satChoiceIndex);
 
             try {
                 ValueVector satelliteInstruments = satellites.get(satChoice.get(1)).getSlotValue("instruments").listValue(rete.getGlobalContext());
@@ -113,7 +112,7 @@ public class RepairSynergyAdditionAssigning implements Variation {
                 int synergisticInstrumentChoiceIndex = PRNG.nextInt(synergyInstruments.length);
                 payloads.get(satChoice.get(1)).add(synergyInstruments[synergisticInstrumentChoiceIndex]);
                 numberOfMoves++;
-                possibleUniqueAdditionSatellites.remove(satChoice);
+                possibleAdditionSatellites.remove(satChoice);
             } catch (JessException e) {
                 e.printStackTrace();
             }

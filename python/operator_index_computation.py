@@ -10,7 +10,7 @@ import numpy as np
 from pygmo import hypervolume
 
 ### Parameters
-assigning_problem = True
+assigning_problem = False
 random_mode = 1 # 1 - only random data, 2 - only epsilon MOEA, 3 - both
 #final_pop_only = True # only specific to epsilon MOEA
 
@@ -330,6 +330,21 @@ I_op_interinstr = np.mean(I_interinstr)
 I_op_packeff = np.mean(I_packeff)
 I_op_spmass = np.mean(I_spmass)
 I_op_instrsyn = np.mean(I_instrsyn)
+
+### Computing minumum percentile for positive I_heur 
+I_heurs = np.column_stack((I_instrdc, I_instrorb, I_interinstr, I_packeff, I_spmass, I_instrsyn))
+percentile_vals = np.linspace(1, 100, 100)
+n_perctile_heurs = np.zeros((I_heurs.shape[1]))
+for i in range(len(n_perctile_heurs)):
+    I_current_heur = I_heurs[:,i]
+    for j in range(len(percentile_vals)):
+        pctile = np.percentile(I_current_heur, percentile_vals[j], method='interpolated_inverted_cdf')
+        if pctile > 0:
+            n_perctile_heurs[i] = percentile_vals[j]
+            break
+        if j == len(percentile_vals)-1:
+            n_perctile_heurs[i] = percentile_vals[j]
+            
 
 print('Operator Index - Instrdc : ' + str(I_op_instrdc) + ' +\- ' + str(np.std(I_instrdc)))
 print('Operator Index - Instrorb : ' + str(I_op_instrorb) + ' +\- ' + str(np.std(I_instrorb)))

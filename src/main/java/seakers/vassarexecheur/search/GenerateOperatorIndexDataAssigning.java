@@ -28,11 +28,11 @@ import java.util.*;
 public class GenerateOperatorIndexDataAssigning {
 
     public static void main(String[] args) {
-        int numRuns = 1;
-        RunMode runMode  = RunMode.EpsilonMOEA;
+        int numRuns = 10;
+        RunMode runMode  = RunMode.RandomPopulation;
         int numCpus = 1;
 
-        boolean moveInstrument = false;
+        //boolean moveInstrument = false; // No longer used, set accordingly in assigning operator instances
 
         boolean finalPopulationOnly = false;
 
@@ -117,12 +117,15 @@ public class GenerateOperatorIndexDataAssigning {
 
         Initialization initialization = new RandomInitialization(problem, popSize);
 
-        Variation repairDutyCycle = new RepairDutyCycleAssigning(dcThreshold, 1, params, moveInstrument, problem, evaluationManager.getResourcePool(), evaluator);
-        Variation repairInstrumentOrbitRelations = new RepairInstrumentOrbitAssigning(1, evaluationManager.getResourcePool(), evaluator, params, problem, moveInstrument);
-        Variation repairInterference = new RepairInterferenceAssigning(1, evaluationManager.getResourcePool(), evaluator, params, problem, interferingInstrumentsMap, moveInstrument);
-        Variation repairPackingEfficiency = new RepairPackingEfficiencyAssigning(packEffThreshold, 1, params, moveInstrument, problem, evaluationManager.getResourcePool(), evaluator);
-        Variation repairMass = new RepairMassAssigning(massThreshold, 1, params, moveInstrument, problem, evaluationManager.getResourcePool(), evaluator);
-        Variation repairSynergy = new RepairSynergyAssigning(1, evaluationManager.getResourcePool(), evaluator, params, problem, interferingInstrumentsMap, moveInstrument);
+        // duty Cycle, interference, mass -> remove, instrument orbit -> move, pack Eff, synergy -> Add
+        Variation repairDutyCycle = new RepairDutyCycleAssigning(dcThreshold, 1, params, false, problem, evaluationManager.getResourcePool(), evaluator);
+        Variation repairInstrumentOrbitRelations = new RepairInstrumentOrbitAssigning(1, evaluationManager.getResourcePool(), evaluator, params, problem, true);
+        Variation repairInterference = new RepairInterferenceAssigning(1, evaluationManager.getResourcePool(), evaluator, params, problem, interferingInstrumentsMap, false);
+        //Variation repairPackingEfficiency = new RepairPackingEfficiencyAssigning(packEffThreshold, 1, params, moveInstrument, problem, evaluationManager.getResourcePool(), evaluator);
+        Variation repairPackingEfficiency = new RepairPackingEfficiencyAdditionAssigning(packEffThreshold, 1, 1, params, problem, evaluationManager.getResourcePool(), evaluator);
+        Variation repairMass = new RepairMassAssigning(massThreshold, 1, params, false, problem, evaluationManager.getResourcePool(), evaluator);
+        //Variation repairSynergy = new RepairSynergyAssigning(1, evaluationManager.getResourcePool(), evaluator, params, problem, instrumentSynergyMap, moveInstrument);
+        Variation repairSynergy = new RepairSynergyAdditionAssigning(1, evaluationManager.getResourcePool(), evaluator, params, problem, instrumentSynergyMap);
 
         Variation[] heuristicOperatorsArray = {repairDutyCycle, repairInstrumentOrbitRelations, repairInterference, repairPackingEfficiency, repairMass, repairSynergy};
 
@@ -155,8 +158,8 @@ public class GenerateOperatorIndexDataAssigning {
                         csvFilename = filepathData + filename + "randinit_" + i + ".csv";
                         saveFilename = savePath + File.separator + filename + "operator_data_" + i + ".csv";
                     } else {
-                        csvFilename = filepathData + filename + "randinit_" + (7 + i) + "_fullpop.csv";
-                        saveFilename = savePath + File.separator + filename + "operator_data_" + (7 + i) + "_fullpop.csv";
+                        csvFilename = filepathData + filename + "randinit_" + i + "_fullpop.csv";
+                        saveFilename = savePath + File.separator + filename + "operator_data_" + i + "_fullpop.csv";
                     }
 
                     ArrayList<Solution> populationList = new ArrayList<>();
