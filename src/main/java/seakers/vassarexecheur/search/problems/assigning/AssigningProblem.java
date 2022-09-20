@@ -125,7 +125,9 @@ public class AssigningProblem  extends AbstractProblem implements SystemArchitec
                          numHeuristicsInteriorPenalty += 1;
                     }
                 }
-                heuristicPenalty /= numHeuristicsInteriorPenalty;
+                if (numHeuristicsInteriorPenalty > 0) {
+                    heuristicPenalty /= numHeuristicsInteriorPenalty;
+                }
 
                 objectives[0] += penaltyWeight*heuristicPenalty;
                 objectives[1] += penaltyWeight*heuristicPenalty;

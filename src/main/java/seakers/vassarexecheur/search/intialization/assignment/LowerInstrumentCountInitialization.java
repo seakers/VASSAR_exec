@@ -5,6 +5,7 @@ import org.moeaframework.core.PRNG;
 import org.moeaframework.core.Solution;
 import org.moeaframework.core.variable.BinaryVariable;
 import org.moeaframework.core.variable.EncodingUtils;
+import org.moeaframework.core.variable.IntegerVariable;
 import seakers.vassarexecheur.search.problems.assigning.AssigningProblem;
 
 public class LowerInstrumentCountInitialization implements Initialization {
@@ -26,11 +27,14 @@ public class LowerInstrumentCountInitialization implements Initialization {
         for (int i = 0; i < populationSize; i++) {
             Solution newSolution = problem.newSolution();
 
-            for (int j = 0; j < newSolution.getNumberOfVariables(); j++) {
+            IntegerVariable intVar = new IntegerVariable(0, 0, 0);
+            newSolution.setVariable(0, intVar);
+
+            for (int j = 0; j < newSolution.getNumberOfVariables()-1; j++) {
                 BinaryVariable var = new BinaryVariable(1);
                 boolean value = PRNG.nextDouble() < decisionProbability;
                 EncodingUtils.setBoolean(var, value);
-                newSolution.setVariable(j, var);
+                newSolution.setVariable(j+1, var);
             }
 
             initialPopulation[i] = newSolution;

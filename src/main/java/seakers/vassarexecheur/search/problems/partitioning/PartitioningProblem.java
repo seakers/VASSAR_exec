@@ -75,7 +75,9 @@ public class PartitioningProblem extends AbstractProblem implements SystemArchit
                          numHeuristicInteriorPenalty += 1;
                     }
                 }
-                heuristicPenalty /= numHeuristicInteriorPenalty;
+                if (numHeuristicInteriorPenalty > 0) {
+                    heuristicPenalty /= numHeuristicInteriorPenalty;
+                }
 
                 objectives[0] += penaltyWeight*heuristicPenalty;
                 objectives[1] += penaltyWeight*heuristicPenalty;

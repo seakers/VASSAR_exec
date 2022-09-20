@@ -28,7 +28,7 @@ import java.util.*;
 public class GenerateOperatorIndexDataAssigning {
 
     public static void main(String[] args) {
-        int numRuns = 10;
+        int numRuns = 9;
         RunMode runMode  = RunMode.RandomPopulation;
         int numCpus = 1;
 
@@ -133,7 +133,7 @@ public class GenerateOperatorIndexDataAssigning {
             case RandomPopulation:
                 System.out.println("Starting random population evaluation for Assigning Problem");
                 for (int i = 0; i < numRuns; i++) {
-                    String runName = savePath + File.separator + "random_assign_operator_index_" + i + ".csv";
+                    String runName = savePath + File.separator + "random_assign_operator_index_" + (i + 1) + ".csv";
 
                     Solution[] population = initialization.initialize();
                     int[] nfes = new int[population.length];
