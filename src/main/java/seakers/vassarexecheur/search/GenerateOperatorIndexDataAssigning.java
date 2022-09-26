@@ -28,7 +28,7 @@ import java.util.*;
 public class GenerateOperatorIndexDataAssigning {
 
     public static void main(String[] args) {
-        int numRuns = 9;
+        int numRuns = 10;
         RunMode runMode  = RunMode.RandomPopulation;
         int numCpus = 1;
 
@@ -47,8 +47,9 @@ public class GenerateOperatorIndexDataAssigning {
          * packingEfficiencyConstrained = [interior_penalty, AOS, biased_init, ACH, objective, constraint]
          * spacecraftMassConstrained = [interior_penalty, AOS, biased_init, ACH, objective, constraint]
          * synergyConstrained = [interior_penalty, AOS, biased_init, ACH, objective, constraint]
+         * instrumentCountConstrained = [interior_penalty, AOS, biased_init, ACH, objective, constraint]
          *
-         * heuristicsConstrained = [dutyCycleConstrained, instrumentOrbitRelationsConstrained, interferenceConstrained, packingEfficiencyConstrained, spacecraftMassConstrained, synergyConstrained]
+         * heuristicsConstrained = [dutyCycleConstrained, instrumentOrbitRelationsConstrained, interferenceConstrained, packingEfficiencyConstrained, spacecraftMassConstrained, synergyConstrained, instrumentCountConstrained]
          */
         boolean[] dutyCycleConstrained = {false, false, false, false, false, false};
         boolean[] instrumentOrbitRelationsConstrained = {false, false, false, false, false, false};
@@ -56,8 +57,9 @@ public class GenerateOperatorIndexDataAssigning {
         boolean[] packingEfficiencyConstrained = {false, false, false, false, false, false};
         boolean[] spacecraftMassConstrained = {false, false, false, false, false, false};
         boolean[] synergyConstrained = {false, false, false, false, false, false};
+        boolean[] instrumentCountConstrained = {false, false, false, false, false, false};
 
-        boolean[][] heuristicsConstrained = new boolean[6][6];
+        boolean[][] heuristicsConstrained = new boolean[7][6];
         for (int i = 0; i < 6; i++) {
             heuristicsConstrained[0][i] = dutyCycleConstrained[i];
             heuristicsConstrained[1][i] = instrumentOrbitRelationsConstrained[i];
@@ -65,6 +67,7 @@ public class GenerateOperatorIndexDataAssigning {
             heuristicsConstrained[3][i] = packingEfficiencyConstrained[i];
             heuristicsConstrained[4][i] =  spacecraftMassConstrained[i];
             heuristicsConstrained[5][i] = synergyConstrained[i];
+            heuristicsConstrained[6][i] = instrumentCountConstrained[i];
         }
 
         int numberOfHeuristicConstraints = 0;
@@ -126,14 +129,15 @@ public class GenerateOperatorIndexDataAssigning {
         Variation repairMass = new RepairMassAssigning(massThreshold, 1, params, false, problem, evaluationManager.getResourcePool(), evaluator);
         //Variation repairSynergy = new RepairSynergyAssigning(1, evaluationManager.getResourcePool(), evaluator, params, problem, instrumentSynergyMap, moveInstrument);
         Variation repairSynergy = new RepairSynergyAdditionAssigning(1, evaluationManager.getResourcePool(), evaluator, params, problem, instrumentSynergyMap);
+        Variation repairInstrumentCount = new RepairInstrumentCountAssigning(1, 1, problem, evaluationManager.getResourcePool(), evaluator, params);
 
-        Variation[] heuristicOperatorsArray = {repairDutyCycle, repairInstrumentOrbitRelations, repairInterference, repairPackingEfficiency, repairMass, repairSynergy};
+        Variation[] heuristicOperatorsArray = {repairDutyCycle, repairInstrumentOrbitRelations, repairInterference, repairPackingEfficiency, repairMass, repairSynergy, repairInstrumentCount};
 
         switch (runMode) {
             case RandomPopulation:
                 System.out.println("Starting random population evaluation for Assigning Problem");
                 for (int i = 0; i < numRuns; i++) {
-                    String runName = savePath + File.separator + "random_assign_operator_index_" + (i + 1) + ".csv";
+                    String runName = savePath + File.separator + "random_assign_operator_index_" + i + ".csv";
 
                     Solution[] population = initialization.initialize();
                     int[] nfes = new int[population.length];
@@ -217,6 +221,7 @@ public class GenerateOperatorIndexDataAssigning {
         Variation repairPackingEfficiency = heuristicOperators[3];
         Variation repairMass = heuristicOperators[4];
         Variation repairSynergy = heuristicOperators[5];
+        Variation repairInstrumentCount = heuristicOperators[6];
 
         File csvFile = new File(fileSaveName);
         try (FileWriter writer = new FileWriter(csvFile)) {
@@ -245,6 +250,9 @@ public class GenerateOperatorIndexDataAssigning {
             headings.add("Architecture - Instrsyn");
             headings.add("Science Score - Instrsyn");
             headings.add("Cost - Instrsyn");
+            headings.add("Architecture - Instrcount");
+            headings.add("Science Score - Instrcount");
+            headings.add("Cost - Instrcount");
             writer.append(headings.toString());
             writer.append("\n");
 
@@ -280,6 +288,10 @@ public class GenerateOperatorIndexDataAssigning {
                 AssigningArchitecture instrsynArch = (AssigningArchitecture) instrsynSol;
                 prob.evaluateArch(instrsynArch);
 
+                Solution instrcountSol = repairInstrumentCount.evolve(new Solution[]{currentSol})[0];
+                AssigningArchitecture instrcountArch = (AssigningArchitecture) instrcountSol;
+                prob.evaluateArch(instrcountArch);
+
                 prob.getEvaluationManager().getResourcePool().poolClean();
 
                 StringJoiner sj = new StringJoiner(",");
@@ -307,6 +319,9 @@ public class GenerateOperatorIndexDataAssigning {
                 sj.add(instrsynArch.getBitString());
                 sj.add(Double.toString(instrsynArch.getObjective(0)));
                 sj.add(Double.toString(instrsynArch.getObjective(1)));
+                sj.add(instrcountArch.getBitString());
+                sj.add(Double.toString(instrcountArch.getObjective(0)));
+                sj.add(Double.toString(instrcountArch.getObjective(1)));
 
                 writer.append(sj.toString());
                 writer.append("\n");

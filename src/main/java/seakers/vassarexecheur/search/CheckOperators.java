@@ -38,8 +38,6 @@ public class CheckOperators {
         // Define problem parameters
         boolean assigningProblem = true; // True -> assigning problem, False -> partitioning problem
 
-        boolean moveInstrument = false; // For the assignment operators only
-
         double dcThreshold = 0.5;
         double massThreshold = 3000.0; // [kg]
         double packEffThreshold = 0.7;
@@ -57,8 +55,12 @@ public class CheckOperators {
          * packingEfficiencyConstrained = [interior_penalty, AOS, biased_init, ACH, objective, constraint]
          * spacecraftMassConstrained = [interior_penalty, AOS, biased_init, ACH, objective, constraint]
          * synergyConstrained = [interior_penalty, AOS, biased_init, ACH, objective, constraint]
+         * instrumentCountConstrained = [interior_penalty, AOS, biased_init, ACH, objective, constraint]
          *
+         * if partitioning problem:
          * heuristicsConstrained = [dutyCycleConstrained, instrumentOrbitRelationsConstrained, interferenceConstrained, packingEfficiencyConstrained, spacecraftMassConstrained, synergyConstrained]
+         * else:
+         * heuristicsConstrained = [dutyCycleConstrained, instrumentOrbitRelationsConstrained, interferenceConstrained, packingEfficiencyConstrained, spacecraftMassConstrained, synergyConstrained, instrumentCountConstrained]
          */
         boolean[] dutyCycleConstrained = {false, false, false, false, false, false};
         boolean[] instrumentOrbitRelationsConstrained = {false, false, false, false, false, false};
@@ -66,15 +68,25 @@ public class CheckOperators {
         boolean[] packingEfficiencyConstrained = {false, false, false, false, false, false};
         boolean[] spacecraftMassConstrained = {false, false, false, false, false, false};
         boolean[] synergyConstrained = {false, false, false, false, false, false};
+        boolean[] instrumentCountConstrained = {false, false, false, false, false, false};
 
-        boolean[][] heuristicsConstrained = new boolean[6][6];
-        for (int i = 0; i < 6; i++) {
+        boolean[][] heuristicsConstrained;
+        if (assigningProblem) {
+            heuristicsConstrained = new boolean[7][6];
+        } else {
+            heuristicsConstrained = new boolean[6][6];
+        }
+
+        for (int i = 0; i < heuristicsConstrained[0].length; i++) {
             heuristicsConstrained[0][i] = dutyCycleConstrained[i];
             heuristicsConstrained[1][i] = instrumentOrbitRelationsConstrained[i];
             heuristicsConstrained[2][i] = interferenceConstrained[i];
             heuristicsConstrained[3][i] = packingEfficiencyConstrained[i];
             heuristicsConstrained[4][i] =  spacecraftMassConstrained[i];
             heuristicsConstrained[5][i] = synergyConstrained[i];
+            if (assigningProblem) {
+                heuristicsConstrained[6][i] = instrumentCountConstrained[i];
+            }
         }
 
         int numberOfHeuristicConstraints = 0;
@@ -120,69 +132,73 @@ public class CheckOperators {
         }
 
         // Initialize heuristic operator
-        String operatorChoice = "instrSyn"; // can be dutyCycle, instrOrbit, interInstr, packEff, spMass or instrSyn
+        String operatorChoice = "instrCount"; // can be dutyCycle, instrOrbit, interInstr, packEff, spMass or instrSyn (or instrCount for assigning problem)
         Variation operator = null;
         String attribute = "";
 
         if (assigningProblem) {
             switch (operatorChoice) {
                 case "dutyCycle":
-                    operator = new RepairDutyCycleAssigning(dcThreshold, 1, params, moveInstrument, (AssigningProblem) satelliteProblem, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator);
+                    operator = new RepairDutyCycleAssigning(dcThreshold, 1, params, false, (AssigningProblem) satelliteProblem, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator);
                     attribute = "DCViolation";
-                break;
+                    break;
                 case "instrOrbit":
-                    operator = new RepairInstrumentOrbitAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, params, (AssigningProblem) satelliteProblem, moveInstrument);
+                    operator = new RepairInstrumentOrbitAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, params, (AssigningProblem) satelliteProblem, true);
                     attribute = "InstrOrbViolation";
-                break;
+                    break;
                 case "interInstr":
-                    operator = new RepairInterferenceAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, params, (AssigningProblem) satelliteProblem, interferingInstrumentsMap, moveInstrument);
+                    operator = new RepairInterferenceAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, params, (AssigningProblem) satelliteProblem, interferingInstrumentsMap, false);
                     attribute = "InterInstrViolation";
-                break;
+                    break;
                 case "packEff":
                     //operator = new RepairPackingEfficiencyAssigning(packEffThreshold, 1, params, moveInstrument, (AssigningProblem) satelliteProblem, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator);
                     operator = new RepairPackingEfficiencyAdditionAssigning(packEffThreshold, 1, 1, params, (AssigningProblem) satelliteProblem, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator);
                     attribute = "PackEffViolation";
-                break;
+                    break;
                 case "spMass":
-                    operator = new RepairMassAssigning(massThreshold, 1, params, moveInstrument, (AssigningProblem) satelliteProblem, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator);
+                    operator = new RepairMassAssigning(massThreshold, 1, params, false, (AssigningProblem) satelliteProblem, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator);
                     attribute = "SpMassViolation";
-                break;
+                    break;
                 case "instrSyn":
                     //operator = new RepairSynergyAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, params, (AssigningProblem) satelliteProblem, instrumentSynergyMap, moveInstrument);
                     operator = new RepairSynergyAdditionAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, params, (AssigningProblem) satelliteProblem, instrumentSynergyMap);
                     attribute = "SynergyViolation";
-                break;
+                    break;
+                case "instrCount":
+                    operator = new RepairInstrumentCountAssigning(1, 1, (AssigningProblem) satelliteProblem, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, params);
+                    attribute = "InstrCountViolation";
+                    break;
                 default: System.out.println("Invalid operator choice");
-                break;
+                    break;
             }
         } else {
             switch (operatorChoice) {
                 case "dutyCycle":
                     operator = new RepairDutyCyclePartitioning(dcThreshold, 1, params, (PartitioningProblem) satelliteProblem, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator);
                     attribute = "DCViolation";
-                break;
+                    break;
                 case "instrOrbit":
                     operator = new RepairInstrumentOrbitPartitioning(1, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator, params, (PartitioningProblem) satelliteProblem);
                     attribute = "InstrOrbViolation";
-                break;
+                    break;
                 case "interInstr":
                     operator = new RepairInterferencePartitioning(1, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator, params, (PartitioningProblem) satelliteProblem, interferingInstrumentsMap);
                     attribute = "InterInstrViolation";
-                break;
+                    break;
                 case "packEff":
                     operator = new RepairPackingEfficiencyPartitioning(packEffThreshold, 1, params, (PartitioningProblem) satelliteProblem, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator);
                     attribute = "PackEffViolation";
-                break;
+                    break;
                 case "spMass":
                     operator = new RepairMassPartitioning(massThreshold, 1, params, (PartitioningProblem) satelliteProblem, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator);
                     attribute = "SpMassViolation";
-                break;
+                    break;
                 case "instrSyn":
                     operator = new RepairSynergyPartitioning(1, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator, params, (PartitioningProblem) satelliteProblem, instrumentSynergyMap);
                     attribute = "SynergyViolation";
-                break;
+                    break;
                 default: System.out.println("Invalid operator choice");
-                break;
+                    break;
             }
         }
 

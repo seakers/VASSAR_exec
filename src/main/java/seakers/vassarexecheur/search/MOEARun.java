@@ -67,7 +67,7 @@ public class MOEARun {
         // Define problem parameters
         String csvPath = System.getProperty("user.dir");
 
-        boolean assigningProblem = false; // True -> assigning problem, False -> partitioning problem
+        boolean assigningProblem = true; // True -> assigning problem, False -> partitioning problem
 
         //boolean moveInstrument = false; // No longer used, set accordingly in method instance for each assigning operator
 
@@ -79,24 +79,38 @@ public class MOEARun {
          * packingEfficiencyConstrained = [interior_penalty, AOS, biased_init, ACH, objective, constraint]
          * spacecraftMassConstrained = [interior_penalty, AOS, biased_init, ACH, objective, constraint]
          * synergyConstrained = [interior_penalty, AOS, biased_init, ACH, objective, constraint]
+         * instrumentCountConstrained = [interior_penalty, AOS, biased_init, ACH, objective, constraint]
          *
+         * if partitioning problem:
          * heuristicsConstrained = [dutyCycleConstrained, instrumentOrbitRelationsConstrained, interferenceConstrained, packingEfficiencyConstrained, spacecraftMassConstrained, synergyConstrained]
+         * else:
+         * heuristicsConstrained = [dutyCycleConstrained, instrumentOrbitRelationsConstrained, interferenceConstrained, packingEfficiencyConstrained, spacecraftMassConstrained, synergyConstrained, instrumentCountConstrained]
          */
-        boolean[] dutyCycleConstrained = {true, false, false, false, false, false};
-        boolean[] instrumentOrbitRelationsConstrained = {true, false, false, false, false, false};
-        boolean[] interferenceConstrained = {true, false, false, false, false, false};
-        boolean[] packingEfficiencyConstrained = {true, false, false, false, false, false};
-        boolean[] spacecraftMassConstrained = {true, false, false, false, false, false};
-        boolean[] synergyConstrained = {true, false, false, false, false, false};
+        boolean[] dutyCycleConstrained = {false, true, false, false, false, false};
+        boolean[] instrumentOrbitRelationsConstrained = {false, true, false, false, false, false};
+        boolean[] interferenceConstrained = {false, true, false, false, false, false};
+        boolean[] packingEfficiencyConstrained = {false, false, false, false, false, false};
+        boolean[] spacecraftMassConstrained = {false, true, false, false, false, false};
+        boolean[] synergyConstrained = {false, false, false, false, false, false};
+        boolean[] instrumentCountConstrained = {false, false, false, false, false, false};
 
-        boolean[][] heuristicsConstrained = new boolean[6][6];
-        for (int i = 0; i < 6; i++) {
+        boolean[][] heuristicsConstrained;
+        if (assigningProblem) {
+            heuristicsConstrained = new boolean[7][6];
+        } else {
+            heuristicsConstrained = new boolean[6][6];
+        }
+
+        for (int i = 0; i < heuristicsConstrained[0].length; i++) {
             heuristicsConstrained[0][i] = dutyCycleConstrained[i];
             heuristicsConstrained[1][i] = instrumentOrbitRelationsConstrained[i];
             heuristicsConstrained[2][i] = interferenceConstrained[i];
             heuristicsConstrained[3][i] = packingEfficiencyConstrained[i];
             heuristicsConstrained[4][i] =  spacecraftMassConstrained[i];
             heuristicsConstrained[5][i] = synergyConstrained[i];
+            if (assigningProblem) {
+                heuristicsConstrained[6][i] = instrumentCountConstrained[i];
+            }
         }
 
         int numberOfHeuristicConstraints = 0;
@@ -110,10 +124,19 @@ public class MOEARun {
             }
         }
 
-        boolean initializeLowerInstrumentCount = true; // Only used for the Assigning Problem
+        ArrayList<Boolean> achConstrained = new ArrayList<>();
+        ArrayList<Boolean> aosConstrained = new ArrayList<>();
+        ArrayList<Boolean> biasinitConstrained = new ArrayList<>();
+        for (int i = 0; i < heuristicsConstrained.length; i++) {
+            achConstrained.add(heuristicsConstrained[i][3]);
+            aosConstrained.add(heuristicsConstrained[i][1]);
+            biasinitConstrained.add(heuristicsConstrained[i][2]);
+        }
 
-        int numCPU = 4;
-        int numRuns = 30;
+        //boolean initializeLowerInstrumentCount = false; // Only used for the Assigning Problem
+
+        int numCPU = 2;
+        int numRuns = 2;
         pool = Executors.newFixedThreadPool(numCPU);
         ecs = new ExecutorCompletionService<>(pool);
 
@@ -205,11 +228,11 @@ public class MOEARun {
             }
 
             // Initial population
-            if (dutyCycleConstrained[2] || instrumentOrbitRelationsConstrained[2] || interferenceConstrained[2] || packingEfficiencyConstrained[2] || spacecraftMassConstrained[2] || synergyConstrained[2]) {
+            if (biasinitConstrained.contains(true)) {
                 System.out.println("Biased Initialization not programmed yet");
             } else {
                 if (assigningProblem) {
-                    if (initializeLowerInstrumentCount) {
+                    if (instrumentCountConstrained[2]) {
                         initialization = new LowerInstrumentCountInitialization((AssigningProblem) satelliteProblem, 0.25, popSize);
                     } else {
                         initialization = new RandomInitialization(satelliteProblem, popSize);
@@ -239,6 +262,7 @@ public class MOEARun {
             Variation repairPackingEfficiency;
             Variation repairMass;
             Variation repairSynergy;
+            Variation repairInstrumentCount = null;
 
             if (assigningProblem) { // duty Cycle, interference, mass -> remove, instrument orbit -> move, pack Eff, synergy -> Add
                 repairDutyCycle = new CompoundVariation(new RepairDutyCycleAssigning(dcThreshold, 1, params, false, (AssigningProblem) satelliteProblem, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator), new BitFlip(mutationProbability));
@@ -249,6 +273,7 @@ public class MOEARun {
                 repairMass = new CompoundVariation(new RepairMassAssigning(massThreshold, 1, params, false, (AssigningProblem) satelliteProblem, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator), new BitFlip(mutationProbability));
                 //repairSynergy = new CompoundVariation(new RepairSynergyAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, params, (AssigningProblem) satelliteProblem, instrumentSynergyMap, moveInstrument), new BitFlip(mutationProbability));
                 repairSynergy = new CompoundVariation(new RepairSynergyAdditionAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, params, (AssigningProblem) satelliteProblem, instrumentSynergyMap), new BitFlip(mutationProbability));
+                repairInstrumentCount = new CompoundVariation(new RepairInstrumentCountAssigning(1, 1, (AssigningProblem) satelliteProblem, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, params), new BitFlip(mutationProbability));
             } else {
                 repairDutyCycle = new CompoundVariation(new RepairDutyCyclePartitioning(dcThreshold, 1, params, (PartitioningProblem) satelliteProblem, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator), new PartitioningMutation(mutationProbability, params));
                 repairInstrumentOrbitRelations = new CompoundVariation(new RepairInstrumentOrbitPartitioning(1, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator, params, (PartitioningProblem) satelliteProblem), new PartitioningMutation(mutationProbability, params));
@@ -258,10 +283,10 @@ public class MOEARun {
                 repairSynergy = new CompoundVariation(new RepairSynergyPartitioning(1, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator, params, (PartitioningProblem) satelliteProblem, instrumentSynergyMap), new PartitioningMutation(mutationProbability, params));
             }
 
-            Variation[] heuristicOperators ={repairDutyCycle, repairInstrumentOrbitRelations, repairInterference, repairPackingEfficiency, repairMass, repairSynergy};
-            String[] heuristicAttributes = {"DCViolation","InstrOrbViolation","InterInstrViolation","PackEffViolation","SpMassViolation","SynergyViolation"};
+            Variation[] heuristicOperators = {repairDutyCycle, repairInstrumentOrbitRelations, repairInterference, repairPackingEfficiency, repairMass, repairSynergy, repairInstrumentCount};
+            String[] heuristicAttributes = {"DCViolation","InstrOrbViolation","InterInstrViolation","PackEffViolation","SpMassViolation","SynergyViolation","InstrCountViolation"};
 
-            if (dutyCycleConstrained[3] || instrumentOrbitRelationsConstrained[3] || interferenceConstrained[3] || packingEfficiencyConstrained[3] || spacecraftMassConstrained[3] || synergyConstrained[3]) { // Adaptive Constraint Handling objects
+            if (achConstrained.contains(true)) { // Adaptive Constraint Handling objects
 
                 KnowledgeStochasticRanking ksr;
 
@@ -280,7 +305,7 @@ public class MOEARun {
             }
             selection = new TournamentSelection(2, comp);
 
-            if (dutyCycleConstrained[1] || instrumentOrbitRelationsConstrained[1] || interferenceConstrained[1] || packingEfficiencyConstrained[1] || spacecraftMassConstrained[1] || synergyConstrained[1]) { // AOS objects
+            if (aosConstrained.contains(true)) { // AOS objects
 
                 // Setup for saving results
                 properties.setBoolean("saveQuality", true);

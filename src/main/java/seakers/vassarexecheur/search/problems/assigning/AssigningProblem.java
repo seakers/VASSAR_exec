@@ -69,7 +69,8 @@ public class AssigningProblem  extends AbstractProblem implements SystemArchitec
             try {
                 Result result = new Result(arch_abs, 0.0, 1.0);
                 double[] objectives = new double[2];
-                if (getNumberOfInstruments(arch) > 61) {
+                int numInstruments = getNumberOfInstruments(arch);
+                if (numInstruments > 35) {
                     objectives[0] = 0.0; // Normalized science score (to be maximized)
                     objectives[1] = 1.0; // Normalized cost (to be minimized)
 
@@ -114,6 +115,9 @@ public class AssigningProblem  extends AbstractProblem implements SystemArchitec
 
                 ArrayList<Double> archHeuristics = result.getHeuristics();
 
+                double numInstrumentsPenalty = getNumberOfInstrumentsPenalty(numInstruments);
+                archHeuristics.add(numInstrumentsPenalty);
+
                 // Interior Penalization
                 double penaltyWeight = 1;
                 double heuristicPenalty = 0;
@@ -151,6 +155,7 @@ public class AssigningProblem  extends AbstractProblem implements SystemArchitec
                 arch.setAttribute("PackEffViolation",archHeuristics.get(3));
                 arch.setAttribute("SpMassViolation",archHeuristics.get(4));
                 arch.setAttribute("SynergyViolation",archHeuristics.get(5));
+                arch.setAttribute("InstrCountViolation",archHeuristics.get(6));
 
                 arch.setAlreadyEvaluated(true);
             }
@@ -193,5 +198,9 @@ public class AssigningProblem  extends AbstractProblem implements SystemArchitec
             }
         }
         return numberOfInstruments;
+    }
+
+    private double getNumberOfInstrumentsPenalty(int numInstruments) {
+        return 1/(1 + Math.exp(-0.4*(numInstruments - 30)));
     }
 }

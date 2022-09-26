@@ -101,7 +101,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Application.GenerateOperatorIndexDataAssigning">
+  <component name="RunManager" selected="Gradle.VASSAR_exec_heur [build]">
     <configuration name="CheckOperators" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="seakers.vassarexecheur.search.CheckOperators" />
       <module name="vassarexecheur.main" />
@@ -115,8 +115,8 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="GenerateOperatorIndexDataAssigning" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="seakers.vassarexecheur.search.GenerateOperatorIndexDataAssigning" />
+    <configuration name="MOEARun" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="seakers.vassarexecheur.search.MOEARun" />
       <module name="vassarexecheur.main" />
       <extension name="coverage">
         <pattern>
@@ -187,11 +187,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Application.CheckOperators" />
+        <item itemvalue="Application.MOEARun" />
         <item itemvalue="Gradle.VASSAR_exec_heur [classes]" />
         <item itemvalue="Gradle.VASSAR_exec_heur [build]" />
         <item itemvalue="Gradle.VASSAR_exec_heur [clean]" />
-        <item itemvalue="Application.GenerateOperatorIndexDataAssigning" />
-        <item itemvalue="Application.CheckOperators" />
       </list>
     </recent_temporary>
   </component>
@@ -222,6 +222,15 @@
     </option>
   </component>
   <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/seakers/vassarexecheur/search/operators/assigning/RepairInstrumentCountAssigning.java</url>
+          <line>65</line>
+          <option name="timeStamp" value="13" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
     <watches-manager>
       <configuration name="Remote">
         <watch expression="archHeuristics" />

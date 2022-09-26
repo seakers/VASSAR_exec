@@ -44,8 +44,9 @@ public class GenerateForMetricsStudyAssigning {
          * packingEfficiencyConstrained = [interior_penalty, AOS, biased_init, ACH, objective, constraint]
          * spacecraftMassConstrained = [interior_penalty, AOS, biased_init, ACH, objective, constraint]
          * synergyConstrained = [interior_penalty, AOS, biased_init, ACH, objective, constraint]
+         * instrumentCountConstrained = [interior_penalty, AOS, biased_init, ACH, objective, constraint]
          *
-         * heuristicsConstrained = [dutyCycleConstrained, instrumentOrbitRelationsConstrained, interferenceConstrained, packingEfficiencyConstrained, spacecraftMassConstrained, synergyConstrained]
+         * heuristicsConstrained = [dutyCycleConstrained, instrumentOrbitRelationsConstrained, interferenceConstrained, packingEfficiencyConstrained, spacecraftMassConstrained, synergyConstrained, instrumentCountConstrained]
          */
         boolean[] dutyCycleConstrained = {false, false, false, false, false, false};
         boolean[] instrumentOrbitRelationsConstrained = {false, false, false, false, false, false};
@@ -53,8 +54,9 @@ public class GenerateForMetricsStudyAssigning {
         boolean[] packingEfficiencyConstrained = {false, false, false, false, false, false};
         boolean[] spacecraftMassConstrained = {false, false, false, false, false, false};
         boolean[] synergyConstrained = {false, false, false, false, false, false};
+        boolean[] instrumentCountConstrained = {false, false, false, false, false, false};
 
-        boolean[][] heuristicsConstrained = new boolean[6][6];
+        boolean[][] heuristicsConstrained = new boolean[7][6];
         for (int i = 0; i < 6; i++) {
             heuristicsConstrained[0][i] = dutyCycleConstrained[i];
             heuristicsConstrained[1][i] = instrumentOrbitRelationsConstrained[i];
@@ -62,6 +64,7 @@ public class GenerateForMetricsStudyAssigning {
             heuristicsConstrained[3][i] = packingEfficiencyConstrained[i];
             heuristicsConstrained[4][i] =  spacecraftMassConstrained[i];
             heuristicsConstrained[5][i] = synergyConstrained[i];
+            heuristicsConstrained[6][i] = instrumentCountConstrained[i];
         }
 
         int numberOfHeuristicConstraints = 0;
@@ -251,6 +254,7 @@ public class GenerateForMetricsStudyAssigning {
             headings.add("Packing Efficiency Violation");
             headings.add("Spacecraft Mass Violation");
             headings.add("Instrument Synergy Violation");
+            headings.add("Instrument Count Violation");
             writer.append(headings.toString());
             writer.append("\n");
 
@@ -276,6 +280,7 @@ public class GenerateForMetricsStudyAssigning {
                 double packingEfficiencyViolation = (double) arch.getAttribute("PackEffViolation");
                 double massViolation = (double) arch.getAttribute("SpMassViolation");
                 double synergyViolation = (double) arch.getAttribute("SynergyViolation");
+                double instrumentCountViolation = (double) arch.getAttribute("InstrCountViolation");
 
                 StringJoiner sj = new StringJoiner(",");
                 sj.add(bitString);
@@ -287,6 +292,7 @@ public class GenerateForMetricsStudyAssigning {
                 sj.add(Double.toString(packingEfficiencyViolation));
                 sj.add(Double.toString(massViolation));
                 sj.add(Double.toString(synergyViolation));
+                sj.add(Double.toString(instrumentCountViolation));
 
                 writer.append(sj.toString());
                 writer.append("\n");

@@ -10,7 +10,7 @@ import numpy as np
 from pygmo import hypervolume
 
 ### Parameters
-assigning_problem = False
+assigning_problem = True
 random_mode = 1 # 1 - only random data, 2 - only epsilon MOEA, 3 - both
 #final_pop_only = True # only specific to epsilon MOEA
 
@@ -43,6 +43,10 @@ if (random_mode == 2):
         #filename_finalpop = "_fullpop"
         
 filepath_full = save_path + filepath_prob + filepath_mode 
+
+obj_weights = [1, 1]
+if assigning_problem:
+    obj_weights = [0.425, 2.5e4] # normalization weights for objectives
         
 ### Useful functions
 def compute_pareto_front(population):
@@ -122,26 +126,26 @@ def read_csv_run(filepath, filename, run_mode):
             if (any(np.isnan(np.array(data_all))) or any(np.isinf(np.array(data_all)))):
                 continue
             
-            science[valid_count] = data_float[0]
-            cost[valid_count] = data_float[1]
+            science[valid_count] = data_float[0]*obj_weights[0]
+            cost[valid_count] = data_float[1]*obj_weights[1]
             
-            science_instrdc[valid_count] = data_float_instrdc[0]
-            cost_instrdc[valid_count] = data_float_instrdc[1]
+            science_instrdc[valid_count] = data_float_instrdc[0]*obj_weights[0]
+            cost_instrdc[valid_count] = data_float_instrdc[1]*obj_weights[1]
             
-            science_instrorb[valid_count] = data_float_instrorb[0]
-            cost_instrorb[valid_count] = data_float_instrorb[1]
+            science_instrorb[valid_count] = data_float_instrorb[0]*obj_weights[0]
+            cost_instrorb[valid_count] = data_float_instrorb[1]*obj_weights[1]
             
-            science_interinstr[valid_count] = data_float_interinstr[0]
-            cost_interinstr[valid_count] = data_float_interinstr[1]
+            science_interinstr[valid_count] = data_float_interinstr[0]*obj_weights[0]
+            cost_interinstr[valid_count] = data_float_interinstr[1]*obj_weights[1]
             
-            science_packeff[valid_count] = data_float_packeff[0]
-            cost_packeff[valid_count] = data_float_packeff[1]
+            science_packeff[valid_count] = data_float_packeff[0]*obj_weights[0]
+            cost_packeff[valid_count] = data_float_packeff[1]*obj_weights[1]
             
-            science_spmass[valid_count] = data_float_spmass[0]
-            cost_spmass[valid_count] = data_float_spmass[1]
+            science_spmass[valid_count] = data_float_spmass[0]*obj_weights[0]
+            cost_spmass[valid_count] = data_float_spmass[1]*obj_weights[1]
             
-            science_instrsyn[valid_count] = data_float_instrsyn[0]
-            cost_instrsyn[valid_count] = data_float_instrsyn[1]
+            science_instrsyn[valid_count] = data_float_instrsyn[0]*obj_weights[0]
+            cost_instrsyn[valid_count] = data_float_instrsyn[1]*obj_weights[1]
             
             valid_count += 1
             

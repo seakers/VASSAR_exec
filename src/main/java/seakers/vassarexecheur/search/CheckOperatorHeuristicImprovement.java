@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.StringJoiner;
@@ -42,7 +43,7 @@ public class CheckOperatorHeuristicImprovement {
 
         double dcThreshold = 0.5;
         double massThreshold = 3000.0; // [kg]
-        double packEffThreshold = 0.4;
+        double packEffThreshold = 0.7;
         boolean considerFeasibility = true;
 
         int numCPU = 1;
@@ -63,8 +64,12 @@ public class CheckOperatorHeuristicImprovement {
          * packingEfficiencyConstrained = [interior_penalty, AOS, biased_init, ACH, objective, constraint]
          * spacecraftMassConstrained = [interior_penalty, AOS, biased_init, ACH, objective, constraint]
          * synergyConstrained = [interior_penalty, AOS, biased_init, ACH, objective, constraint]
+         * instrumentCountConstrained = [interior_penalty, AOS, biased_init, ACH, objective, constraint]
          *
+         * if partitioning problem:
          * heuristicsConstrained = [dutyCycleConstrained, instrumentOrbitRelationsConstrained, interferenceConstrained, packingEfficiencyConstrained, spacecraftMassConstrained, synergyConstrained]
+         * else:
+         * heuristicsConstrained = [dutyCycleConstrained, instrumentOrbitRelationsConstrained, interferenceConstrained, packingEfficiencyConstrained, spacecraftMassConstrained, synergyConstrained, instrumentCountConstrained]
          */
         boolean[] dutyCycleConstrained = {false, false, false, false, false, false};
         boolean[] instrumentOrbitRelationsConstrained = {false, false, false, false, false, false};
@@ -72,8 +77,15 @@ public class CheckOperatorHeuristicImprovement {
         boolean[] packingEfficiencyConstrained = {false, false, false, false, false, false};
         boolean[] spacecraftMassConstrained = {false, false, false, false, false, false};
         boolean[] synergyConstrained = {false, false, false, false, false, false};
+        boolean[] instrumentCountConstrained = {false, false, false, false, false, false};
 
-        boolean[][] heuristicsConstrained = new boolean[6][6];
+        boolean[][] heuristicsConstrained;
+        if (assigningProblem) {
+            heuristicsConstrained = new boolean[7][6];
+        } else {
+            heuristicsConstrained = new boolean[6][6];
+        }
+
         for (int i = 0; i < 6; i++) {
             heuristicsConstrained[0][i] = dutyCycleConstrained[i];
             heuristicsConstrained[1][i] = instrumentOrbitRelationsConstrained[i];
@@ -81,6 +93,9 @@ public class CheckOperatorHeuristicImprovement {
             heuristicsConstrained[3][i] = packingEfficiencyConstrained[i];
             heuristicsConstrained[4][i] =  spacecraftMassConstrained[i];
             heuristicsConstrained[5][i] = synergyConstrained[i];
+            if (assigningProblem) {
+                heuristicsConstrained[6][i] = instrumentCountConstrained[i];
+            }
         }
 
         int numberOfHeuristicConstraints = 0;
@@ -95,27 +110,19 @@ public class CheckOperatorHeuristicImprovement {
         }
 
         // Toggle whether assigning operators move on remove instruments
-        boolean moveMode = true;
-        String fileSaveNameMode = "";
-        if (moveMode) {
-            fileSaveNameMode = "_move";
-        } else {
-            fileSaveNameMode = "_remove";
-        }
-
         BaseParams params;
         AbstractArchitectureEvaluator evaluator;
         HashMap<String, String[]> instrumentSynergyMap;
         HashMap<String, String[]> interferingInstrumentsMap;
         if (assigningProblem) {
-            params = new ClimateCentricAssigningParams(resourcesPath, "CRISP-ATTRIBUTES","test", "normal");
+            params = new ClimateCentricAssigningParams(resourcesPath, "FUZZY-ATTRIBUTES","test", "normal");
 
             instrumentSynergyMap = getInstrumentSynergyNameMap(params);
             interferingInstrumentsMap = getInstrumentInterferenceNameMap(params);
 
             evaluator = new ArchitectureEvaluator(considerFeasibility, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold);
         } else {
-            params = new ClimateCentricPartitioningParams(resourcesPath, "CRISP-ATTRIBUTES", "test", "normal");
+            params = new ClimateCentricPartitioningParams(resourcesPath, "FUZZY-ATTRIBUTES", "test", "normal");
 
             instrumentSynergyMap = getInstrumentSynergyNameMap(params);
             interferingInstrumentsMap = getInstrumentInterferenceNameMap(params);
@@ -153,14 +160,18 @@ public class CheckOperatorHeuristicImprovement {
         Variation repairPackingEfficiency;
         Variation repairMass;
         Variation repairSynergy;
+        Variation repairInstrumentCount = null;
 
         if (assigningProblem) {
-            repairDutyCycle = new RepairDutyCycleAssigning(dcThreshold, 1, params, moveMode, (AssigningProblem) satelliteProblem, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator);
-            repairInstrumentOrbitRelations = new RepairInstrumentOrbitAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, params, (AssigningProblem) satelliteProblem, moveMode);
-            repairInterference = new RepairInterferenceAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, params, (AssigningProblem) satelliteProblem, interferingInstrumentsMap, moveMode);
-            repairPackingEfficiency = new RepairPackingEfficiencyAssigning(packEffThreshold, 1, params, moveMode, (AssigningProblem) satelliteProblem, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator);
-            repairMass = new RepairMassAssigning(massThreshold, 1, params, moveMode, (AssigningProblem) satelliteProblem, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator);
-            repairSynergy = new RepairSynergyAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, params, (AssigningProblem) satelliteProblem, interferingInstrumentsMap, moveMode);
+            repairDutyCycle = new RepairDutyCycleAssigning(dcThreshold, 1, params, false, (AssigningProblem) satelliteProblem, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator);
+            repairInstrumentOrbitRelations = new RepairInstrumentOrbitAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, params, (AssigningProblem) satelliteProblem, true);
+            repairInterference = new RepairInterferenceAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, params, (AssigningProblem) satelliteProblem, interferingInstrumentsMap, false);
+            //repairPackingEfficiency = new RepairPackingEfficiencyAssigning(packEffThreshold, 1, params, moveMode, (AssigningProblem) satelliteProblem, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator);
+            repairPackingEfficiency = new RepairPackingEfficiencyAdditionAssigning(packEffThreshold, 1, 1, params, (AssigningProblem) satelliteProblem, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator);
+            repairMass = new RepairMassAssigning(massThreshold, 1, params, false, (AssigningProblem) satelliteProblem, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator);
+            //repairSynergy = new RepairSynergyAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, params, (AssigningProblem) satelliteProblem, interferingInstrumentsMap, moveMode);
+            repairSynergy = new RepairSynergyAdditionAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, params, (AssigningProblem) satelliteProblem, instrumentSynergyMap);
+            repairInstrumentCount = new RepairInstrumentCountAssigning(1, 1, (AssigningProblem) satelliteProblem, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, params);
         } else {
             repairDutyCycle = new RepairDutyCyclePartitioning(dcThreshold, 1, params, (PartitioningProblem) satelliteProblem, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator);
             repairInstrumentOrbitRelations = new RepairInstrumentOrbitPartitioning(1, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator, params, (PartitioningProblem) satelliteProblem);
@@ -177,16 +188,7 @@ public class CheckOperatorHeuristicImprovement {
         int archsEvaluated = 0; // total architectures found
 
         // Initialize csv file
-        String csvFilename = "";
-        if (assigningProblem) {
-            if (moveMode) {
-                csvFilename = savePath + File.separator + "operator_heuristic_satisfaction" + fileSaveNameProblem + fileSaveNameMode + ".csv";
-            } else {
-                csvFilename = savePath + File.separator + "operator_heuristic_satisfaction" + fileSaveNameProblem + fileSaveNameMode + ".csv";
-            }
-        } else {
-            csvFilename = savePath + File.separator + "operator_heuristic_satisfaction" + fileSaveNameProblem + ".csv";
-        }
+        String csvFilename = savePath + File.separator + "operator_heuristic_satisfaction" + fileSaveNameProblem + ".csv";
 
         File csvFile = new File(csvFilename);
 
@@ -212,6 +214,11 @@ public class CheckOperatorHeuristicImprovement {
             headings.add("Full Design - Synergy");
             headings.add("Synergy - Before");
             headings.add("Synergy - After");
+            if (assigningProblem) {
+                headings.add("Full Design - Instrument Count");
+                headings.add("Instrument Count - Before");
+                headings.add("Instrument Count - After");
+            }
             csvWriter.append(headings.toString());
             csvWriter.append("\n");
 
@@ -219,6 +226,7 @@ public class CheckOperatorHeuristicImprovement {
                 Solution currentSolution = initialization.initialize()[0];
 
                 // Evaluate current solution to obtain prior heuristic values
+                double currentInstrumentCountViolation = 1.0;
                 satelliteProblem.evaluate(currentSolution);
                 double currentDutyCycleViolation = (double)currentSolution.getAttribute("DCViolation");
                 double currentInstrumentOrbitRelationsViolation = (double)currentSolution.getAttribute("InstrOrbViolation");
@@ -226,9 +234,22 @@ public class CheckOperatorHeuristicImprovement {
                 double currentPackingEfficiencyViolation = (double)currentSolution.getAttribute("PackEffViolation");
                 double currentSpacecraftMassViolation = (double)currentSolution.getAttribute("SpMassViolation");
                 double currentSynergyViolation = (double)currentSolution.getAttribute("SynergyViolation");
+                if (assigningProblem) {
+                    currentInstrumentCountViolation = (double)currentSolution.getAttribute("InstrCountViolation");
+                }
+                ArrayList<Double> heuristicViolations = new ArrayList<>();
+                heuristicViolations.add(currentDutyCycleViolation);
+                heuristicViolations.add(currentInstrumentOrbitRelationsViolation);
+                heuristicViolations.add(currentInterferenceViolation);
+                heuristicViolations.add(currentPackingEfficiencyViolation);
+                heuristicViolations.add(currentSpacecraftMassViolation);
+                heuristicViolations.add(currentSynergyViolation);
+                if (assigningProblem) {
+                    heuristicViolations.add(currentInstrumentCountViolation);
+                }
 
                 // Only accept architectures that can be improved by the heuristic operator
-                if ((currentDutyCycleViolation == 0) || (currentInstrumentOrbitRelationsViolation == 0) || (currentInterferenceViolation == 0) || (currentPackingEfficiencyViolation == 0) || (currentSpacecraftMassViolation == 0) || (currentSynergyViolation == 0)) {
+                if (!checkFullHeuristicSatisfaction(heuristicViolations)) {
                     archsEvaluated++;
                     if (archsEvaluated % 100 == 0) {
                         evaluationManager.getResourcePool().poolClean();
@@ -262,6 +283,13 @@ public class CheckOperatorHeuristicImprovement {
                     Solution synergySolution = repairSynergy.evolve(new Solution[]{currentSolution})[0];
                     satelliteProblem.evaluate(synergySolution);
 
+                    // For assigning problem, pass through instrument count operator and evaluate new architecture to obtain post heuristic values
+                    Solution instrCountSolution = null;
+                    if (assigningProblem) {
+                        instrCountSolution = repairInstrumentCount.evolve(new Solution[]{currentSolution})[0];
+                        satelliteProblem.evaluate(instrCountSolution);
+                    }
+
                     // Populate row of CSV file
                     StringJoiner sj = new StringJoiner(",");
 
@@ -272,6 +300,7 @@ public class CheckOperatorHeuristicImprovement {
                     String packEffSolutionString;
                     String spMassSolutionString;
                     String synergySolutionString;
+                    String instrCountSolutionString = null;
                     if (assigningProblem) {
                         currentSolutionString = ((AssigningArchitecture) currentSolution).getBitString();
                         dutyCycleSolutionString = ((AssigningArchitecture) dutyCycleSolution).getBitString();
@@ -280,6 +309,7 @@ public class CheckOperatorHeuristicImprovement {
                         packEffSolutionString = ((AssigningArchitecture) packEffSolution).getBitString();
                         spMassSolutionString = ((AssigningArchitecture) spMassSolution).getBitString();
                         synergySolutionString = ((AssigningArchitecture) synergySolution).getBitString();
+                        instrCountSolutionString = ((AssigningArchitecture) instrCountSolution).getBitString();
                     } else {
                         currentSolutionString = ((PartitioningArchitecture) currentSolution).getString();
                         dutyCycleSolutionString = ((PartitioningArchitecture) dutyCycleSolution).getString();
@@ -315,6 +345,12 @@ public class CheckOperatorHeuristicImprovement {
                     sj.add(synergySolutionString);
                     sj.add(Double.toString(currentSynergyViolation));
                     sj.add(Double.toString((double)synergySolution.getAttribute("SynergyViolation")));
+
+                    if (assigningProblem) {
+                        sj.add(instrCountSolutionString);
+                        sj.add(Double.toString(currentInstrumentCountViolation));
+                        sj.add(Double.toString((double)instrCountSolution.getAttribute("instrCountViolation")));
+                    }
 
                     csvWriter.append(sj.toString());
                     csvWriter.append("\n");
@@ -379,5 +415,16 @@ public class CheckOperatorHeuristicImprovement {
             System.out.println("Interference Map fpr current problem not formulated");
         }
         return interferenceNameMap;
+    }
+
+    private static boolean checkFullHeuristicSatisfaction(ArrayList<Double> heurViolations) {
+        boolean fullySatisfying = true;
+        for (int i = 0; i < heurViolations.size(); i++) {
+            if (heurViolations.get(i) != 0) {
+                fullySatisfying = false;
+                break;
+            }
+        }
+        return fullySatisfying;
     }
 }
