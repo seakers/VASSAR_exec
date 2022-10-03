@@ -29,3 +29,5 @@ end
 
 figure
 plot(x, f_x)
+xlabel('Number of Instruments')
+ylabel('Violation Score')

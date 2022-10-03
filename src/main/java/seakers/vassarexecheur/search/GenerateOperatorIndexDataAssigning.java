@@ -98,6 +98,7 @@ public class GenerateOperatorIndexDataAssigning {
         double dcThreshold = 0.5;
         double massThreshold = 3000.0; // [kg]
         double packEffThreshold = 0.7;
+        double instrCountThreshold = 15; // only for assigning problem
         boolean considerFeasibility = false; // use false only for biased random generation for random population runs
 
         String savePath = System.getProperty("user.dir") + File.separator + "results";
@@ -116,7 +117,7 @@ public class GenerateOperatorIndexDataAssigning {
         ArchitectureEvaluationManager evaluationManager = new ArchitectureEvaluationManager(params, evaluator);
         evaluationManager.init(numCpus);
 
-        AssigningProblem problem = new AssigningProblem(new int[]{1}, params.getProblemName(), evaluationManager, evaluator, params, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
+        AssigningProblem problem = new AssigningProblem(new int[]{1}, params.getProblemName(), evaluationManager, evaluator, params, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, instrCountThreshold, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
 
         Initialization initialization = new RandomInitialization(problem, popSize);
 

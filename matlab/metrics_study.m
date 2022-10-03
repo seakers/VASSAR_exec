@@ -23,6 +23,11 @@ else
     case_heur_bools = [case_instrdc_bools; case_instrorb_bools; case_interinstr_bools; case_packeff_bools; case_spmass_bools; case_instrsyn_bools; case_instrcount_bools];
 end
 
+objs_norm = [0.425, 2.5e4];
+if ~assign_case
+    objs_norm = [0.4, 7250];
+end
+
 %% Compute support for ease of satisfaction study
 n_des2 = 300; % number of random designs to use for ease of satisfaction study
 n_runs2 = 10; % number of runs 
@@ -128,12 +133,12 @@ support_pf_runs = zeros(n_runs,1);
 
 for i = 1:n_runs
     [f_rand_run, heur_rand_run, des_rand_run] = read_csv_data(assign_case, case_heur_bools, random_data_bool, random_init, i-1);
-    f_rand_red = f_rand_run(1:n_des,:);
+    f_rand_red = f_rand_run(1:n_des,:).*objs_norm;
     heur_rand_red = heur_rand_run(1:n_des,:);
     des_rand_red = des_rand_run(1:n_des,:);
     if add_ga_data
         [f_ga_run, heur_ga_run, des_ga_run] = read_csv_data(assign_case, case_heur_bools, ~random_data_bool, random_init, i-1);
-        f_ga_red = f_ga_run(1:n_des,:);
+        f_ga_red = f_ga_run(1:n_des,:).*objs_norm;
         heur_ga_red = heur_ga_run(1:n_des,:);
         des_ga_red = des_ga_run(1:n_des,:);
         
@@ -1069,6 +1074,10 @@ function [obj_array, heur_array, design_array] = read_csv_data(assign_prob, heur
     else
         n_data_variables = 9;
     end
+    
+    if assign_prob
+        n_data_variables = n_data_variables + 1; % to account for instrument count heuristic
+    end
 
     for j = 1:n_data_variables
         format_string = strcat(format_string,'%f');
@@ -1091,9 +1100,9 @@ function [obj_array, heur_array, design_array] = read_csv_data(assign_prob, heur
     designs = data_table(:,1);
         
     if random_data_read
-        csv_data = data_table(:,end-7:end);
+        csv_data = data_table(:,end-(n_data_variables-1):end);
     else
-        csv_data = data_table(:,end-8:end);
+        csv_data = data_table(:,end-n_data_variables:end);
     end
     
     data_array = table2array(csv_data);

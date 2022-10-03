@@ -6,7 +6,7 @@ clc
 %% Cases to consider for GA data
 random_data_bool = true;
 % Case 1 - Epsilon MOEA
-assign_case = false;
+assign_case = true;
 random_init = true;
 case_instrdc_bools = [false, false, false, false];
 case_instrorb_bools = [false, false, false, false];
@@ -14,7 +14,12 @@ case_interinstr_bools = [false, false, false, false];
 case_packeff_bools = [false, false, false, false];
 case_spmass_bools = [false, false, false, false];
 case_instrsyn_bools = [false, false, false, false];
-case_heur_bools = [case_instrdc_bools; case_instrorb_bools; case_interinstr_bools; case_packeff_bools; case_spmass_bools; case_instrsyn_bools];
+if assign_case
+    case_instrcount_bools = [false, false, false, false];
+    case_heur_bools = [case_instrdc_bools; case_instrorb_bools; case_interinstr_bools; case_packeff_bools; case_spmass_bools; case_instrsyn_bools; case_instrcount_bools];
+else
+    case_heur_bools = [case_instrdc_bools; case_instrorb_bools; case_interinstr_bools; case_packeff_bools; case_spmass_bools; case_instrsyn_bools];
+end
 
 %% Generate random designs
 n_des = 300; % number of random designs to use for ease of satisfaction study
@@ -42,6 +47,9 @@ I_interinstr = zeros(size(termination_nfes, 2), n_runs);
 I_packeff = zeros(size(termination_nfes, 2), n_runs);
 I_spmass = zeros(size(termination_nfes, 2), n_runs);
 I_instrsyn = zeros(size(termination_nfes, 2), n_runs);
+if assign_case
+    I_instrcount = zeros(size(termination_nfes, 2), n_runs);
+end
 
 for i = 1:size(termination_nfes, 2)
     I_heurs_i = compute_heuristic_indices(assign_case, case_heur_bools, objs_rand_allruns, heurs_rand_allruns, random_data_bool, random_init, termination_nfes(i), n_runs);
@@ -51,6 +59,9 @@ for i = 1:size(termination_nfes, 2)
     I_packeff(i,:) = I_heurs_i(:,4);
     I_spmass(i,:) = I_heurs_i(:,5);
     I_instrsyn(i,:) = I_heurs_i(:,6);
+    if assign_case
+        I_instrcount(i,:) = I_heurs_i(:,7);
+    end
 end
 
 % PLotting
@@ -149,6 +160,9 @@ function [I_heurs] = compute_heuristic_indices(prob_assign_bool, heurs_bools, f_
     I_packeff_allruns = zeros(n_runs, 1);
     I_spmass_allruns = zeros(n_runs, 1);
     I_instrsyn_allruns = zeros(n_runs, 1);
+    if prob_assign_bool
+        I_instrcount_allruns = zeros(n_runs, 1);
+    end
 
     for i = 1:n_runs
         current_field = strcat('trial',num2str(i));
@@ -168,6 +182,9 @@ function [I_heurs] = compute_heuristic_indices(prob_assign_bool, heurs_bools, f_
         packeff_run = heurs_rand_total(:,4);
         spmass_run = heurs_rand_total(:,5);
         instrsyn_run = heurs_rand_total(:,6);
+        if prob_assign_bool
+            instrcount_run = heurs_rand_total(:,7);
+        end
 
         objs_pareto = compute_pareto_front(-f_rand_total(:,1),f_rand_total(:,2));
         objs_pareto_corrected = [-objs_pareto(:,1),objs_pareto(:,2)];
@@ -195,6 +212,9 @@ function [I_heurs] = compute_heuristic_indices(prob_assign_bool, heurs_bools, f_
 %         fracsat_packeff_runs = length(packeff_run(packeff_run==0))/size(science_norm_run,1);
 %         fracsat_spmass_runs = length(spmass_run(spmass_run==0))/size(science_norm_run,1);
 %         fracsat_instrsyn_runs = length(instrsyn_run(instrsyn_run==0))/size(science_norm_run,1);
+%         if prob_assign_bool
+%             fracsat_instrsyn_runs = length(instrsyn_run(instrsyn_run==0))/size(science_norm_run,1);
+%         end
 
         fracsat_pf_runs = size(objs_pareto,1)/size(science_norm_run,1);
 
@@ -205,6 +225,9 @@ function [I_heurs] = compute_heuristic_indices(prob_assign_bool, heurs_bools, f_
         pearson_packeff_pfdist = corr(packeff_run,min_dist_pf_run,'Type','Pearson','Rows','complete');
         pearson_spmass_pfdist = corr(spmass_run,min_dist_pf_run,'Type','Pearson','Rows','complete');
         pearson_instrsyn_pfdist = corr(instrsyn_run,min_dist_pf_run,'Type','Pearson','Rows','complete');
+        if prob_assign_bool
+            pearson_instrcount_pfdist = corr(instrcount_run,min_dist_pf_run,'Type','Pearson','Rows','complete');
+        end
 
         % Computing Spearman's Correlation Coefficients
         spearman_instrdc_pfdist = corr(instrdc_run,min_dist_pf_run,'Type','Spearman','Rows','complete');
@@ -213,6 +236,9 @@ function [I_heurs] = compute_heuristic_indices(prob_assign_bool, heurs_bools, f_
         spearman_packeff_pfdist = corr(packeff_run,min_dist_pf_run,'Type','Spearman','Rows','complete');
         spearman_spmass_pfdist= corr(spmass_run,min_dist_pf_run,'Type','Spearman','Rows','complete');
         spearman_instrsyn_pfdist = corr(instrsyn_run,min_dist_pf_run,'Type','Spearman','Rows','complete');
+        if prob_assign_bool
+            spearman_instrcount_pfdist = corr(instrcount_run,min_dist_pf_run,'Type','Spearman','Rows','complete');
+        end
 
         % Compute average correlation coefficients
         corr_avg_instrdc_pfdist = (pearson_instrdc_pfdist + spearman_instrdc_pfdist)/2;
@@ -221,6 +247,9 @@ function [I_heurs] = compute_heuristic_indices(prob_assign_bool, heurs_bools, f_
         corr_avg_packeff_pfdist = (pearson_packeff_pfdist + spearman_packeff_pfdist)/2;
         corr_avg_spmass_pfdist = (pearson_spmass_pfdist + spearman_spmass_pfdist)/2;
         corr_avg_instrsyn_pfdist = (pearson_instrsyn_pfdist + spearman_instrsyn_pfdist)/2;
+        if prob_assign_bool
+            corr_avg_instrcount_pfdist = (pearson_instrcount_pfdist + spearman_instrcount_pfdist)/2;
+        end
 
         % Computing Heuristic Indices
         corr_exp_instrdc = 1; % correlation expectation with pfdist
@@ -229,6 +258,9 @@ function [I_heurs] = compute_heuristic_indices(prob_assign_bool, heurs_bools, f_
         corr_exp_packeff = 1; % correlation expectation with pfdist
         corr_exp_spmass = 1; % correlation expectation with pfdist
         corr_exp_instrsyn = 1; % correlation expectation with pfdist
+        if prob_assign_bool
+            corr_exp_instrcount = 1; % correlation expectation with pfdist
+        end
 
         I_instrdc_allruns(i,1) = compute_heuristic_I1_contribution_run_vec(corr_avg_instrdc_pfdist, corr_exp_instrdc, fracsat_pf_runs);
         I_instrorb_allruns(i,1) = compute_heuristic_I1_contribution_run_vec(corr_avg_instrorb_pfdist, corr_exp_instrorb, fracsat_pf_runs);
@@ -236,9 +268,16 @@ function [I_heurs] = compute_heuristic_indices(prob_assign_bool, heurs_bools, f_
         I_packeff_allruns(i,1) = compute_heuristic_I1_contribution_run_vec(corr_avg_packeff_pfdist, corr_exp_packeff, fracsat_pf_runs);
         I_spmass_allruns(i,1) = compute_heuristic_I1_contribution_run_vec(corr_avg_spmass_pfdist, corr_exp_spmass, fracsat_pf_runs);
         I_instrsyn_allruns(i,1) = compute_heuristic_I1_contribution_run_vec(corr_avg_instrsyn_pfdist, corr_exp_instrsyn, fracsat_pf_runs);
+        if prob_assign_bool
+            I_instrcount_allruns(i,1) = compute_heuristic_I1_contribution_run_vec(corr_avg_instrcount_pfdist, corr_exp_instrcount, fracsat_pf_runs);
+        end
     end
 
-    I_heurs = [I_instrdc_allruns, I_instrorb_allruns, I_interinstr_allruns, I_packeff_allruns, I_spmass_allruns, I_instrsyn_allruns];
+    if prob_assign_bool
+        I_heurs = [I_instrdc_allruns, I_instrorb_allruns, I_interinstr_allruns, I_packeff_allruns, I_spmass_allruns, I_instrsyn_allruns, I_instrcount_allruns];
+    else
+        I_heurs = [I_instrdc_allruns, I_instrorb_allruns, I_interinstr_allruns, I_packeff_allruns, I_spmass_allruns, I_instrsyn_allruns];
+    end
 end
 
 function [objs_allcases, heuristics_allcases, designs_allcases] = obtain_combined_ga_data_allruns(prob_assign, heuristic_bools, read_random_data, random_init, term_nfe, num_runs)
@@ -264,8 +303,8 @@ function [objs_array_req, heurs_array_req, des_array_req] = read_csv_data_tillnf
     filepath = 'C:\\SEAK Lab\\SEAK Lab Github\\VASSAR\\VASSAR_exec_heur\\results\\'; % for lab system
     %filepath = 'C:\\Users\\rosha\\Documents\\SEAK Lab Github\\VASSAR\\VASSAR_exec_heur\\results\\'; % for laptop
     methods = ["Int Pen","AOS","Bias Init","ACH"];
-    heuristics = ["InstrDC","InstrOrb","InterInstr","PackEff","SpMass","InstrSyn"];
-    heur_abbr = ["d","o","i","p","m","s"];
+    heuristics = ["InstrdC","Instrorb","Interinstr","Packeff","Spmass","Instrsyn","Instrcount"];
+    heur_abbr = ["d","o","i","p","m","s","c"];
    
     filepath_random = 'Random\\';
     filename_random = 'random_';
@@ -332,6 +371,10 @@ function [objs_array_req, heurs_array_req, des_array_req] = read_csv_data_tillnf
     else
         n_data_variables = 9;
     end
+    
+    if assign_prob
+        n_data_variables = n_data_variables + 1;
+    end
 
     for j = 1:n_data_variables
         format_string = strcat(format_string,'%f');
@@ -354,9 +397,9 @@ function [objs_array_req, heurs_array_req, des_array_req] = read_csv_data_tillnf
     designs = data_table(:,1);
         
     if random_data_read
-        csv_data = data_table(:,end-7:end);
+        csv_data = data_table(:,end-(n_data_variables-1):end);
     else
-        csv_data = data_table(:,end-8:end);
+        csv_data = data_table(:,end-n_data_variables:end);
     end
 
     data_array = table2array(csv_data);

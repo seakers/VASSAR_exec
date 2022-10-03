@@ -48,6 +48,7 @@ public class CheckHeuristicImprovement2 {
         double dcThreshold = 0.5;
         double massThreshold = 3000.0; // [kg]
         double packEffThreshold = 0.4;
+        double instrCountThreshold = 15; // only for assigning problem
         boolean considerFeasibility = true;
 
         int numCPU = 1;
@@ -174,7 +175,7 @@ public class CheckHeuristicImprovement2 {
         // Problem class
         AbstractProblem satelliteProblem;
         if (assigningProblem) {
-            satelliteProblem = new AssigningProblem(new int[]{1}, assigningParams.getProblemName(), evaluationManager, (ArchitectureEvaluator) evaluator, assigningParams, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
+            satelliteProblem = new AssigningProblem(new int[]{1}, assigningParams.getProblemName(), evaluationManager, (ArchitectureEvaluator) evaluator, assigningParams, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, instrCountThreshold, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
         } else {
             satelliteProblem = new PartitioningProblem(partitionParams.getProblemName(), evaluationManager, partitionParams, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
         }

@@ -83,7 +83,7 @@ def compute_hv(population):
     hv = hv_object.compute([1.1,1.1])/1.1**2
     return hv
 
-def read_csv_run(filepath, filename, run_mode):
+def read_csv_run(filepath, filename, run_mode, assign_prob):
     full_filename = filepath + filename 
     
     with open(full_filename,newline='') as csvfile:
@@ -110,6 +110,10 @@ def read_csv_run(filepath, filename, run_mode):
         science_instrsyn = np.zeros(len(data)-1)
         cost_instrsyn = np.zeros(len(data)-1)
         
+        if assign_prob:
+            science_instrcount = np.zeros(len(data)-1)
+            cost_instrcount = np.zeros(len(data)-1)
+        
         valid_count = 0
         for i in range(len(data)-1):
             
@@ -120,8 +124,12 @@ def read_csv_run(filepath, filename, run_mode):
             data_float_packeff = list(map(float,data[i+1][13:15]))
             data_float_spmass = list(map(float,data[i+1][16:18]))
             data_float_instrsyn = list(map(float,data[i+1][19:21]))
+            if assign_prob:
+                data_float_instrcount = list(map(float,data[i+1][22:24]))
             
             data_all = data_float + data_float_instrdc + data_float_instrorb + data_float_interinstr + data_float_packeff + data_float_spmass + data_float_instrsyn
+            if assign_prob:
+                data_all = data_all + data_float_instrcount
             
             if (any(np.isnan(np.array(data_all))) or any(np.isinf(np.array(data_all)))):
                 continue
@@ -147,6 +155,10 @@ def read_csv_run(filepath, filename, run_mode):
             science_instrsyn[valid_count] = data_float_instrsyn[0]*obj_weights[0]
             cost_instrsyn[valid_count] = data_float_instrsyn[1]*obj_weights[1]
             
+            if assign_prob:
+                science_instrcount[valid_count] = data_float_instrcount[0]*obj_weights[0]
+                cost_instrcount[valid_count] = data_float_instrcount[1]*obj_weights[1]
+            
             valid_count += 1
             
     objs = np.column_stack((science, cost))
@@ -156,7 +168,9 @@ def read_csv_run(filepath, filename, run_mode):
     objs_packeff = np.column_stack((science_packeff, cost_packeff))
     objs_spmass = np.column_stack((science_spmass, cost_spmass))
     objs_instrsyn = np.column_stack((science_instrsyn, cost_instrsyn))
-    
+    if assign_prob:
+        objs_instrcount = np.column_stack((science_instrcount, cost_instrcount))
+        
     data = {}
     data['original'] = objs
     data['instrdc'] = objs_instrdc
@@ -165,6 +179,8 @@ def read_csv_run(filepath, filename, run_mode):
     data['packeff'] = objs_packeff
     data['spmass'] = objs_spmass
     data['instrsyn'] = objs_instrsyn
+    if assign_prob:
+        data['instrcount'] = objs_instrcount
     
     return data
 
@@ -175,6 +191,8 @@ I_interinstr = np.zeros(num_runs)
 I_packeff = np.zeros(num_runs)
 I_spmass = np.zeros(num_runs)
 I_instrsyn = np.zeros(num_runs)
+if assigning_problem:
+    I_instrcount = np.zeros(num_runs)
 
 pfs_orig = {}
 pfs_instrdc = {}
@@ -183,6 +201,8 @@ pfs_interinstr = {}
 pfs_packeff = {}
 pfs_spmass = {}
 pfs_instrsyn = {}
+if assigning_problem:
+    pfs_instrcount = {}
 
 science_max_allruns = np.zeros(num_runs)
 cost_max_allruns = np.zeros(num_runs)
@@ -191,7 +211,7 @@ cost_min_allruns = np.zeros(num_runs)
 
 for i in range(num_runs):
     filename_full = filename_mode + str(i) + '.csv'
-    data_all = read_csv_run(filepath_full, filename_full, random_mode)
+    data_all = read_csv_run(filepath_full, filename_full, random_mode, assigning_problem)
     
     if (random_mode == 3):
         if assigning_problem:
@@ -211,6 +231,8 @@ for i in range(num_runs):
         data_packeff_combined = np.vstack((data_all['packeff'], data_moea['packeff']))
         data_spmass_combined = np.vstack((data_all['spmass'], data_moea['spmass']))
         data_instrsyn_combined = np.vstack((data_all['instrsyn'], data_moea['instrsyn']))
+        if assigning_problem:
+            data_instrcount_combined = np.vstack((data_all['instrcount'], data_moea['instrcount']))
         
     else:
         
@@ -221,6 +243,8 @@ for i in range(num_runs):
         data_packeff_combined = data_all['packeff']
         data_spmass_combined = data_all['spmass']
         data_instrsyn_combined = data_all['instrsyn']
+        if assigning_problem:
+            data_instrcount_combined = data_all['instrcount']
     
     pf_orig = compute_pareto_front(data_orig_combined)
     pf_instrdc = compute_pareto_front(data_instrdc_combined)
@@ -229,6 +253,9 @@ for i in range(num_runs):
     pf_packeff = compute_pareto_front(data_packeff_combined)
     pf_spmass = compute_pareto_front(data_spmass_combined)
     pf_instrsyn = compute_pareto_front(data_instrsyn_combined)
+    if assigning_problem:
+        pf_instrcount = compute_pareto_front(data_instrcount_combined)
+        
     
     pfs_orig['run'+str(i)] = pf_orig
     pfs_instrdc['run'+str(i)] = pf_instrdc
@@ -237,6 +264,8 @@ for i in range(num_runs):
     pfs_packeff['run'+str(i)] = pf_packeff
     pfs_spmass['run'+str(i)] = pf_spmass
     pfs_instrsyn['run'+str(i)] = pf_instrsyn
+    if assigning_problem:
+        pfs_instrcount['run'+str(i)] = pf_instrcount
     
     science_pf_orig = [x[0] for x in pf_orig]
     cost_pf_orig = [x[1] for x in pf_orig]
@@ -259,12 +288,23 @@ for i in range(num_runs):
     science_pf_instrsyn = [x[0] for x in pf_instrsyn]
     cost_pf_instrsyn = [x[1] for x in pf_instrsyn]
     
-    science_norm_max = np.amax([np.amax(science_pf_orig), np.amax(science_pf_instrdc), np.amax(science_pf_instrorb), np.amax(science_pf_interinstr), np.amax(science_pf_packeff), np.amax(science_pf_spmass), np.amax(science_pf_instrsyn)])
-    cost_norm_max = np.amax([np.amax(cost_pf_orig), np.amax(cost_pf_instrdc), np.amax(cost_pf_instrorb), np.amax(cost_pf_interinstr), np.amax(cost_pf_packeff), np.amax(cost_pf_spmass), np.amax(cost_pf_instrsyn)])
+    if assigning_problem:
+        science_pf_instrcount = [x[0] for x in pf_instrcount]
+        cost_pf_instrcount = [x[1] for x in pf_instrcount]
         
-    science_norm_min = np.amin([np.amin(science_pf_orig), np.amin(science_pf_instrdc), np.amin(science_pf_instrorb), np.amin(science_pf_interinstr), np.amin(science_pf_packeff), np.amin(science_pf_spmass), np.amin(science_pf_instrsyn)])
-    cost_norm_min = np.amin([np.amin(cost_pf_orig), np.amin(cost_pf_instrdc), np.amin(cost_pf_instrorb), np.amin(cost_pf_interinstr), np.amin(cost_pf_packeff), np.amin(cost_pf_spmass), np.amin(cost_pf_instrsyn)])
+        science_norm_max = np.amax([np.amax(science_pf_orig), np.amax(science_pf_instrdc), np.amax(science_pf_instrorb), np.amax(science_pf_interinstr), np.amax(science_pf_packeff), np.amax(science_pf_spmass), np.amax(science_pf_instrsyn), np.amax(science_pf_instrcount)])
+        cost_norm_max = np.amax([np.amax(cost_pf_orig), np.amax(cost_pf_instrdc), np.amax(cost_pf_instrorb), np.amax(cost_pf_interinstr), np.amax(cost_pf_packeff), np.amax(cost_pf_spmass), np.amax(cost_pf_instrsyn), np.amax(cost_pf_instrcount)])
             
+        science_norm_min = np.amin([np.amin(science_pf_orig), np.amin(science_pf_instrdc), np.amin(science_pf_instrorb), np.amin(science_pf_interinstr), np.amin(science_pf_packeff), np.amin(science_pf_spmass), np.amin(science_pf_instrsyn), np.amin(science_pf_instrcount)])
+        cost_norm_min = np.amin([np.amin(cost_pf_orig), np.amin(cost_pf_instrdc), np.amin(cost_pf_instrorb), np.amin(cost_pf_interinstr), np.amin(cost_pf_packeff), np.amin(cost_pf_spmass), np.amin(cost_pf_instrsyn), np.amin(cost_pf_instrcount)])
+        
+    else:
+        science_norm_max = np.amax([np.amax(science_pf_orig), np.amax(science_pf_instrdc), np.amax(science_pf_instrorb), np.amax(science_pf_interinstr), np.amax(science_pf_packeff), np.amax(science_pf_spmass), np.amax(science_pf_instrsyn)])
+        cost_norm_max = np.amax([np.amax(cost_pf_orig), np.amax(cost_pf_instrdc), np.amax(cost_pf_instrorb), np.amax(cost_pf_interinstr), np.amax(cost_pf_packeff), np.amax(cost_pf_spmass), np.amax(cost_pf_instrsyn)])
+            
+        science_norm_min = np.amin([np.amin(science_pf_orig), np.amin(science_pf_instrdc), np.amin(science_pf_instrorb), np.amin(science_pf_interinstr), np.amin(science_pf_packeff), np.amin(science_pf_spmass), np.amin(science_pf_instrsyn)])
+        cost_norm_min = np.amin([np.amin(cost_pf_orig), np.amin(cost_pf_instrdc), np.amin(cost_pf_instrorb), np.amin(cost_pf_interinstr), np.amin(cost_pf_packeff), np.amin(cost_pf_spmass), np.amin(cost_pf_instrsyn)])
+                       
     science_max_allruns[i] = science_norm_max
     cost_max_allruns[i] = cost_norm_max
     science_min_allruns[i] = science_norm_min
@@ -283,6 +323,8 @@ for i in range(num_runs):
     pf_packeff = pfs_packeff['run'+str(i)]
     pf_spmass = pfs_spmass['run'+str(i)]
     pf_instrsyn = pfs_instrsyn['run'+str(i)]
+    if assigning_problem:
+        pf_instrcount = pfs_instrcount['run'+str(i)]
     
     science_pf_norm_orig = [((x[0] - science_norm_min_allruns)/(science_norm_max_allruns - science_norm_min_allruns)) for x in pf_orig]
     cost_pf_norm_orig = [((x[1] - cost_norm_min_allruns)/(cost_norm_max_allruns - cost_norm_min_allruns)) for x in pf_orig]
@@ -305,6 +347,10 @@ for i in range(num_runs):
     science_pf_norm_instrsyn = [((x[0] - science_norm_min_allruns)/(science_norm_max_allruns - science_norm_min_allruns)) for x in pf_instrsyn]
     cost_pf_norm_instrsyn = [((x[1] - cost_norm_min_allruns)/(cost_norm_max_allruns - cost_norm_min_allruns)) for x in pf_instrsyn]
     
+    if assigning_problem:
+        science_pf_norm_instrcount = [((x[0] - science_norm_min_allruns)/(science_norm_max_allruns - science_norm_min_allruns)) for x in pf_instrcount]
+        cost_pf_norm_instrcount = [((x[1] - cost_norm_min_allruns)/(cost_norm_max_allruns - cost_norm_min_allruns)) for x in pf_instrcount]
+    
     pf_norm_orig = np.column_stack((science_pf_norm_orig, cost_pf_norm_orig))
     pf_norm_instrdc = np.column_stack((science_pf_norm_instrdc, cost_pf_norm_instrdc))
     pf_norm_instrorb = np.column_stack((science_pf_norm_instrorb, cost_pf_norm_instrorb))
@@ -312,6 +358,8 @@ for i in range(num_runs):
     pf_norm_packeff = np.column_stack((science_pf_norm_packeff, cost_pf_norm_packeff))
     pf_norm_spmass = np.column_stack((science_pf_norm_spmass, cost_pf_norm_spmass))
     pf_norm_instrsyn = np.column_stack((science_pf_norm_instrsyn, cost_pf_norm_instrsyn))
+    if assigning_problem:
+        pf_norm_instrcount = np.column_stack((science_pf_norm_instrcount, cost_pf_norm_instrcount))
     
     hv_orig = compute_hv(pf_norm_orig)
     hv_instrdc = compute_hv(pf_norm_instrdc)
@@ -320,6 +368,8 @@ for i in range(num_runs):
     hv_packeff = compute_hv(pf_norm_packeff)
     hv_spmass = compute_hv(pf_norm_spmass)
     hv_instrsyn = compute_hv(pf_norm_instrsyn)
+    if assigning_problem:
+        hv_instrcount = compute_hv(pf_norm_instrcount)
     
     I_instrdc[i] = hv_instrdc - hv_orig
     I_instrorb[i] = hv_instrorb - hv_orig
@@ -327,6 +377,8 @@ for i in range(num_runs):
     I_packeff[i] = hv_packeff - hv_orig
     I_spmass[i] = hv_spmass - hv_orig
     I_instrsyn[i] = hv_instrsyn - hv_orig
+    if assigning_problem:
+        I_instrcount[i] = hv_instrcount - hv_orig
     
 I_op_instrdc = np.mean(I_instrdc)
 I_op_instrorb = np.mean(I_instrorb)
@@ -334,9 +386,14 @@ I_op_interinstr = np.mean(I_interinstr)
 I_op_packeff = np.mean(I_packeff)
 I_op_spmass = np.mean(I_spmass)
 I_op_instrsyn = np.mean(I_instrsyn)
+if assigning_problem:
+    I_op_instrcount = np.mean(I_instrcount)
 
 ### Computing minumum percentile for positive I_heur 
 I_heurs = np.column_stack((I_instrdc, I_instrorb, I_interinstr, I_packeff, I_spmass, I_instrsyn))
+if assigning_problem:
+    I_heurs = np.column_stack((I_heurs, I_instrcount))
+    
 percentile_vals = np.linspace(1, 100, 100)
 n_perctile_heurs = np.zeros((I_heurs.shape[1]))
 for i in range(len(n_perctile_heurs)):
@@ -356,3 +413,5 @@ print('Operator Index - Interinstr : ' + str(I_op_interinstr) + ' +\- ' + str(np
 print('Operator Index - Packeff : ' + str(I_op_packeff) + ' +\- ' + str(np.std(I_packeff)))
 print('Operator Index - Spmass : ' + str(I_op_spmass) + ' +\- ' + str(np.std(I_spmass)))
 print('Operator Index - Instrsyn : ' + str(I_op_instrsyn) + ' +\- ' + str(np.std(I_instrsyn)))
+if assigning_problem:
+    print('Operator Index - Instrcount : ' + str(I_op_instrcount) + ' +\- ' + str(np.std(I_instrcount)))

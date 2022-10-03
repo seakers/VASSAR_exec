@@ -101,7 +101,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Gradle.VASSAR_exec_heur [build]">
+  <component name="RunManager" selected="Application.CheckOperators">
     <configuration name="CheckOperators" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="seakers.vassarexecheur.search.CheckOperators" />
       <module name="vassarexecheur.main" />
@@ -222,15 +222,6 @@
     </option>
   </component>
   <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/seakers/vassarexecheur/search/operators/assigning/RepairInstrumentCountAssigning.java</url>
-          <line>65</line>
-          <option name="timeStamp" value="13" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
     <watches-manager>
       <configuration name="Remote">
         <watch expression="archHeuristics" />

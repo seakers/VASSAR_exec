@@ -16,7 +16,7 @@ from itertools import combinations
 import matplotlib.pyplot as plt
 from IPython.core.debugger import set_trace
 
-assigning_problem = True
+assigning_problem = False
 num_runs = 30 # number of runs for each case
 threshold_hv = 0.85
 
@@ -76,22 +76,26 @@ def get_array_element(array, index):
     return array[index]
 
 #### Determine csv filepath from given case type for one of the satellite problems
-def get_csv_filepath_satellite(instrdc_constrained, instrorb_constrained, interinstr_constrained, packeff_constrained, spmass_constrained, instrsyn_constrained, low_instr_init, cred_strat, assigning, run_number):
+def get_csv_filepath_satellite(instrdc_constrained, instrorb_constrained, interinstr_constrained, packeff_constrained, spmass_constrained, instrsyn_constrained, instrcount_constrained, cred_strat, assigning, run_number):
     # instrdc_constrained = [int_pen, AOS, bias_init, ACH] boolean array
     # instrorb_constrained = [int_pen, AOS, bias_init, ACH] boolean array
     # interinstr_constrained = [int_pen, AOS, bias_init, ACH] boolean array
     # packeff_constrained = [int_pen, AOS, bias_init, ACH] boolean array
     # spmass_constrained = [int_pen, AOS, bias_init, ACH] boolean array
     # instrsyn_constrained = [int_pen, AOS, bias_init, ACH] boolean array
-    # low_instr_init = boolean - lower instrument count biased initialization
+    # instrcount_constrained = [int_pen, AOS, bias_init, ACH] boolean array # only for assigning problem
+    #
     # assigning = True if assigning problem data is to be read, False if partitioning problem data is to be read
     
     filepath = 'C:\\SEAK Lab\\SEAK Lab Github\\VASSAR\\VASSAR_exec_heur\\results\\' # for workstation
     #filepath = 'C:\\Users\\rosha\\Documents\\SEAK Lab Github\\VASSAR\\VASSAR_exec_heur\\results\\' # for laptop
     methods = ['Int Pen','AOS','Bias Init','ACH']
-    heurs_list = ['Instrdc','Instrorb','Interinstr','Packeff','Spmass','Instrsyn']
-    heur_abbrvs_list = ['d','o','i','p','m','s']
-    heur_bools = np.vstack((instrdc_constrained, instrorb_constrained, interinstr_constrained, packeff_constrained, spmass_constrained, instrsyn_constrained))
+    heurs_list = ['Instrdc','Instrorb','Interinstr','Packeff','Spmass','Instrsyn','Instrcount']
+    heur_abbrvs_list = ['d','o','i','p','m','s','c']
+    if assigning:
+        heur_bools = np.vstack((instrdc_constrained, instrorb_constrained, interinstr_constrained, packeff_constrained, spmass_constrained, instrsyn_constrained, instrcount_constrained))
+    else:
+        heur_bools = np.vstack((instrdc_constrained, instrorb_constrained, interinstr_constrained, packeff_constrained, spmass_constrained, instrsyn_constrained))
     aos_bools = [x[1] for x in heur_bools]
     
     if (any(aos_bools)):
@@ -110,41 +114,37 @@ def get_csv_filepath_satellite(instrdc_constrained, instrorb_constrained, interi
     filename2 = ''
     filepath_moea = ''
     filepath_cred = ''
-    if not low_instr_init:
-        constr_count = 0
-        for i in range(len(heur_bools[0])):
-            constraints = methods[i] + ' - '
-            constraints_abbrv = ''
-            heur_count = 0
-            for j in range(len(heur_bools)):
-                if heur_bools[j][i]:
-                    constraints = constraints + heurs_list[j]
-                    constraints_abbrv = constraints_abbrv + heur_abbrvs_list[j]
-                else:
-                    heur_count += 1
-            
-            if heur_count < len(heur_bools):
-                filepath2 = filepath2 + constraints + '\\'
-                filename2 = filename2 + constraints_abbrv + 'con' + str(i) + '_'
+    constr_count = 0
+    for i in range(len(heur_bools[0])):
+        constraints = methods[i] + ' - '
+        constraints_abbrv = ''
+        heur_count = 0
+        for j in range(len(heur_bools)):
+            if heur_bools[j][i]:
+                constraints = constraints + heurs_list[j]
+                constraints_abbrv = constraints_abbrv + heur_abbrvs_list[j]
             else:
-                constr_count += 1
-            
-        if (constr_count == len(heur_bools[0])):
-            filepath_moea = 'Epsilon MOEA\\'
+                heur_count += 1
+        
+        if heur_count < len(heur_bools):
+            filepath2 = filepath2 + constraints + '\\'
+            filename2 = filename2 + constraints_abbrv + 'con' + str(i) + '_'
         else:
-            if (any(aos_bools)):
-                filepath_cred = 'offspring parent dominance\\'
-                if cred_strat == 1:
-                    filepath_cred = 'set improvement dominance\\'
-                elif cred_strat == 2:
-                    filepath_cred = 'set contribution dominance\\'
+            constr_count += 1
+        
+    if (constr_count == len(heur_bools[0])):
+        filepath_moea = 'Epsilon MOEA\\'
+    else:
+        if (any(aos_bools)):
+            filepath_cred = 'offspring parent dominance\\'
+            if cred_strat == 1:
+                filepath_cred = 'set improvement dominance\\'
+            elif cred_strat == 2:
+                filepath_cred = 'set contribution dominance\\'
             
     filepath_initialization = ''
     if not assigning:
-        if any(any(row) for row in heur_bools):
-            filepath_initialization = 'injected initialization\\'
-    elif low_instr_init:
-        filepath_initialization = 'Lower Count Initialization\\'
+        filepath_initialization = 'injected initialization\\'
         
     return filepath + filepath_prob + filepath2 + filepath_moea + filepath_cred + filepath_initialization +  filename + str(run_number) + filename2 + filename_prob
 
@@ -153,10 +153,7 @@ np.set_printoptions(threshold=np.inf)
 
 # Create array of NFE values at which to compute hypervolume 
 # Assumes max function evaluations for a) assigning problem is 5000 and b) partitioning problem is 1000
-if assigning_problem:
-    nfe_increment = 50
-else:
-    nfe_increment = 10
+nfe_increment = 50
     
 n_iter_total = 80 # Total number of points in NFE array (1 more than input value to incorporate 0)
 n_iter_init = 60 # Number of initial points in NFE array separated by nfe_increment (the rest after that are separated by 2*nfe_increment)
@@ -168,8 +165,8 @@ for i in range(n_iter_total - n_iter_init + 1):
     nfe_array[n_iter_init+i] = nfe_increment*n_iter_init + (2*nfe_increment)*i
     
 #### Extract Pareto Front and normalization constants data from csv file
-def extract_data_from_csv(csv_filepath, assigning, intpen_constr_heur, low_instr_init):
-    # intpen_constr_heur = [intpen_constr_instrdc, intpen_constr_instrorb, intpen_constr_interinstr, intpen_constr_packeff, intpen_constr_spmass, intpen_constr_instrsyn] boolean array
+def extract_data_from_csv(csv_filepath, assigning, intpen_constr_heur):
+    # intpen_constr_heur = [intpen_constr_instrdc, intpen_constr_instrorb, intpen_constr_interinstr, intpen_constr_packeff, intpen_constr_spmass, intpen_constr_instrsyn[, intpen_constr_instrcount for assigning]] boolean array
     with open(csv_filepath,newline='') as csvfile:
         data = [row for row in csv.reader(csvfile)]
                 
@@ -183,6 +180,8 @@ def extract_data_from_csv(csv_filepath, assigning, intpen_constr_heur, low_instr
         packeff_scores_dat = np.zeros(len(data)-1)
         spmass_scores_dat = np.zeros(len(data)-1)
         instrsyn_scores_dat = np.zeros(len(data)-1)
+        if assigning:
+            instrcount_scores_dat = np.zeros(len(data)-1)
         
         valid_count = 0
         for x in range(len(data)-1):
@@ -191,7 +190,7 @@ def extract_data_from_csv(csv_filepath, assigning, intpen_constr_heur, low_instr
                 continue
             
             num_func_evals_dat[valid_count] = int(data[x+1][1])
-            science_dat[valid_count] = float(data[x+1][2])
+            science_dat[valid_count] = -float(data[x+1][2]) 
             cost_dat[valid_count] = float(data[x+1][3])
             
             instrdc_scores_dat[valid_count] = float(data[x+1][4])
@@ -200,6 +199,8 @@ def extract_data_from_csv(csv_filepath, assigning, intpen_constr_heur, low_instr
             packeff_scores_dat[valid_count] = float(data[x+1][7])
             spmass_scores_dat[valid_count] = float(data[x+1][8])
             instrsyn_scores_dat[valid_count] = float(data[x+1][9])
+            if assigning:
+                instrcount_scores_dat[valid_count] = float(data[x+1][10])
     
             valid_count += 1
             
@@ -214,6 +215,8 @@ def extract_data_from_csv(csv_filepath, assigning, intpen_constr_heur, low_instr
     packeff_scores = packeff_scores_dat[:valid_count]
     spmass_scores = spmass_scores_dat[:valid_count]
     instrsyn_scores = instrsyn_scores_dat[:valid_count]
+    if assigning:
+        instrcount_scores = instrcount_scores_dat[:valid_count]
             
     #print('science')
     #print(science)
@@ -226,7 +229,6 @@ def extract_data_from_csv(csv_filepath, assigning, intpen_constr_heur, low_instr
     n_func_evals = num_func_evals
     sort_indices = np.argsort(n_func_evals)
     science_sorted = list(science[sort_indices])
-    science_opt_sorted = np.multiply(science_sorted, -1)
     cost_sorted = list(cost[sort_indices])
     
     instrdc_scores_sorted = list(instrdc_scores[sort_indices])
@@ -235,50 +237,49 @@ def extract_data_from_csv(csv_filepath, assigning, intpen_constr_heur, low_instr
     packeff_scores_sorted = list(packeff_scores[sort_indices])
     spmass_scores_sorted = list(spmass_scores[sort_indices])
     instrsyn_scores_sorted = list(instrsyn_scores[sort_indices])
+    if assigning:
+        instrcount_scores_sorted = list(instrcount_scores[sort_indices])
     
     #archs_sorted = []
     #for i in range(len(sort_indices)):
         #archs_sorted.append(archs[sort_indices[i]])
     
-    heur_scores_sorted = np.vstack((instrdc_scores_sorted, instrorb_scores_sorted, interinstr_scores_sorted, packeff_scores_sorted, spmass_scores_sorted, instrsyn_scores_sorted))
+    if assigning:
+        heur_scores_sorted = np.vstack((instrdc_scores_sorted, instrorb_scores_sorted, interinstr_scores_sorted, packeff_scores_sorted, spmass_scores_sorted, instrsyn_scores_sorted, instrcount_scores_sorted))
+    else:
+        heur_scores_sorted = np.vstack((instrdc_scores_sorted, instrorb_scores_sorted, interinstr_scores_sorted, packeff_scores_sorted, spmass_scores_sorted, instrsyn_scores_sorted))
     
     ## Compute objectives (specifically for the interior penalty cases)
-    if (any(intpen_constr_heur) or low_instr_init):
-        if assigning:
-            heur_objs_norm = [0.425, 2.5e4] # normalization weights for objectives
-        else:
-            heur_objs_norm = [0.4, 7250]
+    if assigning:
+        heur_objs_norm = [0.425, 2.5e4] # normalization weights for objectives
     else:
-        heur_objs_norm = [1, 1]
+        heur_objs_norm = [0.4, 7250]
         
     heur_weight = 1
     
-    heur_objs = np.zeros((2, len(instrdc_scores_sorted)))
-    if (any(intpen_constr_heur)):
+    heur_objs = np.zeros(len(instrdc_scores_sorted))
+    if any(intpen_constr_heur):
         heur_index_array = np.arange(len(intpen_constr_heur))
         heur_index_used = [v for i, v in enumerate(heur_index_array) if intpen_constr_heur[i] == True]
      
         for idx in heur_index_used:
             heur_scores_idx = heur_scores_sorted[idx]
-            heur_objs_science_idx = [heur_weight*x for x in heur_scores_idx]
-            heur_objs_cost_idx = [heur_weight*x for x in heur_scores_idx]
-            heur_objs[0] = np.add(heur_objs[0], heur_objs_science_idx)
-            heur_objs[1] = np.add(heur_objs[1], heur_objs_cost_idx)
+            heur_objs_idx = [heur_weight*x for x in heur_scores_idx]
+            heur_objs = np.add(heur_objs, heur_objs_idx)
+            
+        heur_objs = np.divide(heur_objs, len(heur_index_used))
     
-    science_objs_sorted = list(np.subtract(science_opt_sorted, heur_objs[0]))
-    cost_objs_sorted = list(np.subtract(cost_sorted, heur_objs[1]))
+    science_objs_sorted = list(np.subtract(science_sorted, heur_objs))
+    cost_objs_sorted = list(np.subtract(cost_sorted, heur_objs))
     
-    true_science = [k*heur_objs_norm[0] for k in science_objs_sorted]
+    true_science = [k*heur_objs_norm[0] for k in science_objs_sorted] 
     true_cost = [k*heur_objs_norm[1] for k in cost_objs_sorted]
     
     ## Determine normalizing objective scores and compute pareto fronts for penalized and true objectives as well as for true objectives of only feasible designs 
     nfe_list_sorted = list(n_func_evals[sort_indices])
     
     #max_func_evals = nfe_list_sorted[-1]
-    if assigning_problem:
-        max_func_evals = 5000 # some runs for some cases run upto 5001 evaluations, which causes hv array length issues
-    else:
-        max_func_evals = 1000
+    max_func_evals = 5000 # some runs for some cases run upto 5001 evaluations, which causes hv array length issues
 
     pareto_front_dict = {}
     #pareto_front_instrdc_dict = {}
@@ -687,10 +688,16 @@ def hypervolume_computation_all_cases(case_bools_dict, cred_assign, prob_assigni
         max_f_evals_allruns = np.zeros(run_nums)
         for j in range(run_nums):
             print('Run '+str(j))
-            current_csvpath = get_csv_filepath_satellite(current_case_bools[:4], current_case_bools[4:8], current_case_bools[8:12], current_case_bools[12:16], current_case_bools[16:20], current_case_bools[20:24], current_case_bools[-1], cred_assign, prob_assigning, j)
+            if prob_assigning:
+                current_csvpath = get_csv_filepath_satellite(current_case_bools[:4], current_case_bools[4:8], current_case_bools[8:12], current_case_bools[12:16], current_case_bools[16:20], current_case_bools[20:24], current_case_bools[24:28], cred_assign, prob_assigning, j)
+            else:
+                current_csvpath = get_csv_filepath_satellite(current_case_bools[:4], current_case_bools[4:8], current_case_bools[8:12], current_case_bools[12:16], current_case_bools[16:20], current_case_bools[20:24], current_case_bools[20:24], cred_assign, prob_assigning, j)
             #set_trace()
-            heur_intpen_constr = [current_case_bools[0], current_case_bools[4], current_case_bools[8], current_case_bools[12], current_case_bools[16], current_case_bools[20]]
-            pf_dict_j, obj_norm_full_j, max_fun_evals_j = extract_data_from_csv(current_csvpath, prob_assigning, heur_intpen_constr, current_case_bools[-1])
+            if prob_assigning:
+                heur_intpen_constr = [current_case_bools[0], current_case_bools[4], current_case_bools[8], current_case_bools[12], current_case_bools[16], current_case_bools[20], current_case_bools[24]]
+            else:
+                heur_intpen_constr = [current_case_bools[0], current_case_bools[4], current_case_bools[8], current_case_bools[12], current_case_bools[16], current_case_bools[20]]
+            pf_dict_j, obj_norm_full_j, max_fun_evals_j = extract_data_from_csv(current_csvpath, prob_assigning, heur_intpen_constr)
             pf_allruns_i['run'+str(j)] = pf_dict_j
             obj_norm_allcasesandruns['case'+str(i+1)+'run'+str(j)] = obj_norm_full_j
             max_f_evals_allruns[j] = max_fun_evals_j
@@ -749,30 +756,28 @@ def plotting_all_cases(nfe_hv_attained_dict, hv_dict_med_allcases, hv_dict_1stq_
 #### Comparing Simple E-MOEA with AOS - all heuristics and AOS - promising heuristics
 cases_dict = {}
 
-# bools = [int_pen_instrdc, AOS_instrdc, bias_init_instrdc, ACH_instrdc, int_pen_instrorb, AOS_instrorb, bias_init_instrorb, ACH_instrorb, int_pen_interinstr, AOS_interinstr, bias_init_interinstr, ACH_interinstr, int_pen_packeff, AOS_packeff, bias_init_packeff, ACH_packeff, int_pen_spmass, AOS_spmass, bias_init_spmass, ACH_spmass, int_pen_instrsyn, AOS_instrsyn, bias_init_instrsyn, ACH_instrsyn, low_count_init]
-case1_bools = [False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False] # Simple E-MOEA
-#case2_bools = [False, True, False, False, False, True, False, False, False, True, False, False, False, True, False, False, False, True, False, False, False, True, False, False, False] #  AOS - all heuristics
-#case2_bools = [True, False, False, False, True, False, False, False, True, False, False, False, True, False, False, False, True, False, False, False, True, False, False, False, False] #  Int Pen - all heuristics
-case2_bools = [False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, True] # Simple E-MOEA
+# bools = [int_pen_instrdc, AOS_instrdc, bias_init_instrdc, ACH_instrdc, int_pen_instrorb, AOS_instrorb, bias_init_instrorb, ACH_instrorb, int_pen_interinstr, AOS_interinstr, bias_init_interinstr, ACH_interinstr, int_pen_packeff, AOS_packeff, bias_init_packeff, ACH_packeff, int_pen_spmass, AOS_spmass, bias_init_spmass, ACH_spmass, int_pen_instrsyn, AOS_instrsyn, bias_init_instrsyn, ACH_instrsyn, int_pen_instrcount, AOS_instrcount, bias_init_instrcount, ACH_instrcount]
+case1_bools = [False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False] # Simple E-MOEA
+case2_bools = [False, True, False, False, False, True, False, False, False, True, False, False, False, True, False, False, False, True, False, False, False, True, False, False, False, True, False, False] #  AOS - all heuristics
+#case2_bools = [True, False, False, False, True, False, False, False, True, False, False, False, True, False, False, False, True, False, False, False, True, False, False, False, True, False, False, False] #  Int Pen - all heuristics
 if assigning_problem:
-    #case3_bools = [False, True, False, False, False, True, False, False, False, True, False, False, False, False, False, False, False, True, False, False, False, True, False, False, False] #  AOS - DutyCycle, InstrOrb, InterInstr, SpMass, Instrsyn
+    case3_bools = [False, True, False, False, False, True, False, False, False, True, False, False, False, False, False, False, False, True, False, False, False, True, False, False, False, True, False, False] #  AOS - DutyCycle, InstrOrb, InterInstr, SpMass, Instrsyn, Instrcount
     
     cases_dict['case1'] = case1_bools
     cases_dict['case2'] = case2_bools
-    #cases_dict['case3'] = case3_bools
+    cases_dict['case3'] = case3_bools
     
-    line_colours = ['#000000','#E69F00'] # black, yellow
-    #line_colours = ['#000000','#E69F00','#56B4E9'] # black, yellow, blue 
+    #line_colours = ['#000000','#E69F00'] # black, yellow
+    line_colours = ['#000000','#E69F00','#56B4E9'] # black, yellow, blue 
     
     #casenames = ['Eps. MOEA','All heurs']
-    casenames = ['Eps. MOEA','Biased Init.']
-    #casenames = ['Eps. MOEA','All heurs','Promising heurs']
+    casenames = ['Eps. MOEA','All heurs','Promising heurs']
     
-    alpha_values = [0.5,0.5] # change based on number of cases/visibility
-    #alpha_values = [0.5,0.5,0.5] # change based on number of cases/visibility
+    #alpha_values = [0.5,0.5] # change based on number of cases/visibility
+    alpha_values = [0.5,0.5,0.5] # change based on number of cases/visibility
 else:
-    #case3_bools = [False, True, False, False, False, True, False, False, False, True, False, False, False, False, False, False, False, True, False, False, False, True, False, False, False] #  AOS - DutyCycle, InstrOrb, InterInstr, SpMass, Instrsyn
-    case3_bools = [True, False, False, False, True, False, False, False, True, False, False, False, False, False, False, False, True, False, False, False, True, False, False, False, False] #  Int Pen - DutyCycle, InstrOrb, InterInstr, SpMass, Instrsyn
+    case3_bools = [False, True, False, False, False, True, False, False, False, True, False, False, False, False, False, False, False, True, False, False, False, False, False, False, False, False, False, False] #  AOS - DutyCycle, InstrOrb, InterInstr, SpMass
+    #case3_bools = [True, False, False, False, True, False, False, False, True, False, False, False, False, False, False, False, True, False, False, False, True, False, False, False, False, False, False, False] #  Int Pen - DutyCycle, InstrOrb, InterInstr, SpMass, Instrsyn
     
     cases_dict['case1'] = case1_bools
     cases_dict['case2'] = case2_bools

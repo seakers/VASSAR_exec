@@ -27,10 +27,10 @@ import java.util.concurrent.*;
 public class GenerateForMetricsStudyAssigning {
 
     public static void main(String[] args) {
-        int numRuns = 2;
-        int numCpus = 2;
+        int numRuns = 10;
+        int numCpus = 4;
 
-        RunMode runMode  = RunMode.EpsilonMOEA;
+        RunMode runMode  = RunMode.RandomPopulation;
         InitializationMode initializationMode = InitializationMode.InitializeRandom;
 
         ExecutorService pool = Executors.newFixedThreadPool(numCpus);
@@ -104,6 +104,7 @@ public class GenerateForMetricsStudyAssigning {
         double dcThreshold = 0.5;
         double massThreshold = 3000.0; // [kg]
         double packEffThreshold = 0.7;
+        double instrCountThreshold = 15; // only for assigning problem
         boolean considerFeasibility = true;
 
         String savePath = System.getProperty("user.dir") + File.separator + "results";
@@ -130,7 +131,7 @@ public class GenerateForMetricsStudyAssigning {
 
                 for (int i = 0; i < numRuns; i++) {
 
-                    AssigningProblem problem = new AssigningProblem(new int[]{1}, params.getProblemName(), evaluationManager, evaluator, params, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
+                    AssigningProblem problem = new AssigningProblem(new int[]{1}, params.getProblemName(), evaluationManager, evaluator, params, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, instrCountThreshold, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
 
                     switch (initializationMode) {
                         case InitializeRandom:
@@ -200,7 +201,7 @@ public class GenerateForMetricsStudyAssigning {
                 System.out.println("Starting random population evaluation for Assigning Problem");
 
                 for (int i = 0; i < numRuns; i++) {
-                    AssigningProblem problem = new AssigningProblem(new int[]{1}, params.getProblemName(), evaluationManager, evaluator, params, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
+                    AssigningProblem problem = new AssigningProblem(new int[]{1}, params.getProblemName(), evaluationManager, evaluator, params, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, instrCountThreshold, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
                     String runName = "random_" + params.getProblemName() + "_" + "assign" + "_" + i;
 
                     List<Solution> randomPopulation = new ArrayList<>();

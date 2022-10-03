@@ -36,11 +36,12 @@ public class CheckOperators {
 
     public static void main(String[] args) {
         // Define problem parameters
-        boolean assigningProblem = true; // True -> assigning problem, False -> partitioning problem
+        boolean assigningProblem = false; // True -> assigning problem, False -> partitioning problem
 
         double dcThreshold = 0.5;
         double massThreshold = 3000.0; // [kg]
         double packEffThreshold = 0.7;
+        double instrCountThreshold = 15; // only for assigning problem
         boolean considerFeasibility = true;
 
         int numCPU = 1;
@@ -62,12 +63,12 @@ public class CheckOperators {
          * else:
          * heuristicsConstrained = [dutyCycleConstrained, instrumentOrbitRelationsConstrained, interferenceConstrained, packingEfficiencyConstrained, spacecraftMassConstrained, synergyConstrained, instrumentCountConstrained]
          */
-        boolean[] dutyCycleConstrained = {false, false, false, false, false, false};
-        boolean[] instrumentOrbitRelationsConstrained = {false, false, false, false, false, false};
-        boolean[] interferenceConstrained = {false, false, false, false, false, false};
+        boolean[] dutyCycleConstrained = {true, false, false, false, false, false};
+        boolean[] instrumentOrbitRelationsConstrained = {true, false, false, false, false, false};
+        boolean[] interferenceConstrained = {true, false, false, false, false, false};
         boolean[] packingEfficiencyConstrained = {false, false, false, false, false, false};
-        boolean[] spacecraftMassConstrained = {false, false, false, false, false, false};
-        boolean[] synergyConstrained = {false, false, false, false, false, false};
+        boolean[] spacecraftMassConstrained = {true, false, false, false, false, false};
+        boolean[] synergyConstrained = {true, false, false, false, false, false};
         boolean[] instrumentCountConstrained = {false, false, false, false, false, false};
 
         boolean[][] heuristicsConstrained;
@@ -105,7 +106,7 @@ public class CheckOperators {
         HashMap<String, String[]> instrumentSynergyMap;
         HashMap<String, String[]> interferingInstrumentsMap;
         if (assigningProblem) {
-            params = new ClimateCentricAssigningParams(resourcesPath, "CRISP-ATTRIBUTES","test", "normal");
+            params = new ClimateCentricAssigningParams(resourcesPath, "FUZZY-ATTRIBUTES","test", "normal");
 
             instrumentSynergyMap = getInstrumentSynergyNameMap(params);
             interferingInstrumentsMap = getInstrumentInterferenceNameMap(params);
@@ -113,7 +114,7 @@ public class CheckOperators {
             evaluator = new ArchitectureEvaluator(considerFeasibility, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold);
 
         } else {
-            params = new ClimateCentricPartitioningParams(resourcesPath, "CRISP-ATTRIBUTES", "test", "normal");
+            params = new ClimateCentricPartitioningParams(resourcesPath, "FUZZY-ATTRIBUTES", "test", "normal");
 
             instrumentSynergyMap = getInstrumentSynergyNameMap(params);
             interferingInstrumentsMap = getInstrumentInterferenceNameMap(params);
@@ -126,7 +127,7 @@ public class CheckOperators {
         // Problem class
         AbstractProblem satelliteProblem;
         if (assigningProblem) {
-            satelliteProblem = new AssigningProblem(new int[]{1}, params.getProblemName(), evaluationManager, (ArchitectureEvaluator) evaluator, params, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
+            satelliteProblem = new AssigningProblem(new int[]{1}, params.getProblemName(), evaluationManager, (ArchitectureEvaluator) evaluator, params, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, instrCountThreshold, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
         } else {
             satelliteProblem = new PartitioningProblem(params.getProblemName(), evaluationManager, params, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
         }
@@ -221,8 +222,8 @@ public class CheckOperators {
 
         } else {
             //int[] instrumentPartitioning = new int[]{0, 0, 0, 1, 1, 2, 3, 3, 3, 3, 4, 4};
-            int[] instrumentPartitioning = new int[]{0, 1, 0, 2, 2, 4, 3, 3, 3, 3, 4, 4};
-            int[] orbitAssignment = new int[]{1, 1, 0, 2, 4, -1, -1, -1, -1, -1, -1, -1};
+            int[] instrumentPartitioning = new int[]{0, 0, 1, 2, 3, 4, 5, 6, 7, 7, 8, 9};
+            int[] orbitAssignment = new int[]{3, 1, 0, 3, 2, 4, 3, 2, 0, 4, -1, -1};
 
             PartitioningArchitecture arch = new PartitioningArchitecture(params.getNumInstr(), params.getNumOrbits(), 2, params);
             arch.setVariablesFromPartitionArrays(instrumentPartitioning, orbitAssignment);

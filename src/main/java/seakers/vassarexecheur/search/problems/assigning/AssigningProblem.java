@@ -34,11 +34,12 @@ public class AssigningProblem  extends AbstractProblem implements SystemArchitec
     private final double dcThreshold;
     private final double massThreshold; //[kg]
     private final double packingEfficiencyThreshold;
+    private final double instrumentCountThreshold;
     private final int numberOfHeuristicObjectives;
     private final int numberOfHeuristicConstraints;
     private final boolean[][] heuristicsConstrained;
 
-    public AssigningProblem(int[] alternativesForNumberOfSatellites, String problem, ArchitectureEvaluationManager evalManager, ArchitectureEvaluator evaluator, BaseParams params, HashMap<String, String[]> interferenceMap, HashMap<String, String[]> synergyMap, double dcThreshold, double massThreshold, double packingEfficiencyThreshold, int numberOfHeuristicObjectives, int numberOfHeuristicConstraints, boolean[][] heuristicsConstrained) {
+    public AssigningProblem(int[] alternativesForNumberOfSatellites, String problem, ArchitectureEvaluationManager evalManager, ArchitectureEvaluator evaluator, BaseParams params, HashMap<String, String[]> interferenceMap, HashMap<String, String[]> synergyMap, double dcThreshold, double massThreshold, double packingEfficiencyThreshold, double instrumentCountThreshold, int numberOfHeuristicObjectives, int numberOfHeuristicConstraints, boolean[][] heuristicsConstrained) {
         super(1 + params.getNumInstr()*params.getNumOrbits(), 2+numberOfHeuristicObjectives, numberOfHeuristicConstraints);
         this.problem = problem;
         this.evalManager = evalManager;
@@ -50,6 +51,7 @@ public class AssigningProblem  extends AbstractProblem implements SystemArchitec
         this.dcThreshold = dcThreshold;
         this.massThreshold = massThreshold;
         this.packingEfficiencyThreshold = packingEfficiencyThreshold;
+        this.instrumentCountThreshold = instrumentCountThreshold;
         this.numberOfHeuristicObjectives = numberOfHeuristicObjectives;
         this.numberOfHeuristicConstraints = numberOfHeuristicConstraints;
         this.heuristicsConstrained = heuristicsConstrained;
@@ -115,7 +117,7 @@ public class AssigningProblem  extends AbstractProblem implements SystemArchitec
 
                 ArrayList<Double> archHeuristics = result.getHeuristics();
 
-                double numInstrumentsPenalty = getNumberOfInstrumentsPenalty(numInstruments);
+                double numInstrumentsPenalty = getInstrumentCountPenalty2(numInstruments);
                 archHeuristics.add(numInstrumentsPenalty);
 
                 // Interior Penalization
@@ -200,7 +202,17 @@ public class AssigningProblem  extends AbstractProblem implements SystemArchitec
         return numberOfInstruments;
     }
 
-    private double getNumberOfInstrumentsPenalty(int numInstruments) {
+    private double getInstrumentCountPenalty(int numInstruments) {
         return 1/(1 + Math.exp(-0.4*(numInstruments - 30)));
+    }
+
+    private double getInstrumentCountPenalty2(int numInstruments) {
+        if (numInstruments < instrumentCountThreshold) {
+            return 0.0;
+        } else if (numInstruments < 40) {
+            return (numInstruments - instrumentCountThreshold)/(40.0 - instrumentCountThreshold);
+        } else {
+            return 1.0;
+        }
     }
 }

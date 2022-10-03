@@ -86,13 +86,13 @@ public class MOEARun {
          * else:
          * heuristicsConstrained = [dutyCycleConstrained, instrumentOrbitRelationsConstrained, interferenceConstrained, packingEfficiencyConstrained, spacecraftMassConstrained, synergyConstrained, instrumentCountConstrained]
          */
-        boolean[] dutyCycleConstrained = {false, true, false, false, false, false};
-        boolean[] instrumentOrbitRelationsConstrained = {false, true, false, false, false, false};
-        boolean[] interferenceConstrained = {false, true, false, false, false, false};
+        boolean[] dutyCycleConstrained = {false, false, false, false, false, false};
+        boolean[] instrumentOrbitRelationsConstrained = {false, false, false, false, false, false};
+        boolean[] interferenceConstrained = {false, false, false, false, false, false};
         boolean[] packingEfficiencyConstrained = {false, false, false, false, false, false};
-        boolean[] spacecraftMassConstrained = {false, true, false, false, false, false};
+        boolean[] spacecraftMassConstrained = {false, false, false, false, false, false};
         boolean[] synergyConstrained = {false, false, false, false, false, false};
-        boolean[] instrumentCountConstrained = {false, false, false, false, false, false};
+        boolean[] instrumentCountConstrained = {false, false, false, false, false, false}; // only for assigning problem
 
         boolean[][] heuristicsConstrained;
         if (assigningProblem) {
@@ -106,7 +106,7 @@ public class MOEARun {
             heuristicsConstrained[1][i] = instrumentOrbitRelationsConstrained[i];
             heuristicsConstrained[2][i] = interferenceConstrained[i];
             heuristicsConstrained[3][i] = packingEfficiencyConstrained[i];
-            heuristicsConstrained[4][i] =  spacecraftMassConstrained[i];
+            heuristicsConstrained[4][i] = spacecraftMassConstrained[i];
             heuristicsConstrained[5][i] = synergyConstrained[i];
             if (assigningProblem) {
                 heuristicsConstrained[6][i] = instrumentCountConstrained[i];
@@ -115,7 +115,7 @@ public class MOEARun {
 
         int numberOfHeuristicConstraints = 0;
         int numberOfHeuristicObjectives = 0;
-        for (int i = 0; i < 6; i++) {
+        for (int i = 0; i < heuristicsConstrained.length; i++) {
             if (heuristicsConstrained[i][5]) {
                 numberOfHeuristicConstraints++;
             }
@@ -135,17 +135,18 @@ public class MOEARun {
 
         //boolean initializeLowerInstrumentCount = false; // Only used for the Assigning Problem
 
-        int numCPU = 2;
-        int numRuns = 2;
+        int numCPU = 5;
+        int numRuns = 30;
         pool = Executors.newFixedThreadPool(numCPU);
         ecs = new ExecutorCompletionService<>(pool);
 
         //setup for epsilon MOEA
-        double[] epsilonDouble = new double[]{0.001, 10};
+        double[] epsilonDouble = new double[]{0.01, 0.01};
 
         double dcThreshold = 0.5;
         double massThreshold = 3000.0; // [kg]
         double packEffThreshold = 0.7;
+        double instrCountThreshold = 15; // only for assigning problem
         boolean considerFeasibility = true;
 
         // Get time
@@ -200,7 +201,7 @@ public class MOEARun {
             fileSaveNameProblem = "_partitioning";
         }
 
-        String[] heuristicAbbreviations = {"d","o","i","p","m","s"};
+        String[] heuristicAbbreviations = {"d","o","i","p","m","s","c"};
         StringBuilder fileSaveNameConstraint = new StringBuilder();
         for (int i = 0; i < heuristicsConstrained[0].length; i++) {
             StringBuilder enforcedHeuristics = new StringBuilder();
@@ -222,7 +223,7 @@ public class MOEARun {
             // Problem class
             AbstractProblem satelliteProblem;
             if (assigningProblem) {
-                satelliteProblem = new AssigningProblem(new int[]{1}, params.getProblemName(), evaluationManager, (ArchitectureEvaluator) evaluator, params, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
+                satelliteProblem = new AssigningProblem(new int[]{1}, params.getProblemName(), evaluationManager, (ArchitectureEvaluator) evaluator, params, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, instrCountThreshold, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
             } else {
                 satelliteProblem = new PartitioningProblem(params.getProblemName(), evaluationManager, params, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
             }
@@ -233,7 +234,7 @@ public class MOEARun {
             } else {
                 if (assigningProblem) {
                     if (instrumentCountConstrained[2]) {
-                        initialization = new LowerInstrumentCountInitialization((AssigningProblem) satelliteProblem, 0.25, popSize);
+                        initialization = new LowerInstrumentCountInitialization((AssigningProblem) satelliteProblem, instrCountThreshold/60, popSize);
                     } else {
                         initialization = new RandomInitialization(satelliteProblem, popSize);
                     }
