@@ -57,7 +57,7 @@ public class GenerateForMetricsStudyAssigning {
         boolean[] instrumentCountConstrained = {false, false, false, false, false, false};
 
         boolean[][] heuristicsConstrained = new boolean[7][6];
-        for (int i = 0; i < 6; i++) {
+        for (int i = 0; i < heuristicsConstrained[0].length; i++) {
             heuristicsConstrained[0][i] = dutyCycleConstrained[i];
             heuristicsConstrained[1][i] = instrumentOrbitRelationsConstrained[i];
             heuristicsConstrained[2][i] = interferenceConstrained[i];

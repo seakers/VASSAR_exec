@@ -192,7 +192,7 @@ public class AssigningProblem  extends AbstractProblem implements SystemArchitec
         return abs_arch;
     }
 
-    private int getNumberOfInstruments(AssigningArchitecture arch) {
+    public int getNumberOfInstruments(AssigningArchitecture arch) {
         int numberOfInstruments = 0;
         for (int i = 0; i < arch.getNumberOfVariables()-1; i++) {
             if (EncodingUtils.getBoolean(arch.getVariable(i+1))) {

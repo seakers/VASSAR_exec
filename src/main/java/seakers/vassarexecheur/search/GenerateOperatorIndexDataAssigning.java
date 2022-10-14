@@ -130,7 +130,7 @@ public class GenerateOperatorIndexDataAssigning {
         Variation repairMass = new RepairMassAssigning(massThreshold, 1, params, false, problem, evaluationManager.getResourcePool(), evaluator);
         //Variation repairSynergy = new RepairSynergyAssigning(1, evaluationManager.getResourcePool(), evaluator, params, problem, instrumentSynergyMap, moveInstrument);
         Variation repairSynergy = new RepairSynergyAdditionAssigning(1, evaluationManager.getResourcePool(), evaluator, params, problem, instrumentSynergyMap);
-        Variation repairInstrumentCount = new RepairInstrumentCountAssigning(1, 1, problem, evaluationManager.getResourcePool(), evaluator, params);
+        Variation repairInstrumentCount = new RepairInstrumentCountAssigning(1, 1, instrCountThreshold, problem, evaluationManager.getResourcePool(), evaluator, params);
 
         Variation[] heuristicOperatorsArray = {repairDutyCycle, repairInstrumentOrbitRelations, repairInterference, repairPackingEfficiency, repairMass, repairSynergy, repairInstrumentCount};
 

@@ -1098,12 +1098,8 @@ function [obj_array, heur_array, design_array] = read_csv_data(assign_prob, heur
     
     designs = strings(pop_size);
     designs = data_table(:,1);
-        
-    if random_data_read
-        csv_data = data_table(:,end-(n_data_variables-1):end);
-    else
-        csv_data = data_table(:,end-n_data_variables:end);
-    end
+    
+    csv_data = data_table(:,end-(n_data_variables-1):end);
     
     data_array = table2array(csv_data);
     design_array = table2array(designs);

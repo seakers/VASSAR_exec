@@ -166,7 +166,7 @@ public class CheckOperators {
                     attribute = "SynergyViolation";
                     break;
                 case "instrCount":
-                    operator = new RepairInstrumentCountAssigning(1, 1, (AssigningProblem) satelliteProblem, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, params);
+                    operator = new RepairInstrumentCountAssigning(1, 1, instrCountThreshold, (AssigningProblem) satelliteProblem, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, params);
                     attribute = "InstrCountViolation";
                     break;
                 default: System.out.println("Invalid operator choice");

@@ -69,8 +69,12 @@ public class CheckHeuristicImprovement2 {
          * packingEfficiencyConstrained = [interior_penalty, AOS, biased_init, ACH, objective, constraint]
          * spacecraftMassConstrained = [interior_penalty, AOS, biased_init, ACH, objective, constraint]
          * synergyConstrained = [interior_penalty, AOS, biased_init, ACH, objective, constraint]
+         * instrumentCountConstrained = [interior_penalty, AOS, biased_init, ACH, objective, constraint]
          *
-         * heuristicsConstrained = [dutyCycleConstrained, instrumentOrbitRelationsConstrained, interferenceConstrained, packingEfficiencyConstrained, spacecraftMassConstrained, synergyConstrained]
+         * if partitioning problem:
+         *      heuristicsConstrained = [dutyCycleConstrained, instrumentOrbitRelationsConstrained, interferenceConstrained, packingEfficiencyConstrained, spacecraftMassConstrained, synergyConstrained]
+         *  else:
+         *      heuristicsConstrained = [dutyCycleConstrained, instrumentOrbitRelationsConstrained, interferenceConstrained, packingEfficiencyConstrained, spacecraftMassConstrained, synergyConstrained, instrumentCountConstrained]
          */
         boolean[] dutyCycleConstrained = {false, false, false, false, false, false};
         boolean[] instrumentOrbitRelationsConstrained = {false, false, false, false, false, false};
@@ -78,36 +82,35 @@ public class CheckHeuristicImprovement2 {
         boolean[] packingEfficiencyConstrained = {false, false, false, false, false, false};
         boolean[] spacecraftMassConstrained = {false, false, false, false, false, false};
         boolean[] synergyConstrained = {false, false, false, false, false, false};
+        boolean[] instrumentCountConstrained = {false, false, false, false, false, false};
 
-        boolean[][] heuristicsConstrained = new boolean[6][6];
-        for (int i = 0; i < 6; i++) {
+        boolean[][] heuristicsConstrained;
+        if (assigningProblem) {
+            heuristicsConstrained = new boolean[7][6];
+        } else {
+            heuristicsConstrained = new boolean[6][6];
+        }
+
+        for (int i = 0; i < heuristicsConstrained[0].length; i++) {
             heuristicsConstrained[0][i] = dutyCycleConstrained[i];
             heuristicsConstrained[1][i] = instrumentOrbitRelationsConstrained[i];
             heuristicsConstrained[2][i] = interferenceConstrained[i];
             heuristicsConstrained[3][i] = packingEfficiencyConstrained[i];
             heuristicsConstrained[4][i] =  spacecraftMassConstrained[i];
             heuristicsConstrained[5][i] = synergyConstrained[i];
+            if (assigningProblem) {
+                heuristicsConstrained[6][i] = instrumentCountConstrained[i];
+            }
         }
 
         int numberOfHeuristicConstraints = 0;
         int numberOfHeuristicObjectives = 0;
-        for (int i = 0; i < 6; i++) {
+        for (int i = 0; i < heuristicsConstrained.length; i++) {
             if (heuristicsConstrained[i][5]) {
                 numberOfHeuristicConstraints++;
             }
             if (heuristicsConstrained[i][4]) {
                 numberOfHeuristicObjectives++;
-            }
-        }
-
-        // Toggle whether assigning operators move on remove instruments
-        boolean moveMode = true;
-        String fileSaveNameMode = "";
-        if (assigningProblem) {
-            if (moveMode) {
-                fileSaveNameMode = "_move";
-            } else {
-                fileSaveNameMode = "_remove";
             }
         }
 
@@ -155,17 +158,7 @@ public class CheckHeuristicImprovement2 {
         int numArchs = 100;
 
         // Initialize csv file
-        String csvFilename = "";
-        if (assigningProblem) {
-            if (moveMode) {
-                csvFilename = savePath + File.separator + "operator_heuristic_satisfaction" + fileSaveNameProblem + fileSaveNameMode + ".csv";
-            } else {
-                csvFilename = savePath + File.separator + "operator_heuristic_satisfaction" + fileSaveNameProblem + fileSaveNameMode + ".csv";
-            }
-        } else {
-            csvFilename = savePath + File.separator + "operator_heuristic_satisfaction" + fileSaveNameProblem + ".csv";
-        }
-
+        String csvFilename = savePath + File.separator + "operator_heuristic_satisfaction" + fileSaveNameProblem + ".csv";
         File csvFile = new File(csvFilename);
 
         PRNG.setRandom(new SynchronizedMersenneTwister());
@@ -187,14 +180,18 @@ public class CheckHeuristicImprovement2 {
         Variation repairPackingEfficiency;
         Variation repairMass;
         Variation repairSynergy;
+        Variation repairInstrumentCount;
 
         if (assigningProblem) {
-            repairDutyCycle = new RepairDutyCycleAssigning(dcThreshold, 1, assigningParams, moveMode, (AssigningProblem) satelliteProblem, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator);
-            repairInstrumentOrbitRelations = new RepairInstrumentOrbitAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, assigningParams, (AssigningProblem) satelliteProblem, moveMode);
-            repairInterference = new RepairInterferenceAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, assigningParams, (AssigningProblem) satelliteProblem, interferingInstrumentsMap, moveMode);
-            repairPackingEfficiency = new RepairPackingEfficiencyAssigning(packEffThreshold, 1, assigningParams, moveMode, (AssigningProblem) satelliteProblem, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator);
-            repairMass = new RepairMassAssigning(massThreshold, 1, assigningParams, moveMode, (AssigningProblem) satelliteProblem, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator);
-            repairSynergy = new RepairSynergyAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, assigningParams, (AssigningProblem) satelliteProblem, interferingInstrumentsMap, moveMode);
+            repairDutyCycle = new RepairDutyCycleAssigning(dcThreshold, 1, assigningParams, false, (AssigningProblem) satelliteProblem, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator);
+            repairInstrumentOrbitRelations = new RepairInstrumentOrbitAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, assigningParams, (AssigningProblem) satelliteProblem, true);
+            repairInterference = new RepairInterferenceAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, assigningParams, (AssigningProblem) satelliteProblem, interferingInstrumentsMap, false);
+            //repairPackingEfficiency = new RepairPackingEfficiencyAssigning(packEffThreshold, 1, assigningParams, moveMode, (AssigningProblem) satelliteProblem, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator);
+            repairPackingEfficiency = new RepairPackingEfficiencyAdditionAssigning(packEffThreshold, 1, 1, assigningParams, (AssigningProblem) satelliteProblem, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator);
+            repairMass = new RepairMassAssigning(massThreshold, 1, assigningParams, false, (AssigningProblem) satelliteProblem, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator);
+            //repairSynergy = new RepairSynergyAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, assigningParams, (AssigningProblem) satelliteProblem, interferingInstrumentsMap, moveMode);
+            repairSynergy = new RepairSynergyAdditionAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, assigningParams, (AssigningProblem) satelliteProblem, instrumentSynergyMap);
+            repairInstrumentCount = new RepairInstrumentCountAssigning(1, 1, instrCountThreshold, (AssigningProblem) satelliteProblem, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, assigningParams);
         } else {
             repairDutyCycle = new RepairDutyCyclePartitioning(dcThreshold, 1, partitionParams, (PartitioningProblem) satelliteProblem, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator);
             repairInstrumentOrbitRelations = new RepairInstrumentOrbitPartitioning(1, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator, partitionParams, (PartitioningProblem) satelliteProblem);
@@ -215,7 +212,7 @@ public class CheckHeuristicImprovement2 {
         }
 
         // Pass each architecture through the different operators and store the results in a new csv file
-        String newFileName = savePath + File.separator + "operator_heuristic_satisfaction" + fileSaveNameProblem + fileSaveNameMode + "_mod" + ".csv";
+        String newFileName = savePath + File.separator + "operator_heuristic_satisfaction" + fileSaveNameProblem + "_mod" + ".csv";
         File newCsvFile = new File(newFileName);
         int archCounter = 0;
 

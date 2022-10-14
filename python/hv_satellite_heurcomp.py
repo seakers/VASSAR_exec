@@ -16,7 +16,7 @@ from itertools import combinations
 import matplotlib.pyplot as plt
 from IPython.core.debugger import set_trace
 
-assigning_problem = False
+assigning_problem = True
 num_runs = 30 # number of runs for each case
 threshold_hv = 0.85
 
@@ -171,6 +171,7 @@ def extract_data_from_csv(csv_filepath, assigning, intpen_constr_heur):
         data = [row for row in csv.reader(csvfile)]
                 
         num_func_evals_dat = np.zeros(len(data)-1)
+        designs = []
         science_dat = np.zeros(len(data)-1)
         cost_dat = np.zeros(len(data)-1)
         
@@ -189,6 +190,7 @@ def extract_data_from_csv(csv_filepath, assigning, intpen_constr_heur):
             if (any(np.isnan(np.array(data_float))) or any(np.isinf(np.array(data_float)))):
                 continue
             
+            designs.append(data[x+1][0])
             num_func_evals_dat[valid_count] = int(data[x+1][1])
             science_dat[valid_count] = -float(data[x+1][2]) 
             cost_dat[valid_count] = float(data[x+1][3])
@@ -228,6 +230,7 @@ def extract_data_from_csv(csv_filepath, assigning, intpen_constr_heur):
     ## Sort num_fun_evals (and objectives and heuristic scores) in ascending order
     n_func_evals = num_func_evals
     sort_indices = np.argsort(n_func_evals)
+    designs_sorted = list(np.array(designs)[sort_indices])
     science_sorted = list(science[sort_indices])
     cost_sorted = list(cost[sort_indices])
     
@@ -303,8 +306,8 @@ def extract_data_from_csv(csv_filepath, assigning, intpen_constr_heur):
         nfe_val = nfe_array[i]
     
         if (nfe_list_sorted[0] == 0):
-            if (nfe_val <= 300): # population size set at 300 in java code, but maybe different here due to NaNs
-                nfe_index_current = pop_size+1
+            if (nfe_val <= pop_size): # population size set at 300 in java code, but maybe different here due to NaNs
+                nfe_index_current = pop_size
                 nfe_index_previous = 0
             else:
                 nfe_index_current = find_closest_index(nfe_val, nfe_list_sorted)
@@ -555,8 +558,8 @@ def plot_hypervolume_stats_allcases(hv_median_dict, hv_1q_dict, hv_3q_dict, nfe_
     #print(number_cases)
     for i in range(number_cases):
         #print(print(marker_array[i]+'*'))
-        plt.plot(nfe_array, hv_median_dict['case'+str(i)], '-', color=colour_array[i], label=casename_array[i])
-        plt.fill_between(nfe_array, hv_1q_dict['case'+str(i)], hv_3q_dict['case'+str(i)], color=colour_array[i], alpha=alpha_array[i])
+        plt.plot(nfe_array, hv_median_dict['case'+str(i)], '-', linewidth=3, color=colour_array[i], label=casename_array[i])
+        plt.fill_between(nfe_array, hv_1q_dict['case'+str(i)], hv_3q_dict['case'+str(i)], color=colour_array[i], edgecolor="none", alpha=alpha_array[i])
         
         #plt.plot(nfe_array, hv_1q_dict['case'+str(i)], '--', color=colour_array[i])#, label=casename_array[i]+' 1st Quartile')
         #plt.plot(nfe_array, hv_3q_dict['case'+str(i)], '--', color=colour_array[i])#, label=casename_array[i]+' 3rd Quartile')
@@ -688,6 +691,8 @@ def hypervolume_computation_all_cases(case_bools_dict, cred_assign, prob_assigni
         max_f_evals_allruns = np.zeros(run_nums)
         for j in range(run_nums):
             print('Run '+str(j))
+            #if np.isin(j, np.array([8])):
+                #print('Debug')
             if prob_assigning:
                 current_csvpath = get_csv_filepath_satellite(current_case_bools[:4], current_case_bools[4:8], current_case_bools[8:12], current_case_bools[12:16], current_case_bools[16:20], current_case_bools[20:24], current_case_bools[24:28], cred_assign, prob_assigning, j)
             else:
@@ -761,7 +766,9 @@ case1_bools = [False, False, False, False, False, False, False, False, False, Fa
 case2_bools = [False, True, False, False, False, True, False, False, False, True, False, False, False, True, False, False, False, True, False, False, False, True, False, False, False, True, False, False] #  AOS - all heuristics
 #case2_bools = [True, False, False, False, True, False, False, False, True, False, False, False, True, False, False, False, True, False, False, False, True, False, False, False, True, False, False, False] #  Int Pen - all heuristics
 if assigning_problem:
-    case3_bools = [False, True, False, False, False, True, False, False, False, True, False, False, False, False, False, False, False, True, False, False, False, True, False, False, False, True, False, False] #  AOS - DutyCycle, InstrOrb, InterInstr, SpMass, Instrsyn, Instrcount
+    #case3_bools = [False, True, False, False, False, False, False, False, False, True, False, False, False, False, False, False, False, True, False, False, False, False, False, False, False, True, False, False] #  AOS - DutyCycle, InterInstr, SpMass, Instrcount
+    case3_bools = [False, False, False, False, False, False, False, False, False, True, False, False, False, False, False, False, False, True, False, False, False, False, False, False, False, True, False, False] #  AOS - InterInstr, SpMass, Instrcount
+    #case3_bools = [True, False, False, False, True, False, False, False, True, False, False, False, False, False, False, False, True, False, False, False, True, False, False, False, True, False, False, False] #  Int Pen - DutyCycle, InstrOrb, InterInstr, SpMass, Instrsyn, Instrcount
     
     cases_dict['case1'] = case1_bools
     cases_dict['case2'] = case2_bools
@@ -774,10 +781,10 @@ if assigning_problem:
     casenames = ['Eps. MOEA','All heurs','Promising heurs']
     
     #alpha_values = [0.5,0.5] # change based on number of cases/visibility
-    alpha_values = [0.5,0.5,0.5] # change based on number of cases/visibility
+    alpha_values = [0.4,0.4,0.4] # change based on number of cases/visibility
 else:
-    case3_bools = [False, True, False, False, False, True, False, False, False, True, False, False, False, False, False, False, False, True, False, False, False, False, False, False, False, False, False, False] #  AOS - DutyCycle, InstrOrb, InterInstr, SpMass
-    #case3_bools = [True, False, False, False, True, False, False, False, True, False, False, False, False, False, False, False, True, False, False, False, True, False, False, False, False, False, False, False] #  Int Pen - DutyCycle, InstrOrb, InterInstr, SpMass, Instrsyn
+    #case3_bools = [False, True, False, False, False, True, False, False, False, True, False, False, False, False, False, False, False, True, False, False, False, False, False, False, False, False, False, False] #  AOS - DutyCycle, InstrOrb, InterInstr, SpMass
+    case3_bools = [True, False, False, False, True, False, False, False, True, False, False, False, False, False, False, False, True, False, False, False, True, False, False, False, False, False, False, False] #  Int Pen - DutyCycle, InstrOrb, InterInstr, SpMass, Instrsyn
     
     cases_dict['case1'] = case1_bools
     cases_dict['case2'] = case2_bools

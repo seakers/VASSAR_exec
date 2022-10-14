@@ -33,6 +33,8 @@ public class RepairInstrumentCountAssigning implements Variation {
      */
     private final int ySatellites;
 
+    private final double instrCountThreshold;
+
     /**
      * Assigning Problem used to evaluate architectures
      */
@@ -47,9 +49,10 @@ public class RepairInstrumentCountAssigning implements Variation {
 
     private final BaseParams params;
 
-    public RepairInstrumentCountAssigning(int xInstruments, int ySatellites, AssigningProblem problem, ResourcePool resourcePool, ArchitectureEvaluator evaluator, BaseParams params) {
+    public RepairInstrumentCountAssigning(int xInstruments, int ySatellites, double instrCountThreshold, AssigningProblem problem, ResourcePool resourcePool, ArchitectureEvaluator evaluator, BaseParams params) {
         this.xInstruments = xInstruments;
         this.ySatellites = ySatellites;
+        this.instrCountThreshold = instrCountThreshold;
         this.problem = problem;
         this.resourcePool = resourcePool;
         this.evaluator = evaluator;
@@ -90,22 +93,24 @@ public class RepairInstrumentCountAssigning implements Variation {
         ArrayList<ArrayList<String>> childPayloads = new ArrayList<>(allPayloads);
         ArrayList<String> childOrbits = new ArrayList<>(allOrbits);
 
-        for (int i = 0; i < ySatellites; i++) {
-            int randomSatIndex = PRNG.nextInt(childOrbits.size());
-            if (childPayloads.get(randomSatIndex).isEmpty()) {
-                i--;
-                continue;
-            } else {
-                for (int j = 0; j < xInstruments; j++) {
-                    int randomInstrumentIndex = PRNG.nextInt(childPayloads.get(randomSatIndex).size());
-                    childPayloads.get(randomSatIndex).remove(randomInstrumentIndex);
-                    if (childPayloads.get(randomSatIndex).isEmpty()) {
-                        break;
+        if (problem.getNumberOfInstruments(parent) > instrCountThreshold) {
+            for (int i = 0; i < ySatellites; i++) {
+                int randomSatIndex = PRNG.nextInt(childOrbits.size());
+                if (childPayloads.get(randomSatIndex).isEmpty()) {
+                    i--;
+                    continue;
+                } else {
+                    for (int j = 0; j < xInstruments; j++) {
+                        int randomInstrumentIndex = PRNG.nextInt(childPayloads.get(randomSatIndex).size());
+                        childPayloads.get(randomSatIndex).remove(randomInstrumentIndex);
+                        if (childPayloads.get(randomSatIndex).isEmpty()) {
+                            break;
+                        }
                     }
                 }
-            }
-            if (getNonEmptySatellites(childPayloads) < (ySatellites - i)) {
-                break;
+                if (getNonEmptySatellites(childPayloads) < (ySatellites - i)) {
+                    break;
+                }
             }
         }
 

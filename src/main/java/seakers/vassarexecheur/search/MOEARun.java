@@ -88,11 +88,11 @@ public class MOEARun {
          */
         boolean[] dutyCycleConstrained = {false, false, false, false, false, false};
         boolean[] instrumentOrbitRelationsConstrained = {false, false, false, false, false, false};
-        boolean[] interferenceConstrained = {false, false, false, false, false, false};
+        boolean[] interferenceConstrained = {false, true, false, false, false, false};
         boolean[] packingEfficiencyConstrained = {false, false, false, false, false, false};
-        boolean[] spacecraftMassConstrained = {false, false, false, false, false, false};
+        boolean[] spacecraftMassConstrained = {false, true, false, false, false, false};
         boolean[] synergyConstrained = {false, false, false, false, false, false};
-        boolean[] instrumentCountConstrained = {false, false, false, false, false, false}; // only for assigning problem
+        boolean[] instrumentCountConstrained = {false, true, false, false, false, false}; // only for assigning problem
 
         boolean[][] heuristicsConstrained;
         if (assigningProblem) {
@@ -135,8 +135,8 @@ public class MOEARun {
 
         //boolean initializeLowerInstrumentCount = false; // Only used for the Assigning Problem
 
-        int numCPU = 5;
-        int numRuns = 30;
+        int numCPU = 3;
+        int numRuns = 6;
         pool = Executors.newFixedThreadPool(numCPU);
         ecs = new ExecutorCompletionService<>(pool);
 
@@ -274,7 +274,7 @@ public class MOEARun {
                 repairMass = new CompoundVariation(new RepairMassAssigning(massThreshold, 1, params, false, (AssigningProblem) satelliteProblem, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator), new BitFlip(mutationProbability));
                 //repairSynergy = new CompoundVariation(new RepairSynergyAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, params, (AssigningProblem) satelliteProblem, instrumentSynergyMap, moveInstrument), new BitFlip(mutationProbability));
                 repairSynergy = new CompoundVariation(new RepairSynergyAdditionAssigning(1, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, params, (AssigningProblem) satelliteProblem, instrumentSynergyMap), new BitFlip(mutationProbability));
-                repairInstrumentCount = new CompoundVariation(new RepairInstrumentCountAssigning(1, 1, (AssigningProblem) satelliteProblem, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, params), new BitFlip(mutationProbability));
+                repairInstrumentCount = new CompoundVariation(new RepairInstrumentCountAssigning(1, 1, instrCountThreshold, (AssigningProblem) satelliteProblem, evaluationManager.getResourcePool(), (ArchitectureEvaluator) evaluator, params), new BitFlip(mutationProbability));
             } else {
                 repairDutyCycle = new CompoundVariation(new RepairDutyCyclePartitioning(dcThreshold, 1, params, (PartitioningProblem) satelliteProblem, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator), new PartitioningMutation(mutationProbability, params));
                 repairInstrumentOrbitRelations = new CompoundVariation(new RepairInstrumentOrbitPartitioning(1, evaluationManager.getResourcePool(), (seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator) evaluator, params, (PartitioningProblem) satelliteProblem), new PartitioningMutation(mutationProbability, params));

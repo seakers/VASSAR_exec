@@ -182,6 +182,7 @@ public class AssigningSearch implements Callable<Algorithm> {
             headings.add("Packing Efficiency Violation");
             headings.add("Spacecraft Mass Violation");
             headings.add("Instrument Synergy Violation");
+            headings.add("Instrument Count Violation");
             writer.append(headings.toString());
             writer.append("\n");
 
@@ -208,6 +209,7 @@ public class AssigningSearch implements Callable<Algorithm> {
                 double packingEfficiencyViolation = (double) arch.getAttribute("PackEffViolation");
                 double massViolation = (double) arch.getAttribute("SpMassViolation");
                 double synergyViolation = (double) arch.getAttribute("SynergyViolation");
+                double instrumentCountViolation = (double) arch.getAttribute("InstrCountViolation");
 
                 StringJoiner sj = new StringJoiner(",");
                 sj.add(bitString);
@@ -220,6 +222,7 @@ public class AssigningSearch implements Callable<Algorithm> {
                 sj.add(Double.toString(packingEfficiencyViolation));
                 sj.add(Double.toString(massViolation));
                 sj.add(Double.toString(synergyViolation));
+                sj.add(Double.toString(instrumentCountViolation));
 
                 writer.append(sj.toString());
                 writer.append("\n");

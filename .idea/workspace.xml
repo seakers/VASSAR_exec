@@ -101,7 +101,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Application.CheckOperators">
+  <component name="RunManager" selected="Application.MOEARun">
     <configuration name="CheckOperators" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="seakers.vassarexecheur.search.CheckOperators" />
       <module name="vassarexecheur.main" />

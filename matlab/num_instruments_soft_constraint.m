@@ -5,7 +5,7 @@ clc
 
 %% Function testing
 x = linspace(0, 60);
-model = 'logistic'; % linear or logistic
+model = 'linear'; % linear or logistic
 
 switch model
     case 'logistic'
@@ -16,13 +16,15 @@ switch model
         f_x = L./(1 + exp(-k*(x - x0))); 
         
     case 'linear'
-        % Test 2 - Linear function (1 at 60, 0 at 15)
+        % Test 2 - Linear function (1 at 40, 0 at 15)
         f_x = zeros(1, size(x,2));
         for i = 1:size(x,2)
             if x(i) < 15
                 f_x(i) = 0;
-            else
-                f_x(i) = 1 + (x(i) - 60)/45;
+            elseif x(i) < 40
+                f_x(i) = (x(i) - 15)/25;
+            else 
+                f_x(i) = 1;
             end
         end
 end
