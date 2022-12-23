@@ -1,20 +1,19 @@
 # -*- coding: utf-8 -*-
 """
-Operator Index determination for satellite problems
+Operator Index for satellite design problems with Bootstrapping
 
-@author: rosha
+@author: roshan94
 """
-
 import csv
 import numpy as np
 from pygmo import hypervolume
 
 ### Parameters
-assigning_problem = False
-random_mode = 1 # 1 - only random data, 2 - only epsilon MOEA, 3 - both
+assigning_problem = True
+random_mode = 1 # 1 - only random data, 2 - only epsilon MOEA, 3 - both (always 1)
 #final_pop_only = True # only specific to epsilon MOEA
 
-num_runs = 10
+#num_runs = 10
 
 #num_archs = 300 # only specific to random data 
 
@@ -47,7 +46,7 @@ filepath_full = save_path + filepath_prob + filepath_mode
 obj_weights = [1, 1]
 if assigning_problem:
     obj_weights = [0.425, 2.5e4] # normalization weights for objectives
-        
+    
 ### Useful functions
 def compute_pareto_front(population):
     pop_size = len(population)
@@ -184,89 +183,45 @@ def read_csv_run(filepath, filename, run_mode, assign_prob):
     
     return data
 
-### Operation
-I_instrdc = np.zeros(num_runs)
-I_instrorb = np.zeros(num_runs)
-I_interinstr = np.zeros(num_runs)
-I_packeff = np.zeros(num_runs)
-I_spmass = np.zeros(num_runs)
-I_instrsyn = np.zeros(num_runs)
-if assigning_problem:
-    I_instrcount = np.zeros(num_runs)
-
-pfs_orig = {}
-pfs_instrdc = {}
-pfs_instrorb = {}
-pfs_interinstr = {}
-pfs_packeff = {}
-pfs_spmass = {}
-pfs_instrsyn = {}
-if assigning_problem:
-    pfs_instrcount = {}
-
-science_max_allruns = np.zeros(num_runs)
-cost_max_allruns = np.zeros(num_runs)
-science_min_allruns = np.zeros(num_runs)
-cost_min_allruns = np.zeros(num_runs)
-
-for i in range(num_runs):
-    filename_full = filename_mode + str(i) + '.csv'
-    data_all = read_csv_run(filepath_full, filename_full, random_mode, assigning_problem)
+def get_data_subset(data, dataset_inds, assign_prob):
+    dataset = {}
     
-    if (random_mode == 3):
-        if assigning_problem:
-            filename_moea = "EpsilonMOEA_emoea_ClimateCentric_assign_operator_data_"
-        else:
-            filename_moea = "EpsilonMOEA_emoea_ClimateCentric_partition_operator_data_"
-            
-        filepath_moea_full = save_path + filepath_prob + "Epsilon MOEA\\"
-            
-        filename_moea_full = filename_moea + str(i) + '.csv'
-        data_moea = read_csv_run(filepath_moea_full, filename_moea_full, random_mode)
-    
-        data_orig_combined = np.vstack((data_all['original'], data_moea['original']))
-        data_instrdc_combined = np.vstack((data_all['instrdc'], data_moea['instrdc']))
-        data_instrorb_combined = np.vstack((data_all['instrorb'], data_moea['instrorb']))
-        data_interinstr_combined = np.vstack((data_all['interinstr'], data_moea['interinstr']))
-        data_packeff_combined = np.vstack((data_all['packeff'], data_moea['packeff']))
-        data_spmass_combined = np.vstack((data_all['spmass'], data_moea['spmass']))
-        data_instrsyn_combined = np.vstack((data_all['instrsyn'], data_moea['instrsyn']))
-        if assigning_problem:
-            data_instrcount_combined = np.vstack((data_all['instrcount'], data_moea['instrcount']))
+    dataset['original'] = data['original'][dataset_inds,:]
+    dataset['instrdc'] = data['instrdc'][dataset_inds,:]
+    dataset['instrorb'] = data['instrorb'][dataset_inds,:]
+    dataset['interinstr'] = data['interinstr'][dataset_inds,:]
+    dataset['packeff'] = data['packeff'][dataset_inds,:]
+    dataset['spmass'] = data['spmass'][dataset_inds,:]
+    dataset['instrsyn'] = data['instrsyn'][dataset_inds,:]
+    if assign_prob:
+        dataset['instrcount'] = data['instrcount'][dataset_inds,:]
         
-    else:
-        
-        data_orig_combined = data_all['original']
-        data_instrdc_combined = data_all['instrdc']
-        data_instrorb_combined = data_all['instrorb']
-        data_interinstr_combined = data_all['interinstr']
-        data_packeff_combined = data_all['packeff']
-        data_spmass_combined = data_all['spmass']
-        data_instrsyn_combined = data_all['instrsyn']
-        if assigning_problem:
-            data_instrcount_combined = data_all['instrcount']
+    return dataset
+
+def compute_indices(data, assign_prob):
     
-    pf_orig = compute_pareto_front(data_orig_combined)
-    pf_instrdc = compute_pareto_front(data_instrdc_combined)
-    pf_instrorb = compute_pareto_front(data_instrorb_combined)
-    pf_interinstr = compute_pareto_front(data_interinstr_combined)
-    pf_packeff = compute_pareto_front(data_packeff_combined)
-    pf_spmass = compute_pareto_front(data_spmass_combined)
-    pf_instrsyn = compute_pareto_front(data_instrsyn_combined)
+    data_orig = data['original']
+    data_instrdc = data['instrdc']
+    data_instrorb = data['instrorb']
+    data_interinstr = data['interinstr']
+    data_packeff = data['packeff']
+    data_spmass = data['spmass']
+    data_instrsyn = data['instrsyn']
     if assigning_problem:
-        pf_instrcount = compute_pareto_front(data_instrcount_combined)
+        data_instrcount = data['instrcount']
         
-    
-    pfs_orig['run'+str(i)] = pf_orig
-    pfs_instrdc['run'+str(i)] = pf_instrdc
-    pfs_instrorb['run'+str(i)] = pf_instrorb
-    pfs_interinstr['run'+str(i)] = pf_interinstr
-    pfs_packeff['run'+str(i)] = pf_packeff
-    pfs_spmass['run'+str(i)] = pf_spmass
-    pfs_instrsyn['run'+str(i)] = pf_instrsyn
+    ## Compute Pareto Fronts
+    pf_orig = compute_pareto_front(data_orig)
+    pf_instrdc = compute_pareto_front(data_instrdc)
+    pf_instrorb = compute_pareto_front(data_instrorb)
+    pf_interinstr = compute_pareto_front(data_interinstr)
+    pf_packeff = compute_pareto_front(data_packeff)
+    pf_spmass = compute_pareto_front(data_spmass)
+    pf_instrsyn = compute_pareto_front(data_instrsyn)
     if assigning_problem:
-        pfs_instrcount['run'+str(i)] = pf_instrcount
-    
+        pf_instrcount = compute_pareto_front(data_instrcount)
+        
+    ## Obtain bounds for normalization
     science_pf_orig = [x[0] for x in pf_orig]
     cost_pf_orig = [x[1] for x in pf_orig]
     
@@ -304,52 +259,32 @@ for i in range(num_runs):
             
         science_norm_min = np.amin([np.amin(science_pf_orig), np.amin(science_pf_instrdc), np.amin(science_pf_instrorb), np.amin(science_pf_interinstr), np.amin(science_pf_packeff), np.amin(science_pf_spmass), np.amin(science_pf_instrsyn)])
         cost_norm_min = np.amin([np.amin(cost_pf_orig), np.amin(cost_pf_instrdc), np.amin(cost_pf_instrorb), np.amin(cost_pf_interinstr), np.amin(cost_pf_packeff), np.amin(cost_pf_spmass), np.amin(cost_pf_instrsyn)])
-                       
-    science_max_allruns[i] = science_norm_max
-    cost_max_allruns[i] = cost_norm_max
-    science_min_allruns[i] = science_norm_min
-    cost_min_allruns[i] = cost_norm_min
+        
+    ## Obtain normalized Pareto Fronts
+    science_pf_norm_orig = [((x[0] - science_norm_min)/(science_norm_max - science_norm_min)) for x in pf_orig]
+    cost_pf_norm_orig = [((x[1] - cost_norm_min)/(cost_norm_max - cost_norm_min)) for x in pf_orig]
     
-science_norm_max_allruns = np.amax(science_max_allruns)
-cost_norm_max_allruns = np.amax(cost_max_allruns)
-science_norm_min_allruns = np.amin(science_min_allruns)
-cost_norm_min_allruns = np.amin(cost_min_allruns)
-            
-for i in range(num_runs):
-    pf_orig = pfs_orig['run'+str(i)]
-    pf_instrdc = pfs_instrdc['run'+str(i)]
-    pf_instrorb = pfs_instrorb['run'+str(i)]
-    pf_interinstr = pfs_interinstr['run'+str(i)]
-    pf_packeff = pfs_packeff['run'+str(i)]
-    pf_spmass = pfs_spmass['run'+str(i)]
-    pf_instrsyn = pfs_instrsyn['run'+str(i)]
-    if assigning_problem:
-        pf_instrcount = pfs_instrcount['run'+str(i)]
+    science_pf_norm_instrdc = [((x[0] - science_norm_min)/(science_norm_max - science_norm_min)) for x in pf_instrdc]
+    cost_pf_norm_instrdc = [((x[1] - cost_norm_min)/(cost_norm_max - cost_norm_min)) for x in pf_instrdc]
     
-    science_pf_norm_orig = [((x[0] - science_norm_min_allruns)/(science_norm_max_allruns - science_norm_min_allruns)) for x in pf_orig]
-    cost_pf_norm_orig = [((x[1] - cost_norm_min_allruns)/(cost_norm_max_allruns - cost_norm_min_allruns)) for x in pf_orig]
+    science_pf_norm_instrorb = [((x[0] - science_norm_min)/(science_norm_max - science_norm_min)) for x in pf_instrorb]
+    cost_pf_norm_instrorb = [((x[1] - cost_norm_min)/(cost_norm_max - cost_norm_min)) for x in pf_instrorb]
     
-    science_pf_norm_instrdc = [((x[0] - science_norm_min_allruns)/(science_norm_max_allruns - science_norm_min_allruns)) for x in pf_instrdc]
-    cost_pf_norm_instrdc = [((x[1] - cost_norm_min_allruns)/(cost_norm_max_allruns - cost_norm_min_allruns)) for x in pf_instrdc]
+    science_pf_norm_interinstr = [((x[0] - science_norm_min)/(science_norm_max - science_norm_min)) for x in pf_interinstr]
+    cost_pf_norm_interinstr = [((x[1] - cost_norm_min)/(cost_norm_max - cost_norm_min)) for x in pf_interinstr]
     
-    science_pf_norm_instrorb = [((x[0] - science_norm_min_allruns)/(science_norm_max_allruns - science_norm_min_allruns)) for x in pf_instrorb]
-    cost_pf_norm_instrorb = [((x[1] - cost_norm_min_allruns)/(cost_norm_max_allruns - cost_norm_min_allruns)) for x in pf_instrorb]
+    science_pf_norm_packeff = [((x[0] - science_norm_min)/(science_norm_max - science_norm_min)) for x in pf_packeff]
+    cost_pf_norm_packeff = [((x[1] - cost_norm_min)/(cost_norm_max - cost_norm_min)) for x in pf_packeff]
     
-    science_pf_norm_interinstr = [((x[0] - science_norm_min_allruns)/(science_norm_max_allruns - science_norm_min_allruns)) for x in pf_interinstr]
-    cost_pf_norm_interinstr = [((x[1] - cost_norm_min_allruns)/(cost_norm_max_allruns - cost_norm_min_allruns)) for x in pf_interinstr]
+    science_pf_norm_spmass = [((x[0] - science_norm_min)/(science_norm_max - science_norm_min)) for x in pf_spmass]
+    cost_pf_norm_spmass = [((x[1] - cost_norm_min)/(cost_norm_max - cost_norm_min)) for x in pf_spmass]
     
-    science_pf_norm_packeff = [((x[0] - science_norm_min_allruns)/(science_norm_max_allruns - science_norm_min_allruns)) for x in pf_packeff]
-    cost_pf_norm_packeff = [((x[1] - cost_norm_min_allruns)/(cost_norm_max_allruns - cost_norm_min_allruns)) for x in pf_packeff]
-    
-    science_pf_norm_spmass = [((x[0] - science_norm_min_allruns)/(science_norm_max_allruns - science_norm_min_allruns)) for x in pf_spmass]
-    cost_pf_norm_spmass = [((x[1] - cost_norm_min_allruns)/(cost_norm_max_allruns - cost_norm_min_allruns)) for x in pf_spmass]
-    
-    science_pf_norm_instrsyn = [((x[0] - science_norm_min_allruns)/(science_norm_max_allruns - science_norm_min_allruns)) for x in pf_instrsyn]
-    cost_pf_norm_instrsyn = [((x[1] - cost_norm_min_allruns)/(cost_norm_max_allruns - cost_norm_min_allruns)) for x in pf_instrsyn]
+    science_pf_norm_instrsyn = [((x[0] - science_norm_min)/(science_norm_max - science_norm_min)) for x in pf_instrsyn]
+    cost_pf_norm_instrsyn = [((x[1] - cost_norm_min)/(cost_norm_max - cost_norm_min)) for x in pf_instrsyn]
     
     if assigning_problem:
-        science_pf_norm_instrcount = [((x[0] - science_norm_min_allruns)/(science_norm_max_allruns - science_norm_min_allruns)) for x in pf_instrcount]
-        cost_pf_norm_instrcount = [((x[1] - cost_norm_min_allruns)/(cost_norm_max_allruns - cost_norm_min_allruns)) for x in pf_instrcount]
+        science_pf_norm_instrcount = [((x[0] - science_norm_min)/(science_norm_max - science_norm_min)) for x in pf_instrcount]
+        cost_pf_norm_instrcount = [((x[1] - cost_norm_min)/(cost_norm_max - cost_norm_min)) for x in pf_instrcount]
     
     pf_norm_orig = np.column_stack((science_pf_norm_orig, cost_pf_norm_orig))
     pf_norm_instrdc = np.column_stack((science_pf_norm_instrdc, cost_pf_norm_instrdc))
@@ -361,6 +296,7 @@ for i in range(num_runs):
     if assigning_problem:
         pf_norm_instrcount = np.column_stack((science_pf_norm_instrcount, cost_pf_norm_instrcount))
     
+    ## Compute Hypervolume and Indices
     hv_orig = compute_hv(pf_norm_orig)
     hv_instrdc = compute_hv(pf_norm_instrdc)
     hv_instrorb = compute_hv(pf_norm_instrorb)
@@ -371,47 +307,59 @@ for i in range(num_runs):
     if assigning_problem:
         hv_instrcount = compute_hv(pf_norm_instrcount)
     
-    I_instrdc[i] = hv_instrdc - hv_orig
-    I_instrorb[i] = hv_instrorb - hv_orig
-    I_interinstr[i] = hv_interinstr - hv_orig
-    I_packeff[i] = hv_packeff - hv_orig
-    I_spmass[i] = hv_spmass - hv_orig
-    I_instrsyn[i] = hv_instrsyn - hv_orig
+    I_instrdc = hv_instrdc - hv_orig
+    I_instrorb = hv_instrorb - hv_orig
+    I_interinstr = hv_interinstr - hv_orig
+    I_packeff = hv_packeff - hv_orig
+    I_spmass = hv_spmass - hv_orig
+    I_instrsyn = hv_instrsyn - hv_orig
     if assigning_problem:
-        I_instrcount[i] = hv_instrcount - hv_orig
-    
-I_op_instrdc = np.mean(I_instrdc)
-I_op_instrorb = np.mean(I_instrorb)
-I_op_interinstr = np.mean(I_interinstr)
-I_op_packeff = np.mean(I_packeff)
-I_op_spmass = np.mean(I_spmass)
-I_op_instrsyn = np.mean(I_instrsyn)
-if assigning_problem:
-    I_op_instrcount = np.mean(I_instrcount)
+        I_instrcount = hv_instrcount - hv_orig
+    else:
+        I_instrcount = 0
+        
+    return [I_instrdc, I_instrorb, I_interinstr, I_packeff, I_spmass, I_instrsyn, I_instrcount]
 
-### Computing minumum percentile for positive I_heur 
-I_heurs = np.column_stack((I_instrdc, I_instrorb, I_interinstr, I_packeff, I_spmass, I_instrsyn))
-if assigning_problem:
-    I_heurs = np.column_stack((I_heurs, I_instrcount))
-    
-percentile_vals = np.linspace(1, 100, 100)
-n_perctile_heurs = np.zeros((I_heurs.shape[1]))
-for i in range(len(n_perctile_heurs)):
-    I_current_heur = I_heurs[:,i]
-    for j in range(len(percentile_vals)):
-        pctile = np.percentile(I_current_heur, percentile_vals[j], method='interpolated_inverted_cdf')
-        if pctile > 0:
-            n_perctile_heurs[i] = percentile_vals[j]
-            break
-        if j == len(percentile_vals)-1:
-            n_perctile_heurs[i] = percentile_vals[j]
-            
+#### OPERATION    
+run_num = 0
 
-print('Operator Index - Instrdc : ' + str(I_op_instrdc) + ' +\- ' + str(np.std(I_instrdc)))
-print('Operator Index - Instrorb : ' + str(I_op_instrorb) + ' +\- ' + str(np.std(I_instrorb)))
-print('Operator Index - Interinstr : ' + str(I_op_interinstr) + ' +\- ' + str(np.std(I_interinstr)))
-print('Operator Index - Packeff : ' + str(I_op_packeff) + ' +\- ' + str(np.std(I_packeff)))
-print('Operator Index - Spmass : ' + str(I_op_spmass) + ' +\- ' + str(np.std(I_spmass)))
-print('Operator Index - Instrsyn : ' + str(I_op_instrsyn) + ' +\- ' + str(np.std(I_instrsyn)))
+filename_full = filename_mode + str(run_num) + '.csv'
+data_all = read_csv_run(filepath_full, filename_full, random_mode, assigning_problem)
+
+n_heurs = 6
 if assigning_problem:
-    print('Operator Index - Instrcount : ' + str(I_op_instrcount) + ' +\- ' + str(np.std(I_instrcount)))
+    n_heurs = 7
+
+dataset_mode = 3 # 1 - bootstrapping, 2 - leave one out, 3 - equal division
+
+if dataset_mode == 1:
+    n_datasets = 30
+    n_des = 200
+elif dataset_mode == 2:
+    n_datasets = 300
+    n_des = 299
+else:
+    n_datasets = 10
+    n_des = 30
+    
+### Compute Indices for each dataset
+I_datasets = np.zeros((n_datasets, 7))
+for i in range(n_datasets):
+    
+    if dataset_mode == 1:
+        dataset_des_inds = np.random.randint(0, len(data_all['original']), n_des)
+    elif dataset_mode == 2:
+        dataset_des_inds_all = np.linspace(0, n_datasets-1, n_datasets)
+        dataset_des_inds = np.delete(dataset_des_inds_all, i)
+        dataset_des_inds = np.asarray(dataset_des_inds, dtype='int')
+    else:
+        dataset_des_inds = np.linspace(i*n_des, (i+1)*n_des-1, n_des)
+        dataset_des_inds = np.asarray(dataset_des_inds, dtype='int')
+        
+    data_comb_run = get_data_subset(data_all, dataset_des_inds, assigning_problem)
+    I_datasets[i,:] = compute_indices(data_comb_run, assigning_problem)
+    
+### Empirical probability of positive index
+prob_heurs = np.zeros((n_heurs))
+for i in range(n_heurs):
+    prob_heurs[i] = len([x for x in I_datasets[:,i] if x > 0])/n_datasets

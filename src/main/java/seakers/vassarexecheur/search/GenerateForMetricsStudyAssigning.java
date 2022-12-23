@@ -99,7 +99,7 @@ public class GenerateForMetricsStudyAssigning {
         //PRNG.setSeed(4321);
 
         //setup for epsilon MOEA
-        double[] epsilonDouble = new double[]{0.001, 10};
+        double[] epsilonDouble = new double[]{0.01, 0.01};
 
         double dcThreshold = 0.5;
         double massThreshold = 3000.0; // [kg]

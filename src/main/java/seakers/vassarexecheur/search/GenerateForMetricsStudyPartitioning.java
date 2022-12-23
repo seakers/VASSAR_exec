@@ -34,9 +34,9 @@ public class GenerateForMetricsStudyPartitioning {
 
     public static void main(String[] args) {
         int numRuns = 10;
-        int numCpus = 4;
+        int numCpus = 1;
 
-        RunMode runMode  = RunMode.EpsilonMOEA;
+        RunMode runMode  = RunMode.RandomPopulation;
         RandomMode randomMode = RandomMode.FullyRandom;
         InitializationMode initializationMode = InitializationMode.InitializeRandom;
 
@@ -93,7 +93,7 @@ public class GenerateForMetricsStudyPartitioning {
         properties.setInt("populationSize", popSize);
         double crossoverProbability = 1.0;
         properties.setDouble("crossoverProbability", crossoverProbability);
-        double mutationProbability = 1. / 60.;
+        double mutationProbability = 1. / 24.;
         properties.setDouble("mutationProbability", mutationProbability);
         Variation partCross;
         Variation partFlip;
@@ -103,17 +103,17 @@ public class GenerateForMetricsStudyPartitioning {
         //PRNG.setSeed(4321);
 
         //setup for epsilon MOEA
-        double[] epsilonDouble = new double[]{0.001, 10};
+        double[] epsilonDouble = new double[]{0.01, 0.01};
 
         double dcThreshold = 0.5;
         double massThreshold = 3000.0; // [kg]
-        double packEffThreshold = 0.4;
+        double packEffThreshold = 0.7;
         boolean considerFeasibility = false; // use false only for biased random generation for random population runs
 
         String savePath = System.getProperty("user.dir") + File.separator + "results";
 
-        //String resourcesPath = "C:\\SEAK Lab\\SEAK Lab Github\\VASSAR\\VASSAR_resources-heur"; // for lab system
-        String resourcesPath = "C:\\Users\\rosha\\Documents\\SEAK Lab Github\\VASSAR\\VASSAR_resources-heur"; // for laptop
+        String resourcesPath = "C:\\SEAK Lab\\SEAK Lab Github\\VASSAR\\VASSAR_resources-heur"; // for lab system
+        //String resourcesPath = "C:\\Users\\rosha\\Documents\\SEAK Lab Github\\VASSAR\\VASSAR_resources-heur"; // for laptop
 
         ClimateCentricPartitioningParams params = new ClimateCentricPartitioningParams(resourcesPath, "FUZZY-ATTRIBUTES", "test", "normal");
 

@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
 public class RepairSynergyAdditionAssigning implements Variation {
 
     /**
-     * Number of instrument moves
+     * Number of instrument additions
      */
     private int numberOfChanges;
 

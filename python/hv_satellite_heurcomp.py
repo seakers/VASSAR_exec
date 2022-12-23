@@ -18,7 +18,7 @@ from IPython.core.debugger import set_trace
 
 assigning_problem = True
 num_runs = 30 # number of runs for each case
-threshold_hv = 0.85
+#threshold_hv = 0.85
 
 credit_assignment = 1 # 0 -> offspring parent dominance, 1 -> set improvement dominance, 2 -> set contribution dominance
 
@@ -471,6 +471,18 @@ def compute_hv_arrays_from_csv_data(pf_dict, obj_norm_full, max_fun_evals):
         
     return hypervol_full_dict
 
+### Compute the max hypervolume of all cases
+def get_max_hv(hypervol_dict_allcases):
+    hv_max_allcases = np.zeros((len(hypervol_dict_allcases), len(hypervol_dict_allcases['case'+str(0)])))
+    for i in range(len(hypervol_dict_allcases)):
+        hv_dict_allruns_case = hypervol_dict_allcases['case'+str(i)]
+        for j in range(len(hv_dict_allruns_case)):
+            hv_vals_run = [x[1] for x in hv_dict_allruns_case['run'+str(j)]]
+            hv_max_run = np.amax(hv_vals_run)
+            hv_max_allcases[i,j] = hv_max_run
+        
+    return np.amax(hv_max_allcases)
+
 ### Compute array of NFE values for reaching threshold hypervolume for different runs of a particular case
 def compute_nfe_hypervolume_attained(hv_dict, hv_threshold):
     #hv_threshold = 0.75 # Threshold HV value to reach, user parameter
@@ -493,7 +505,7 @@ def compute_nfe_hypervolume_attained(hv_dict, hv_threshold):
     return nfe_hv_attained
     
 ### Plot fraction of runs attaining threshold hypervolume vs NFE
-def plot_fraction_hypervolume_attained(nfe_hv_attained_dict, hv_thresh, nfe_array, colour_array, casename_array, savefig_name):
+def plot_fraction_hypervolume_attained(nfe_hv_attained_dict, nfe_array, colour_array, casename_array, savefig_name):
     fig1 = plt.figure()
     n_cases = len(nfe_hv_attained_dict)
     case_idx = 0
@@ -508,13 +520,13 @@ def plot_fraction_hypervolume_attained(nfe_hv_attained_dict, hv_thresh, nfe_arra
         plt.plot(nfe_array, frac_runs_hv_attained, '-', color=colour_array[case_idx], label=casename_array[case_idx])
         case_idx += 1
     
-    plt.xlabel('Number of Function Evaluations',fontsize=14)
-    plt.ylabel('Fraction of runs HV $\geq$ ' + str(hv_thresh),fontsize=14)
+    plt.xlabel(r'Number of Function Evaluations',fontsize=14)
+    plt.ylabel(r'Fraction of runs HV $\geq$ 0.8 $\times$ max HV',fontsize=14)
     plt.xticks(fontsize=14)
     plt.yticks(fontsize=14)
     plt.legend(loc='upper center', bbox_to_anchor=(0.5,1.10), ncol=3, borderaxespad=0 ,prop={"size":12})
     plt.show()
-    fig1.savefig('frac_hv_attained_' + savefig_name + '.png', format='png')
+    fig1.savefig('frac_hv_attained_' + savefig_name + '.pdf', format='pdf')
     
 def compute_hypervolume_stats(hypervols_dict):
     hv_dict_keys = list(hypervols_dict.keys())
@@ -551,39 +563,37 @@ def plot_hypervolume_stats(hv_median_case, hv_1q_case, hv_3q_case, nfe_array, sa
     plt.show()
     #fig1.savefig('HV_plot_averaged_' + savefig_name + '.png')
     
-def plot_hypervolume_stats_allcases(hv_median_dict, hv_1q_dict, hv_3q_dict, nfe_array, colour_array, alpha_array, casename_array, plot_title, savefig_name):
+def plot_hypervolume_stats_allcases(hv_median_dict, hv_1q_dict, hv_3q_dict, nfe_array, colour_array, alpha_array, casename_array, plot_title, savefig_name, incl_legend):
     fig1 = plt.figure()
     number_cases = len(hv_median_dict)
     #print('n_cases')
     #print(number_cases)
     for i in range(number_cases):
         #print(print(marker_array[i]+'*'))
-        plt.plot(nfe_array, hv_median_dict['case'+str(i)], '-', linewidth=3, color=colour_array[i], label=casename_array[i])
+        plt.plot(nfe_array, hv_median_dict['case'+str(i)], '-', linewidth=2.5, color=colour_array[i], label=casename_array[i])
         plt.fill_between(nfe_array, hv_1q_dict['case'+str(i)], hv_3q_dict['case'+str(i)], color=colour_array[i], edgecolor="none", alpha=alpha_array[i])
         
         #plt.plot(nfe_array, hv_1q_dict['case'+str(i)], '--', color=colour_array[i])#, label=casename_array[i]+' 1st Quartile')
         #plt.plot(nfe_array, hv_3q_dict['case'+str(i)], '--', color=colour_array[i])#, label=casename_array[i]+' 3rd Quartile')
-    plt.xlabel('Number of Function Evaluations',fontsize=13)
-    plt.ylabel('Hypervolume',fontsize=13)
+    plt.xlabel(r'Number of Function Evaluations',fontsize=13)
+    plt.ylabel(r'Hypervolume',fontsize=13)
     plt.xticks(fontsize=13)
     plt.yticks(fontsize=13)
     #plt.title(plot_title)
-    plt.legend(loc='upper center', bbox_to_anchor=(0.5,1.10), ncol=3, borderaxespad=0, prop={"size":12})
+    if incl_legend:
+        plt.legend(loc='upper center', bbox_to_anchor=(0.5,1.10), ncol=3, borderaxespad=0, prop={"size":12})
     plt.show()
-    fig1.savefig('HV_plot_averaged_' + savefig_name + '.png', format='png')
+    fig1.savefig('HV_plot_averaged_' + savefig_name + '.pdf', format='pdf')
     
 def compute_mann_whitney_Uvals(assigning_prob, hv_dict_allcases, nfe_array): # Wilcoxon Rank Sum Test
     # hv_med_array_allcases is a dictionary of length = number of cases
     
-    if assigning_prob:
-        ## For assigning problem
-        nfe_samples_array = [0, 500, 750, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000]
-        n_samples = len(nfe_samples_array)
-    else:
-        ## For partitioning problem
-        n_samples = 11
-        linspace_samples_array = np.linspace(0,1,n_samples)
-        nfe_samples_array = np.floor(np.multiply(linspace_samples_array, nfe_array[-1]))
+    nfe_samples_array = [0, 250, 500, 750, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000]
+    n_samples = len(nfe_samples_array)
+    
+    #n_samples = 11
+    #linspace_samples_array = np.linspace(0,1,n_samples)
+    #nfe_samples_array = np.floor(np.multiply(linspace_samples_array, nfe_array[-1]))
        
     #n_samples = 20
     #linspace_samples_array = np.linspace(0,1,n_samples)
@@ -676,7 +686,7 @@ def hypervolume_computation_single_case(case_booleans, prob_assigning, cred_assi
     plot_hypervolume_stats(hv_median_all, hv_1q_all, hv_3q_all, nfe_array, case_name+'_full')
     
     
-def hypervolume_computation_all_cases(case_bools_dict, cred_assign, prob_assigning, run_nums, marker_colours, alpha_vals, case_names, hv_thresh):
+def hypervolume_computation_all_cases(case_bools_dict, cred_assign, prob_assigning, run_nums, marker_colours, alpha_vals, case_names):
     num_cases = len(case_bools_dict) # number of cases to compare 
 
     ## Computing the pareto fronts and normalization objectives for each run in each case
@@ -732,7 +742,14 @@ def hypervolume_computation_all_cases(case_bools_dict, cred_assign, prob_assigni
             hv_dict_allruns['run'+str(j)] = hv_dict_j
             
         hv_dict_allcases['case'+str(i)] = hv_dict_allruns
+        
+    # Compute max hypervolume over all cases for nfe_hypervolume_attained
+    hv_max = get_max_hv(hv_dict_allcases)
+    hv_thresh = 0.8*hv_max
             
+    for i in range(num_cases):
+        hv_dict_allruns = hv_dict_allcases['case'+str(i)]
+        
         print('Computing array of NFE for attaining threshold hypervolume')
         nfe_hv_attained_case = compute_nfe_hypervolume_attained(hv_dict_allruns, hv_thresh)
         nfe_array_hv_attained_dict['case'+str(i)] = nfe_hv_attained_case
@@ -749,14 +766,31 @@ def hypervolume_computation_all_cases(case_bools_dict, cred_assign, prob_assigni
           
     return nfe_array_hv_attained_dict, hv_dict_median_allcases, hv_dict_1q_allcases, hv_dict_3q_allcases, U_test_dict, nfe_array_i
     
-def plotting_all_cases(nfe_hv_attained_dict, hv_dict_med_allcases, hv_dict_1stq_allcases, hv_dict_3rdq_allcases, nfe_array0, mark_colors, alphas, names_cases, hv_thresh):
+def plotting_all_cases(nfe_hv_attained_dict, hv_dict_med_allcases, hv_dict_1stq_allcases, hv_dict_3rdq_allcases, nfe_array0, mark_colors, alphas, names_cases):
     print('Plotting')
-    plot_fraction_hypervolume_attained(nfe_hv_attained_dict, hv_thresh, nfe_array0, mark_colors, names_cases, 'allcases')
-    plot_hypervolume_stats_allcases(hv_dict_med_allcases, hv_dict_1stq_allcases, hv_dict_3rdq_allcases, nfe_array, mark_colors, alphas, names_cases, 'Hypervolume', 'allcases')
+    plot_fraction_hypervolume_attained(nfe_hv_attained_dict, nfe_array0, mark_colors, names_cases, 'allcases')
+    plot_hypervolume_stats_allcases(hv_dict_med_allcases, hv_dict_1stq_allcases, hv_dict_3rdq_allcases, nfe_array, mark_colors, alphas, names_cases, 'Hypervolume', 'allcases', True)
+    
+def plot_upto_nfe(nfe_start, nfe_end, hv_med_allcases, hv_1stq_allcases, hv_3rdq_allcases, nfe_array0, mark_colors, alphas, names_cases):
+    nfe_start_index = find_closest_index(nfe_start, nfe_array0) # find index of closest value in nfe_array to nfe_stert
+    nfe_end_index = find_closest_index(nfe_end, nfe_array0) # find index of closest value in nfe_array to nfe_end
+    
+    nfe_array_lim = nfe_array0[nfe_start_index:nfe_end_index]
+    hv_med_lim_allcases = {}
+    hv_1q_lim_allcases = {}
+    hv_3q_lim_allcases = {}
+    for i in range(len(hv_med_allcases)):
+        hv_med_lim_allcases['case'+str(i)] = hv_med_allcases['case'+str(i)][nfe_start_index:nfe_end_index]
+        hv_1q_lim_allcases['case'+str(i)] = hv_1stq_allcases['case'+str(i)][nfe_start_index:nfe_end_index]
+        hv_3q_lim_allcases['case'+str(i)] = hv_3rdq_allcases['case'+str(i)][nfe_start_index:nfe_end_index]
+    
+    plot_hypervolume_stats_allcases(hv_med_lim_allcases, hv_1q_lim_allcases, hv_3q_lim_allcases, nfe_array_lim, mark_colors, alphas, names_cases, '', 'hv_upto_nfe', False)
     
 #######################################################################################################################################################################################################################################################################################################################################################################################################
     # PROGRAM OPERATION
 #######################################################################################################################################################################################################################################################################################################################################################################################################
+
+## NOTE: For Int Pen cases, change heur_weight on line 261 to appropriate value
 
 #### Comparing Simple E-MOEA with AOS - all heuristics and AOS - promising heuristics
 cases_dict = {}
@@ -765,9 +799,11 @@ cases_dict = {}
 case1_bools = [False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False] # Simple E-MOEA
 case2_bools = [False, True, False, False, False, True, False, False, False, True, False, False, False, True, False, False, False, True, False, False, False, True, False, False, False, True, False, False] #  AOS - all heuristics
 #case2_bools = [True, False, False, False, True, False, False, False, True, False, False, False, True, False, False, False, True, False, False, False, True, False, False, False, True, False, False, False] #  Int Pen - all heuristics
+#case2_bools = [False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, True, False] #  Bias Init - Instrcount
 if assigning_problem:
     #case3_bools = [False, True, False, False, False, False, False, False, False, True, False, False, False, False, False, False, False, True, False, False, False, False, False, False, False, True, False, False] #  AOS - DutyCycle, InterInstr, SpMass, Instrcount
     case3_bools = [False, False, False, False, False, False, False, False, False, True, False, False, False, False, False, False, False, True, False, False, False, False, False, False, False, True, False, False] #  AOS - InterInstr, SpMass, Instrcount
+    #case3_bools = [False, False, False, False, False, True, False, False, False, True, False, False, False, False, False, False, False, True, False, False, False, False, False, False, False, True, False, False] #  AOS - Instrorb, InterInstr, SpMass, Instrcount
     #case3_bools = [True, False, False, False, True, False, False, False, True, False, False, False, False, False, False, False, True, False, False, False, True, False, False, False, True, False, False, False] #  Int Pen - DutyCycle, InstrOrb, InterInstr, SpMass, Instrsyn, Instrcount
     
     cases_dict['case1'] = case1_bools
@@ -779,12 +815,13 @@ if assigning_problem:
     
     #casenames = ['Eps. MOEA','All heurs']
     casenames = ['Eps. MOEA','All heurs','Promising heurs']
+    #casenames = ['Eps. MOEA','Bias Init - InstrCount']
     
-    #alpha_values = [0.5,0.5] # change based on number of cases/visibility
+    #alpha_values = [0.4,0.4] # change based on number of cases/visibility
     alpha_values = [0.4,0.4,0.4] # change based on number of cases/visibility
 else:
-    #case3_bools = [False, True, False, False, False, True, False, False, False, True, False, False, False, False, False, False, False, True, False, False, False, False, False, False, False, False, False, False] #  AOS - DutyCycle, InstrOrb, InterInstr, SpMass
-    case3_bools = [True, False, False, False, True, False, False, False, True, False, False, False, False, False, False, False, True, False, False, False, True, False, False, False, False, False, False, False] #  Int Pen - DutyCycle, InstrOrb, InterInstr, SpMass, Instrsyn
+    case3_bools = [False, True, False, False, False, True, False, False, False, True, False, False, False, False, False, False, False, True, False, False, False, False, False, False, False, False, False, False] #  AOS - DutyCycle, InstrOrb, InterInstr, SpMass
+    #case3_bools = [True, False, False, False, True, False, False, False, True, False, False, False, False, False, False, False, True, False, False, False, True, False, False, False, False, False, False, False] #  Int Pen - DutyCycle, InstrOrb, InterInstr, SpMass, Instrsyn
     
     cases_dict['case1'] = case1_bools
     cases_dict['case2'] = case2_bools
@@ -795,14 +832,41 @@ else:
     #casenames = ['Eps. MOEA','AOS - Heur']
     casenames = ['Eps. MOEA','All heurs','Promising heurs']
     
-    alpha_values = [0.5,0.5,0.5] # change based on number of cases/visibility
+    alpha_values = [0.4,0.4,0.4] # change based on number of cases/visibility
     #alpha_values = [0.5,0.5] # change based on number of cases/visibility
 
-nfe_cdf_array, hv_dict_med_cases, hv_dict_1q_cases, hv_dict_3q_cases, Uvals_test, nfe_array_1 = hypervolume_computation_all_cases(cases_dict, credit_assignment, assigning_problem, num_runs, line_colours, alpha_values, casenames, threshold_hv)
+nfe_cdf_array, hv_dict_med_cases, hv_dict_1q_cases, hv_dict_3q_cases, Uvals_test, nfe_array_1 = hypervolume_computation_all_cases(cases_dict, credit_assignment, assigning_problem, num_runs, line_colours, alpha_values, casenames)
 
 ## Mann Whitney U values
 print("For optimization objectives")
 print(Uvals_test)
 
-plotting_all_cases(nfe_cdf_array, hv_dict_med_cases, hv_dict_1q_cases, hv_dict_3q_cases, nfe_array_1, line_colours, alpha_values, casenames, threshold_hv)
+plotting_all_cases(nfe_cdf_array, hv_dict_med_cases, hv_dict_1q_cases, hv_dict_3q_cases, nfe_array_1, line_colours, alpha_values, casenames)
 #print(nfe_cdf_array)
+
+if assigning_problem:
+    plot_upto_nfe(500, 2500, hv_dict_med_cases, hv_dict_1q_cases, hv_dict_3q_cases, nfe_array_1, line_colours, alpha_values, casenames)
+
+## Checking for max NFE improvement between eps MOEA and promising heurs
+hv_med_emoea = hv_dict_med_cases['case0']
+hv_med_allheur = hv_dict_med_cases['case1']
+hv_med_promheur = hv_dict_med_cases['case2']
+hv_vals = np.linspace(0.0, 1.0, 101)
+nfe_diffs_promheur = np.zeros((len(hv_vals)))
+nfe_diffs_allheur = np.zeros((len(hv_vals)))
+nfe_idxs_emoea = np.zeros((len(hv_vals)))
+nfe_idxs_allheur = np.zeros((len(hv_vals)))
+nfe_idxs_promheur = np.zeros((len(hv_vals)))
+for i in range(len(hv_vals)):
+    nfe_idx_emoea = find_closest_index(hv_vals[i], hv_med_emoea)
+    nfe_idx_allheur = find_closest_index(hv_vals[i], hv_med_allheur)
+    nfe_idx_promheur = find_closest_index(hv_vals[i], hv_med_promheur)
+    nfe_diffs_promheur[i] = nfe_array[nfe_idx_emoea] - nfe_array[nfe_idx_promheur] 
+    nfe_diffs_allheur[i] = nfe_array[nfe_idx_emoea] - nfe_array[nfe_idx_allheur] 
+    nfe_idxs_emoea[i] = nfe_idx_emoea
+    nfe_idxs_allheur[i] = nfe_idx_allheur
+    nfe_idxs_promheur[i] = nfe_idx_promheur
+    
+max_nfe_diff_promheur = np.amax(nfe_diffs_promheur)
+max_nfe_diff_allheur = np.amax(nfe_diffs_allheur)
+    

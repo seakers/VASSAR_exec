@@ -7,7 +7,7 @@ clc
 random_data_bool = true;
 
 % Case 1 - Epsilon MOEA
-assign_case = true;
+assign_case = false;
 random_init = true;
 case_instrdc_bools = [false, false, false, false];
 case_instrorb_bools = [false, false, false, false];
@@ -172,8 +172,7 @@ for i = 1:n_runs
     science_true_all.(current_field) = f_rand_red(:,1);
     cost_true_all.(current_field) = f_rand_red(:,2);
     
-    objs_pareto = compute_pareto_front(-f_rand_red(:,1),f_rand_red(:,2));
-    objs_pareto_true = [-objs_pareto(:,1),objs_pareto(:,2)];
+    
     
     %%%% Normalizing objectives and pfs wrt max and min from objectives
     science_max = max(f_rand_red(:,1));
@@ -188,36 +187,73 @@ for i = 1:n_runs
     cost_max_all(i,1) = cost_max;
     cost_min_all(i,1) = cost_min;
     
-    science_norm_run = (f_rand_red(:,1) - science_min)/(science_max - science_min);
-    cost_norm_run = (f_rand_red(:,2) - cost_min)/(cost_max - cost_min);
+    %science_norm_run = (f_rand_red(:,1) - science_min)/(science_max - science_min);
+    %cost_norm_run = (f_rand_red(:,2) - cost_min)/(cost_max - cost_min);
+    
+    %science_all.(current_field) = science_norm_run;
+    %cost_all.(current_field) = cost_norm_run;
+    
+    %objs_norm_pareto_run = [(objs_pareto_true(:,1) - science_min)/(science_max - science_min), (objs_pareto_true(:,2) - cost_min)/(cost_max - cost_min)]; 
+    
+    %min_dist_pf_run = zeros(size(f_rand_red,1),1);
+    %for k = 1:size(science_norm_run,1)
+        %min_dist_pf_run(k,1) = compute_min_pf_dist([science_norm_run(k,1),cost_norm_run(k,1)],objs_norm_pareto_run);
+    %end
+    
+    %min_dist_pf_all.(current_field) = min_dist_pf_run;
+    
+    support_full_instrdc_runs(i,1) = length(instrdc_run(instrdc_run==0))/size(instrdc_run,1);
+    support_full_instrorb_runs(i,1) = length(instrorb_run(instrorb_run==0))/size(instrdc_run,1);
+    support_full_interinstr_runs(i,1) = length(interinstr_run(interinstr_run==0))/size(instrdc_run,1);
+    support_full_packeff_runs(i,1) = length(packeff_run(packeff_run==0))/size(instrdc_run,1);
+    support_full_spmass_runs(i,1) = length(spmass_run(spmass_run==0))/size(instrdc_run,1);
+    support_full_instrsyn_runs(i,1) = length(instrsyn_run(instrsyn_run==0))/size(instrdc_run,1);
+    if assign_case
+        support_full_instrcount_runs(i,1) = length(instrcount_run(instrcount_run==0))/size(instrdc_run,1);
+    end
+
+    %n_pf_runs(i,1) = size(objs_pareto,1);
+    
+    %%%support_pf_runs(i,1) = size(objs_pareto,1)/size(science_norm_run,1);
+    %support_pf_runs(i,1) = mean(min_dist_pf_run);
+    
+end
+
+%%% Normalize objectives and Pareto Front
+science_max_allruns = max(science_max_all);
+science_min_allruns = min(science_min_all);
+cost_max_allruns = max(cost_max_all);
+cost_min_allruns = min(cost_min_all);
+for i = 1:n_runs
+    current_field = strcat('trial',num2str(i));
+    
+    science_run = science_true_all.(current_field);
+    cost_run = cost_true_all.(current_field);
+    
+    objs_pareto = compute_pareto_front(-science_run, cost_run);
+    objs_pareto_true = [-objs_pareto(:,1),objs_pareto(:,2)];
+    
+    science_norm_run = (science_run - science_min_allruns)/(science_max_allruns - science_min_allruns);
+    cost_norm_run = (cost_run - cost_min_allruns)/(cost_max_allruns - cost_min_allruns);
     
     science_all.(current_field) = science_norm_run;
     cost_all.(current_field) = cost_norm_run;
     
-    objs_norm_pareto_run = [(objs_pareto_true(:,1) - science_min)/(science_max - science_min), (objs_pareto_true(:,2) - cost_min)/(cost_max - cost_min)]; 
+    objs_norm_pareto_run = [(objs_pareto_true(:,1) - science_min_allruns)/(science_max_allruns - science_min_allruns), (objs_pareto_true(:,2) - cost_min_allruns)/(cost_max_allruns - cost_min_allruns)]; 
     
-    min_dist_pf_run = zeros(size(f_rand_red,1),1);
+    min_dist_pf_run = zeros(size(science_run,1),1);
     for k = 1:size(science_norm_run,1)
         min_dist_pf_run(k,1) = compute_min_pf_dist([science_norm_run(k,1),cost_norm_run(k,1)],objs_norm_pareto_run);
     end
     
     min_dist_pf_all.(current_field) = min_dist_pf_run;
     
-    support_full_instrdc_runs(i,1) = length(instrdc_run(instrdc_run==0))/size(science_norm_run,1);
-    support_full_instrorb_runs(i,1) = length(instrorb_run(instrorb_run==0))/size(science_norm_run,1);
-    support_full_interinstr_runs(i,1) = length(interinstr_run(interinstr_run==0))/size(science_norm_run,1);
-    support_full_packeff_runs(i,1) = length(packeff_run(packeff_run==0))/size(science_norm_run,1);
-    support_full_spmass_runs(i,1) = length(spmass_run(spmass_run==0))/size(science_norm_run,1);
-    support_full_instrsyn_runs(i,1) = length(instrsyn_run(instrsyn_run==0))/size(science_norm_run,1);
-    if assign_case
-        support_full_instrcount_runs(i,1) = length(instrcount_run(instrcount_run==0))/size(science_norm_run,1);
-    end
-
     n_pf_runs(i,1) = size(objs_pareto,1);
     
-    support_pf_runs(i,1) = size(objs_pareto,1)/size(science_norm_run,1);
-    
+    %support_pf_runs(i,1) = size(objs_pareto,1)/size(science_norm_run,1);
+    support_pf_runs(i,1) = mean(min_dist_pf_run);
 end
+
 if assign_case
     support_tablestats = [mean(support_pf_runs), std(support_pf_runs);
         mean(support_full_instrdc_runs), std(support_full_instrdc_runs);
@@ -599,14 +635,24 @@ end
 % I1_spmass = compute_heuristic_I1_contribution2(corr_avg_spmass_pfdist, corr_exp_spmass, support_pf_runs);
 % I1_instrsyn = compute_heuristic_I1_contribution2(corr_avg_instrsyn_pfdist, corr_exp_instrsyn, support_pf_runs);
 
-I1_instrdc = compute_heuristic_I1_contribution_run_vec(corr_avg_instrdc_pfdist, corr_exp_instrdc, support_pf_runs);
-I1_instrorb = compute_heuristic_I1_contribution_run_vec(corr_avg_instrorb_pfdist, corr_exp_instrorb, support_pf_runs);
-I1_interinstr = compute_heuristic_I1_contribution_run_vec(corr_avg_interinstr_pfdist, corr_exp_interinstr, support_pf_runs);
-I1_packeff = compute_heuristic_I1_contribution_run_vec(corr_avg_packeff_pfdist, corr_exp_packeff, support_pf_runs);
-I1_spmass = compute_heuristic_I1_contribution_run_vec(corr_avg_spmass_pfdist, corr_exp_spmass, support_pf_runs);
-I1_instrsyn = compute_heuristic_I1_contribution_run_vec(corr_avg_instrsyn_pfdist, corr_exp_instrsyn, support_pf_runs);
+% I1_instrdc = compute_heuristic_I1_contribution_run_vec(corr_avg_instrdc_pfdist, corr_exp_instrdc, support_pf_runs);
+% I1_instrorb = compute_heuristic_I1_contribution_run_vec(corr_avg_instrorb_pfdist, corr_exp_instrorb, support_pf_runs);
+% I1_interinstr = compute_heuristic_I1_contribution_run_vec(corr_avg_interinstr_pfdist, corr_exp_interinstr, support_pf_runs);
+% I1_packeff = compute_heuristic_I1_contribution_run_vec(corr_avg_packeff_pfdist, corr_exp_packeff, support_pf_runs);
+% I1_spmass = compute_heuristic_I1_contribution_run_vec(corr_avg_spmass_pfdist, corr_exp_spmass, support_pf_runs);
+% I1_instrsyn = compute_heuristic_I1_contribution_run_vec(corr_avg_instrsyn_pfdist, corr_exp_instrsyn, support_pf_runs);
+% if assign_case
+%     I1_instrcount = compute_heuristic_I1_contribution_run_vec(corr_avg_instrcount_pfdist, corr_exp_instrcount, support_pf_runs);
+% end
+
+I1_instrdc = compute_heuristic_I1_contribution_run_vec2(corr_avg_instrdc_pfdist, corr_exp_instrdc, support_pf_runs);
+I1_instrorb = compute_heuristic_I1_contribution_run_vec2(corr_avg_instrorb_pfdist, corr_exp_instrorb, support_pf_runs);
+I1_interinstr = compute_heuristic_I1_contribution_run_vec2(corr_avg_interinstr_pfdist, corr_exp_interinstr, support_pf_runs);
+I1_packeff = compute_heuristic_I1_contribution_run_vec2(corr_avg_packeff_pfdist, corr_exp_packeff, support_pf_runs);
+I1_spmass = compute_heuristic_I1_contribution_run_vec2(corr_avg_spmass_pfdist, corr_exp_spmass, support_pf_runs);
+I1_instrsyn = compute_heuristic_I1_contribution_run_vec2(corr_avg_instrsyn_pfdist, corr_exp_instrsyn, support_pf_runs);
 if assign_case
-    I1_instrcount = compute_heuristic_I1_contribution_run_vec(corr_avg_instrcount_pfdist, corr_exp_instrcount, support_pf_runs);
+    I1_instrcount = compute_heuristic_I1_contribution_run_vec2(corr_avg_instrcount_pfdist, corr_exp_instrcount, support_pf_runs);
 end
 
 %I1_norm_instrdc = I1_instrdc/(abs(I1_instrdc) + abs(I1_instrorb) + abs(I1_interinstr) + abs(I1_packeff) + abs(I1_spmass) + abs(I1_instrsyn));
@@ -914,6 +960,17 @@ function index_contribution = compute_heuristic_I1_contribution_run_vec(corr_arr
     
     log_arg = idx_corr_heur_param.*corr_array_heur_param;
     index_contribution = log_arg.*(-1.*log10(supp_array_param));
+end
+
+function index_contribution = compute_heuristic_I1_contribution_run_vec2(corr_array_heur_param, idx_corr_heur_param, weight_array_param)
+    % corr_array_heur_param and weight_array_param are (n x 1) arrays where n is the number of runs
+    is_nan_vals = isnan(corr_array_heur_param); % nan values happen when all values in array are identical
+    
+    corr_array_heur_param = corr_array_heur_param(~is_nan_vals);
+    weight_array_param = weight_array_param(~is_nan_vals);
+    
+    log_arg = idx_corr_heur_param.*corr_array_heur_param;
+    index_contribution = log_arg.*weight_array_param;
 end
 
 function index_contribution = compute_heuristic_I2_contribution2(corr_array_heur_param, idx_corr_heur_param, supp_array_param, supp_array_heur)

@@ -87,7 +87,7 @@ public class MOEARun {
          * heuristicsConstrained = [dutyCycleConstrained, instrumentOrbitRelationsConstrained, interferenceConstrained, packingEfficiencyConstrained, spacecraftMassConstrained, synergyConstrained, instrumentCountConstrained]
          */
         boolean[] dutyCycleConstrained = {false, false, false, false, false, false};
-        boolean[] instrumentOrbitRelationsConstrained = {false, false, false, false, false, false};
+        boolean[] instrumentOrbitRelationsConstrained = {false, true, false, false, false, false};
         boolean[] interferenceConstrained = {false, true, false, false, false, false};
         boolean[] packingEfficiencyConstrained = {false, false, false, false, false, false};
         boolean[] spacecraftMassConstrained = {false, true, false, false, false, false};
@@ -135,8 +135,8 @@ public class MOEARun {
 
         //boolean initializeLowerInstrumentCount = false; // Only used for the Assigning Problem
 
-        int numCPU = 3;
-        int numRuns = 6;
+        int numCPU = 1;
+        int numRuns = 1;
         pool = Executors.newFixedThreadPool(numCPU);
         ecs = new ExecutorCompletionService<>(pool);
 
@@ -229,20 +229,16 @@ public class MOEARun {
             }
 
             // Initial population
-            if (biasinitConstrained.contains(true)) {
-                System.out.println("Biased Initialization not programmed yet");
-            } else {
-                if (assigningProblem) {
-                    if (instrumentCountConstrained[2]) {
-                        initialization = new LowerInstrumentCountInitialization((AssigningProblem) satelliteProblem, instrCountThreshold/60, popSize);
-                    } else {
-                        initialization = new RandomInitialization(satelliteProblem, popSize);
-                    }
+            if (assigningProblem) {
+                if (instrumentCountConstrained[2]) { // Biased Initialization for other heuristics not programmed yet
+                    initialization = new LowerInstrumentCountInitialization((AssigningProblem) satelliteProblem, instrCountThreshold/60, popSize);
                 } else {
-                    //initialization = new RandomPartitioningAndAssigning(popSize, (PartitioningProblem) satelliteProblem, params.getInstrumentList(), params.getOrbitList());
-                    //initialization = new RandomFeasiblePartitioning(popSize, (PartitioningProblem) satelliteProblem, params.getInstrumentList(), params.getOrbitList());
-                    initialization = new RandomPartitioningReadInitialization(savePath, i, popSize, (PartitioningProblem) satelliteProblem, params.getInstrumentList(), params.getOrbitList());
+                    initialization = new RandomInitialization(satelliteProblem, popSize);
                 }
+            } else {
+                //initialization = new RandomPartitioningAndAssigning(popSize, (PartitioningProblem) satelliteProblem, params.getInstrumentList(), params.getOrbitList());
+                //initialization = new RandomFeasiblePartitioning(popSize, (PartitioningProblem) satelliteProblem, params.getInstrumentList(), params.getOrbitList());
+                initialization = new RandomPartitioningReadInitialization(savePath, i, popSize, (PartitioningProblem) satelliteProblem, params.getInstrumentList(), params.getOrbitList());
             }
 
             // Initialize the population
