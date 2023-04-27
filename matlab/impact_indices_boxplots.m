@@ -7,8 +7,8 @@ clc
 %prob_types = ['assign','partition','stiffness','artery'];
 %heur_forms = ['softconstraint','operator','biasedsample'];
 
-prob = 'partition';
-heur_form = 'operator';
+prob = 'stiffness';
+heur_form = 'softconstraint';
 
 I_heur = read_data(prob, heur_form);
 
@@ -108,7 +108,7 @@ function [] = plot_boxplot(I_heurs_arr, p_pos_heurs, mean_heurs, heur_ticks, heu
     scatter(heur_ticks, mean_heurs, [], 'filled', 'o', 'MarkerFaceColor', 'b')
     xlabel('Heuristic')
     ylabel('Impact Index')
-    legend('$mean(I(h))$','Interpreter','Latex','Location','Best')
+    %legend('$mean(I(h))$','Interpreter','Latex','Location','Best')
     hold off
     xticks(heur_ticks)
     xticklabels(heur_strs)

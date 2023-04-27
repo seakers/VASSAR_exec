@@ -7,10 +7,10 @@ import org.moeaframework.core.PRNG;
 import org.moeaframework.core.Variation;
 import org.moeaframework.util.TypedProperties;
 import seakers.orekit.util.OrekitConfig;
-import seakers.vassar.evaluation.AbstractArchitectureEvaluator;
-import seakers.vassar.evaluation.ArchitectureEvaluationManager;
-import seakers.vassar.problems.Assigning.ArchitectureEvaluator;
-import seakers.vassar.problems.Assigning.ClimateCentricParams;
+import seakers.vassarheur.evaluation.AbstractArchitectureEvaluator;
+import seakers.vassarheur.evaluation.ArchitectureEvaluationManager;
+import seakers.vassarheur.problems.Assigning.ArchitectureEvaluator;
+import seakers.vassarheur.problems.Assigning.ClimateCentricAssigningParams;
 import seakers.vassarexecheur.search.intialization.SynchronizedMersenneTwister;
 
 import java.io.File;
@@ -64,7 +64,7 @@ public class MOEARunEOSSAssign {
         String resourcesPath = "C:\\SEAK Lab\\SEAK Lab Github\\VASSAR\\VASSAR_resources-master";
         String savePath = System.getProperty("user.dir") + File.separator + "results";
 
-        ClimateCentricParams params = new ClimateCentricParams(resourcesPath, "CRISP-ATTRIBUTES","test", "normal");
+        ClimateCentricAssigningParams params = new ClimateCentricAssigningParams(resourcesPath, "CRISP-ATTRIBUTES","test", "normal");
         AbstractArchitectureEvaluator evaluator = new ArchitectureEvaluator();
         ArchitectureEvaluationManager evaluationManager = new ArchitectureEvaluationManager(params, evaluator);
         evaluationManager.init(numCpus);

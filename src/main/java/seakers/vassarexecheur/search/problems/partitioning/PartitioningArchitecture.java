@@ -86,7 +86,7 @@ public class PartitioningArchitecture extends Architecture {
     public Solution copy() { return new PartitioningArchitecture(this); }
 
     public Solution deepCopy() {
-        AssigningArchitecture copy = (AssigningArchitecture) this.copy();
+        PartitioningArchitecture copy = (PartitioningArchitecture) this.copy();
 
         // Copy Variables
         for (int i = 0; i < this.getNumberOfVariables(); i++) {

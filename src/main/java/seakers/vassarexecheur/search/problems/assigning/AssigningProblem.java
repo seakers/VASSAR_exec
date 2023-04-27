@@ -159,6 +159,10 @@ public class AssigningProblem  extends AbstractProblem implements SystemArchitec
                 arch.setAttribute("SynergyViolation",archHeuristics.get(5));
                 arch.setAttribute("InstrCountViolation",archHeuristics.get(6));
 
+                // Set objective attributes for Heuristic Coevolutionary Problem
+                arch.setAttribute("TrueObjective1", arch.getObjective(0));
+                arch.setAttribute("TrueObjective2", arch.getObjective(1));
+
                 arch.setAlreadyEvaluated(true);
             }
             catch (Exception e) {

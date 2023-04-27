@@ -106,6 +106,11 @@ public class PartitioningProblem extends AbstractProblem implements SystemArchit
                 arch.setSatellitePayloads(result.getSatellitePayloads());
 
                 arch.setSatelliteOrbits(result.getSatelliteOrbits());
+
+                // Set objective attributes for Heuristic Coevolutionary Problem
+                arch.setAttribute("TrueObjective1", arch.getObjective(0));
+                arch.setAttribute("TrueObjective2", arch.getObjective(1));
+
                 arch.setAlreadyEvaluated(true);
             }
             catch (Exception e) {

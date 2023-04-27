@@ -65,6 +65,9 @@ public class RandomPartitioningReadInitialization implements Initialization {
 
             initialPopulation[populationCounter] = newArch;
             populationCounter++;
+            if (populationCounter == populationSize) {
+                break;
+            }
         }
 
         return initialPopulation;

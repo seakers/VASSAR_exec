@@ -79,7 +79,7 @@
     <property name="project.structure.last.edited" value="Project" />
     <property name="project.structure.proportion" value="0.15" />
     <property name="project.structure.side.proportion" value="0.2" />
-    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
+    <property name="settings.editor.selected.configurable" value="reference.settingsdialog.project.gradle" />
   </component>
   <component name="RecentsManager">
     <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
@@ -107,7 +107,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Application.MOEARun">
+  <component name="RunManager" selected="Gradle.VASSAR_exec_heur [publishToMavenLocal]">
     <configuration name="GenerateForMetricsStudyPartitioning" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="seakers.vassarexecheur.search.GenerateForMetricsStudyPartitioning" />
       <module name="vassarexecheur.main" />
