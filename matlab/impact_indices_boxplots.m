@@ -7,8 +7,8 @@ clc
 %prob_types = ['assign','partition','stiffness','artery'];
 %heur_forms = ['softconstraint','operator','biasedsample'];
 
-prob = 'stiffness';
-heur_form = 'softconstraint';
+prob = 'artery';
+heur_form = 'operator';
 
 I_heur = read_data(prob, heur_form);
 
@@ -41,7 +41,7 @@ plot_boxplot(I_heur, p_pos_heur, mean_heur, heur_ticks, heurs, heur_form)
 probs = ["assign","stiffness","artery"];
 heur_form = 'biasedsample';
 
-heurs = {'Assignment - DC','Stiffness - OR','Artery - OR'};
+heurs = {'Assignment - IC','Stiffness - OR','Artery - OR'};
 heur_ticks = linspace(1, size(heurs,2), size(heurs,2));
 
 I_heurs_combined = [];
@@ -94,14 +94,12 @@ end
 function [] = plot_boxplot(I_heurs_arr, p_pos_heurs, mean_heurs, heur_ticks, heur_strs, heur_type)
 
     heur_ticks_cell = num2cell(heur_ticks);
+    x_ticks = [0, heur_ticks, heur_ticks(end)+1];
     
     figure
+    plot(x_ticks,zeros(size(x_ticks,2),1),'k--')
+    hold on
     boxplot(I_heurs_arr, 'Labels',heur_ticks_cell)
-    %if strcmp(heur_type, 'softconstraint')
-        %ylim([-0.75,1.75])
-    %else
-        %ylim([-0.2,1.05])
-    %end
     %hold on
     %scatter(heur_ticks, p_pos_heurs, 44, 'filled', 'pentagram', 'MarkerFaceColor', 'k')
     hold on
@@ -110,6 +108,7 @@ function [] = plot_boxplot(I_heurs_arr, p_pos_heurs, mean_heurs, heur_ticks, heu
     ylabel('Impact Index')
     %legend('$mean(I(h))$','Interpreter','Latex','Location','Best')
     hold off
+    ylim([-1,1])
     xticks(heur_ticks)
     xticklabels(heur_strs)
     ax = gca;

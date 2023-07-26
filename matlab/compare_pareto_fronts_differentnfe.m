@@ -194,9 +194,9 @@ function [objs_array_req, heurs_array_req, des_array_req] = read_csv_data_tillnf
     data_table = readtable(full_filepath,'Format',format_string,'Delimiter',',');
     
     %%%% store retrieved data into different variables
-    %%%% csv_data includes: [Pen. Obj. 1, Pen.Obj. 2, True Obj. 1, True Obj. 2, Feasibility Score,
-    %%%% Connectivity Score, Stiffness Ratio Constraint, Partial Collapsibility Score, 
-    %%%% Nodal Properties Score, Orientation Score]
+    %%%% csv_data includes: [Science, Cost, Duty Cycle Violation, Instrument Orbit Assignment Violation, 
+    %%%% Interference Violation, Packing Efficiency Violation, Spacecraft Mass Violation, 
+    %%%% Synergy Violation, *Instrument Count Violation* (only for Assigning Problem)]
     pop_size =  size(data_table,1);
     csv_data = zeros(pop_size,9);
     

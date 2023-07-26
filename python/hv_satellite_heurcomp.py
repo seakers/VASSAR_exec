@@ -16,7 +16,7 @@ from itertools import combinations
 import matplotlib.pyplot as plt
 from IPython.core.debugger import set_trace
 
-assigning_problem = True
+assigning_problem = False
 num_runs = 30 # number of runs for each case
 #threshold_hv = 0.85
 
@@ -258,7 +258,7 @@ def extract_data_from_csv(csv_filepath, assigning, intpen_constr_heur):
     else:
         heur_objs_norm = [0.4, 7250]
         
-    heur_weight = 1
+    heur_weight = 1 # change to 0.1 for interior penalty for either problem
     
     heur_objs = np.zeros(len(instrdc_scores_sorted))
     if any(intpen_constr_heur):
@@ -505,7 +505,7 @@ def compute_nfe_hypervolume_attained(hv_dict, hv_threshold):
     return nfe_hv_attained
     
 ### Plot fraction of runs attaining threshold hypervolume vs NFE
-def plot_fraction_hypervolume_attained(nfe_hv_attained_dict, nfe_array, colour_array, casename_array, savefig_name):
+def plot_fraction_hypervolume_attained(nfe_hv_attained_dict, nfe_array, colour_array, linestyles_array, casename_array, savefig_name):
     fig1 = plt.figure()
     n_cases = len(nfe_hv_attained_dict)
     case_idx = 0
@@ -517,7 +517,7 @@ def plot_fraction_hypervolume_attained(nfe_hv_attained_dict, nfe_array, colour_a
             idx_runs_hv_attained = [idx for idx, val in enumerate(nfe_hv_attained_case) if val <= nfe_array[i]]
             frac_runs_hv_attained[i] = len(idx_runs_hv_attained)/n_runs
             
-        plt.plot(nfe_array, frac_runs_hv_attained, '-', color=colour_array[case_idx], label=casename_array[case_idx])
+        plt.plot(nfe_array, frac_runs_hv_attained, linestyle=linestyles_array[case_idx], color=colour_array[case_idx], label=casename_array[case_idx])
         case_idx += 1
     
     plt.xlabel(r'Number of Function Evaluations',fontsize=14)
@@ -563,18 +563,24 @@ def plot_hypervolume_stats(hv_median_case, hv_1q_case, hv_3q_case, nfe_array, sa
     plt.show()
     #fig1.savefig('HV_plot_averaged_' + savefig_name + '.png')
     
-def plot_hypervolume_stats_allcases(hv_median_dict, hv_1q_dict, hv_3q_dict, nfe_array, colour_array, alpha_array, casename_array, plot_title, savefig_name, incl_legend):
+def plot_hypervolume_stats_allcases(hv_median_dict, hv_1q_dict, hv_3q_dict, nfe_array, colour_array, alpha_array, linestyles_array, hatches_case, casename_array, plot_title, savefig_name, incl_legend, use_ylim):
     fig1 = plt.figure()
     number_cases = len(hv_median_dict)
     #print('n_cases')
     #print(number_cases)
     for i in range(number_cases):
         #print(print(marker_array[i]+'*'))
-        plt.plot(nfe_array, hv_median_dict['case'+str(i)], '-', linewidth=2.5, color=colour_array[i], label=casename_array[i])
-        plt.fill_between(nfe_array, hv_1q_dict['case'+str(i)], hv_3q_dict['case'+str(i)], color=colour_array[i], edgecolor="none", alpha=alpha_array[i])
+        if all(h is None for h in hatches_case):
+            plt.plot(nfe_array, hv_median_dict['case'+str(i)], linewidth=2.5, color=colour_array[i], linestyle=linestyles_array[i], label=casename_array[i])
+            plt.fill_between(nfe_array, hv_1q_dict['case'+str(i)], hv_3q_dict['case'+str(i)], color=colour_array[i], hatch=hatches_case[i], linestyle=linestyles_array[i], edgecolor="none", alpha=alpha_array[i])
+        else:
+            plt.plot(nfe_array, hv_median_dict['case'+str(i)], linewidth=2.5, linestyle=linestyles_array[i], label=casename_array[i])
+            plt.fill_between(nfe_array, hv_1q_dict['case'+str(i)], hv_3q_dict['case'+str(i)], facecolor="none", edgecolor=colour_array[i], hatch=hatches_case[i], linestyle=linestyles_array[i], alpha=alpha_array[i])
         
         #plt.plot(nfe_array, hv_1q_dict['case'+str(i)], '--', color=colour_array[i])#, label=casename_array[i]+' 1st Quartile')
         #plt.plot(nfe_array, hv_3q_dict['case'+str(i)], '--', color=colour_array[i])#, label=casename_array[i]+' 3rd Quartile')
+    if use_ylim:
+        plt.ylim(0.0, 1.0) # reviewer requested modification
     plt.xlabel(r'Number of Function Evaluations',fontsize=13)
     plt.ylabel(r'Hypervolume',fontsize=13)
     plt.xticks(fontsize=13)
@@ -766,12 +772,12 @@ def hypervolume_computation_all_cases(case_bools_dict, cred_assign, prob_assigni
           
     return nfe_array_hv_attained_dict, hv_dict_median_allcases, hv_dict_1q_allcases, hv_dict_3q_allcases, U_test_dict, nfe_array_i
     
-def plotting_all_cases(nfe_hv_attained_dict, hv_dict_med_allcases, hv_dict_1stq_allcases, hv_dict_3rdq_allcases, nfe_array0, mark_colors, alphas, names_cases):
+def plotting_all_cases(nfe_hv_attained_dict, hv_dict_med_allcases, hv_dict_1stq_allcases, hv_dict_3rdq_allcases, nfe_array0, mark_colors, alphas, line_styles_case, hatches_case, names_cases):
     print('Plotting')
-    plot_fraction_hypervolume_attained(nfe_hv_attained_dict, nfe_array0, mark_colors, names_cases, 'allcases')
-    plot_hypervolume_stats_allcases(hv_dict_med_allcases, hv_dict_1stq_allcases, hv_dict_3rdq_allcases, nfe_array, mark_colors, alphas, names_cases, 'Hypervolume', 'allcases', True)
+    plot_fraction_hypervolume_attained(nfe_hv_attained_dict, nfe_array0, mark_colors, line_styles_case, names_cases, 'allcases')
+    plot_hypervolume_stats_allcases(hv_dict_med_allcases, hv_dict_1stq_allcases, hv_dict_3rdq_allcases, nfe_array, mark_colors, alphas, line_styles_case, hatches_case, names_cases, 'Hypervolume', 'allcases', True, True)
     
-def plot_upto_nfe(nfe_start, nfe_end, hv_med_allcases, hv_1stq_allcases, hv_3rdq_allcases, nfe_array0, mark_colors, alphas, names_cases):
+def plot_upto_nfe(nfe_start, nfe_end, hv_med_allcases, hv_1stq_allcases, hv_3rdq_allcases, nfe_array0, mark_colors, alphas, line_styles_case, hatches_case, names_cases):
     nfe_start_index = find_closest_index(nfe_start, nfe_array0) # find index of closest value in nfe_array to nfe_stert
     nfe_end_index = find_closest_index(nfe_end, nfe_array0) # find index of closest value in nfe_array to nfe_end
     
@@ -784,7 +790,7 @@ def plot_upto_nfe(nfe_start, nfe_end, hv_med_allcases, hv_1stq_allcases, hv_3rdq
         hv_1q_lim_allcases['case'+str(i)] = hv_1stq_allcases['case'+str(i)][nfe_start_index:nfe_end_index]
         hv_3q_lim_allcases['case'+str(i)] = hv_3rdq_allcases['case'+str(i)][nfe_start_index:nfe_end_index]
     
-    plot_hypervolume_stats_allcases(hv_med_lim_allcases, hv_1q_lim_allcases, hv_3q_lim_allcases, nfe_array_lim, mark_colors, alphas, names_cases, '', 'hv_upto_nfe', False)
+    plot_hypervolume_stats_allcases(hv_med_lim_allcases, hv_1q_lim_allcases, hv_3q_lim_allcases, nfe_array_lim, mark_colors, alphas, line_styles_case, hatches_case, names_cases, '', 'hv_upto_nfe', False, False)
     
 #######################################################################################################################################################################################################################################################################################################################################################################################################
     # PROGRAM OPERATION
@@ -819,6 +825,12 @@ if assigning_problem:
     
     #alpha_values = [0.4,0.4] # change based on number of cases/visibility
     alpha_values = [0.4,0.4,0.4] # change based on number of cases/visibility
+    
+    line_styles = ['-','-','-']
+    #line_styles = ['-','--',':']
+    
+    #case_hatches = ['o','/','x']
+    case_hatches = [None, None, None]
 else:
     case3_bools = [False, True, False, False, False, True, False, False, False, True, False, False, False, False, False, False, False, True, False, False, False, False, False, False, False, False, False, False] #  AOS - DutyCycle, InstrOrb, InterInstr, SpMass
     #case3_bools = [True, False, False, False, True, False, False, False, True, False, False, False, False, False, False, False, True, False, False, False, True, False, False, False, False, False, False, False] #  Int Pen - DutyCycle, InstrOrb, InterInstr, SpMass, Instrsyn
@@ -829,11 +841,18 @@ else:
     
     line_colours = ['#000000','#E69F00','#56B4E9'] # black, yellow, blue
     #line_colours = ['#000000','#E69F00'] # black, yellow
+    
     #casenames = ['Eps. MOEA','AOS - Heur']
     casenames = ['Eps. MOEA','All heurs','Promising heurs']
     
+    line_styles = ['-','-','-']
+    #line_styles = ['-','--',':']
+    
     alpha_values = [0.4,0.4,0.4] # change based on number of cases/visibility
     #alpha_values = [0.5,0.5] # change based on number of cases/visibility
+    
+    #case_hatches = ['o','/','x']
+    case_hatches = [None, None, None]
 
 nfe_cdf_array, hv_dict_med_cases, hv_dict_1q_cases, hv_dict_3q_cases, Uvals_test, nfe_array_1 = hypervolume_computation_all_cases(cases_dict, credit_assignment, assigning_problem, num_runs, line_colours, alpha_values, casenames)
 
@@ -841,11 +860,10 @@ nfe_cdf_array, hv_dict_med_cases, hv_dict_1q_cases, hv_dict_3q_cases, Uvals_test
 print("For optimization objectives")
 print(Uvals_test)
 
-plotting_all_cases(nfe_cdf_array, hv_dict_med_cases, hv_dict_1q_cases, hv_dict_3q_cases, nfe_array_1, line_colours, alpha_values, casenames)
+plotting_all_cases(nfe_cdf_array, hv_dict_med_cases, hv_dict_1q_cases, hv_dict_3q_cases, nfe_array_1, line_colours, alpha_values, line_styles, case_hatches, casenames)
 #print(nfe_cdf_array)
 
-if assigning_problem:
-    plot_upto_nfe(500, 2500, hv_dict_med_cases, hv_dict_1q_cases, hv_dict_3q_cases, nfe_array_1, line_colours, alpha_values, casenames)
+plot_upto_nfe(500, 2500, hv_dict_med_cases, hv_dict_1q_cases, hv_dict_3q_cases, nfe_array_1, line_colours, alpha_values, line_styles, case_hatches, casenames)
 
 ## Checking for max NFE improvement between eps MOEA and promising heurs
 hv_med_emoea = hv_dict_med_cases['case0']
