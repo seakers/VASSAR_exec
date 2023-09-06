@@ -1,8 +1,119 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
   <component name="ChangeListManager">
-    <list default="true" id="46c8bac3-9a98-4d2e-bede-3eb116d49ae3" name="Default Changelist" comment="" />
-    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <list default="true" id="46c8bac3-9a98-4d2e-bede-3eb116d49ae3" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/src/main/java/seakers/vassarexecheur/search/App.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/5.2.1/executionHistory/executionHistory.bin" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/5.2.1/executionHistory/executionHistory.lock" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/5.2.1/fileContent/fileContent.lock" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/5.2.1/fileHashes/fileHashes.bin" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/5.2.1/fileHashes/fileHashes.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/5.2.1/fileHashes/fileHashes.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/5.2.1/fileHashes/resourceHashesCache.bin" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/5.2.1/javaCompile/classAnalysis.bin" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/5.2.1/javaCompile/jarAnalysis.bin" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/5.2.1/javaCompile/javaCompile.lock" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/5.2.1/javaCompile/taskHistory.bin" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/cache.properties" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/cache.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/outputFiles.bin" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/AssigningMOEARun.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/AssigningMOEARun.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/AssigningSearch.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/AssigningSearch.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/CheckHeuristicImprovement2.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/CheckHeuristicImprovement2.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/CheckOperatorHeuristicImprovement.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/CheckOperatorHeuristicImprovement.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/CheckOperators.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/CheckOperators.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/Example.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/Example.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/GenerateForMetricsStudyAssigning$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/GenerateForMetricsStudyAssigning$1.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/GenerateForMetricsStudyAssigning$InitializationMode.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/GenerateForMetricsStudyAssigning$InitializationMode.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/GenerateForMetricsStudyAssigning$RunMode.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/GenerateForMetricsStudyAssigning$RunMode.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/GenerateForMetricsStudyAssigning.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/GenerateForMetricsStudyAssigning.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/GenerateForMetricsStudyPartitioning$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/GenerateForMetricsStudyPartitioning$1.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/GenerateForMetricsStudyPartitioning$InitializationMode.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/GenerateForMetricsStudyPartitioning$InitializationMode.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/GenerateForMetricsStudyPartitioning$RandomMode.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/GenerateForMetricsStudyPartitioning$RandomMode.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/GenerateForMetricsStudyPartitioning$RunMode.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/GenerateForMetricsStudyPartitioning$RunMode.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/GenerateForMetricsStudyPartitioning.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/GenerateForMetricsStudyPartitioning.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/GenerateOperatorIndexDataAssigning$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/GenerateOperatorIndexDataAssigning$1.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/GenerateOperatorIndexDataAssigning$RunMode.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/GenerateOperatorIndexDataAssigning$RunMode.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/GenerateOperatorIndexDataAssigning.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/GenerateOperatorIndexDataAssigning.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/GenerateOperatorIndexDataPartitioning$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/GenerateOperatorIndexDataPartitioning$1.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/GenerateOperatorIndexDataPartitioning$RunMode.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/GenerateOperatorIndexDataPartitioning$RunMode.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/GenerateOperatorIndexDataPartitioning.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/GenerateOperatorIndexDataPartitioning.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/MOEARun.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/MOEARun.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/PartitioningMOEARun.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/PartitioningMOEARun.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/PartitioningSearch.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/PartitioningSearch.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/Utils.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/Utils.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/constrainthandling/DisjunctiveNormalForm.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/constrainthandling/DisjunctiveNormalForm.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/constrainthandling/KnowledgeStochasticRanking.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/constrainthandling/KnowledgeStochasticRanking.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/eoss/EOSSSearchAssign.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/eoss/EOSSSearchAssign.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/eoss/GenerateForMetricsStudyEOSSAssign$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/eoss/GenerateForMetricsStudyEOSSAssign$1.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/eoss/GenerateForMetricsStudyEOSSAssign$InitializationMode.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/eoss/GenerateForMetricsStudyEOSSAssign$InitializationMode.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/eoss/GenerateForMetricsStudyEOSSAssign$RunMode.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/eoss/GenerateForMetricsStudyEOSSAssign$RunMode.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/eoss/GenerateForMetricsStudyEOSSAssign.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/eoss/GenerateForMetricsStudyEOSSAssign.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/eoss/MOEARunEOSSAssign$InitializationMode.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/eoss/MOEARunEOSSAssign$InitializationMode.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/eoss/MOEARunEOSSAssign.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/eoss/MOEARunEOSSAssign.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/intialization/SynchronizedMersenneTwister$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/intialization/SynchronizedMersenneTwister$1.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/intialization/SynchronizedMersenneTwister.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/intialization/SynchronizedMersenneTwister.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/intialization/assignment/DutyCycleInitialization.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/intialization/assignment/DutyCycleInitialization.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/intialization/assignment/InstrumentOrbitInitialization.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/intialization/assignment/InstrumentOrbitInitialization.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/intialization/assignment/InterferenceInitialization.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/intialization/assignment/InterferenceInitialization.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/intialization/assignment/LowerInstrumentCountInitialization.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/intialization/assignment/LowerInstrumentCountInitialization.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/intialization/assignment/MassInitialization.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/intialization/assignment/MassInitialization.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/intialization/assignment/PackingEfficiencyInitialization.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/intialization/assignment/PackingEfficiencyInitialization.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/intialization/assignment/SynergyInitialization.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/intialization/assignment/SynergyInitialization.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/intialization/partitioning/DutyCycleInitialization.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/intialization/partitioning/DutyCycleInitialization.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/intialization/partitioning/InstrumentOrbitInitialization.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/intialization/partitioning/InstrumentOrbitInitialization.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/intialization/partitioning/InterferenceInitialization.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/intialization/partitioning/InterferenceInitialization.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/intialization/partitioning/MassInitialization.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/intialization/partitioning/MassInitialization.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/intialization/partitioning/PackingEfficiencyInitialization.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/intialization/partitioning/PackingEfficiencyInitialization.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/intialization/partitioning/PartitioningInitialization.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/intialization/partitioning/PartitioningInitialization.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/intialization/partitioning/RandomFeasiblePartitioning.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/intialization/partitioning/RandomFeasiblePartitioning.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/intialization/partitioning/RandomPartitioningAndAssigning.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/intialization/partitioning/RandomPartitioningAndAssigning.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/intialization/partitioning/RandomPartitioningReadInitialization.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/intialization/partitioning/RandomPartitioningReadInitialization.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/intialization/partitioning/StoreRandomFeasiblePartitioning.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/intialization/partitioning/StoreRandomFeasiblePartitioning.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/intialization/partitioning/SynergyInitialization.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/intialization/partitioning/SynergyInitialization.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/assigning/RepairDutyCycle.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/assigning/RepairDutyCycle.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/assigning/RepairDutyCycleAssigning.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/assigning/RepairDutyCycleAssigning.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/assigning/RepairInstrumentCountAssigning.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/assigning/RepairInstrumentCountAssigning.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/assigning/RepairInstrumentOrbit.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/assigning/RepairInstrumentOrbit.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/assigning/RepairInstrumentOrbitAssigning.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/assigning/RepairInstrumentOrbitAssigning.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/assigning/RepairInterference.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/assigning/RepairInterference.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/assigning/RepairInterferenceAssigning.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/assigning/RepairInterferenceAssigning.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/assigning/RepairMass.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/assigning/RepairMass.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/assigning/RepairMassAssigning.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/assigning/RepairMassAssigning.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/assigning/RepairPackingEfficiency.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/assigning/RepairPackingEfficiency.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/assigning/RepairPackingEfficiencyAdditionAssigning.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/assigning/RepairPackingEfficiencyAdditionAssigning.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/assigning/RepairPackingEfficiencyAssigning.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/assigning/RepairPackingEfficiencyAssigning.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/assigning/RepairSynergy.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/assigning/RepairSynergy.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/assigning/RepairSynergyAdditionAssigning.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/assigning/RepairSynergyAdditionAssigning.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/assigning/RepairSynergyAssigning.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/assigning/RepairSynergyAssigning.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/partitioning/PartitioningCrossover.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/partitioning/PartitioningCrossover.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/partitioning/PartitioningMutation.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/partitioning/PartitioningMutation.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/partitioning/RepairDutyCycle.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/partitioning/RepairDutyCycle.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/partitioning/RepairDutyCyclePartitioning.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/partitioning/RepairDutyCyclePartitioning.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/partitioning/RepairInstrumentOrbit.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/partitioning/RepairInstrumentOrbit.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/partitioning/RepairInstrumentOrbitPartitioning.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/partitioning/RepairInstrumentOrbitPartitioning.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/partitioning/RepairInterference.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/partitioning/RepairInterference.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/partitioning/RepairInterferencePartitioning.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/partitioning/RepairInterferencePartitioning.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/partitioning/RepairMass.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/partitioning/RepairMass.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/partitioning/RepairMassPartitioning.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/partitioning/RepairMassPartitioning.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/partitioning/RepairPackingEfficiency.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/partitioning/RepairPackingEfficiency.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/partitioning/RepairPackingEfficiencyPartitioning.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/partitioning/RepairPackingEfficiencyPartitioning.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/partitioning/RepairSynergy.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/partitioning/RepairSynergy.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/partitioning/RepairSynergyPartitioning.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/operators/partitioning/RepairSynergyPartitioning.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/problems/assigning/AssigningArchitecture.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/problems/assigning/AssigningArchitecture.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/problems/assigning/AssigningProblem.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/problems/assigning/AssigningProblem.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/problems/partitioning/PartitioningArchitecture.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/problems/partitioning/PartitioningArchitecture.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/problems/partitioning/PartitioningProblem.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/seakers/vassarexecheur/search/problems/partitioning/PartitioningProblem.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/libs/vassarexecheur-1.0.jar" beforeDir="false" afterPath="$PROJECT_DIR$/build/libs/vassarexecheur-1.0.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/publications/mavenJava/pom-default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/build/publications/mavenJava/pom-default.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/tmp/jar/MANIFEST.MF" beforeDir="false" afterPath="$PROJECT_DIR$/build/tmp/jar/MANIFEST.MF" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/seakers/vassarexecheur/search/problems/assigning/AssigningProblem.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/seakers/vassarexecheur/search/problems/assigning/AssigningProblem.java" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -27,37 +138,12 @@
         </task>
         <projects_view>
           <tree_state>
-            <expand>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="vassarexecheur" type="f1a62948:ProjectNode" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="vassarexecheur" type="f1a62948:ProjectNode" />
-                <item name="Tasks" type="e4a08cd1:TasksNode" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="vassarexecheur" type="f1a62948:ProjectNode" />
-                <item name="Tasks" type="e4a08cd1:TasksNode" />
-                <item name="build" type="c8890929:TasksNode$1" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="vassarexecheur" type="f1a62948:ProjectNode" />
-                <item name="Tasks" type="e4a08cd1:TasksNode" />
-                <item name="publishing" type="c8890929:TasksNode$1" />
-              </path>
-            </expand>
+            <expand />
             <select />
           </tree_state>
         </projects_view>
       </state>
     </system>
-  </component>
-  <component name="FavoritesManager">
-    <favorites_list name="vassarexecheur" />
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -69,17 +155,62 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="jar://$MAVEN_REPOSITORY$/seakers/system-architecture-problems/1.0/system-architecture-problems-1.0.jar!/seakers/architecture/Architecture.class" root0="SKIP_INSPECTION" />
+    <setting file="jar://$MAVEN_REPOSITORY$/seakers/vassarheur/1.0/vassarheur-1.0.jar!/seakers/vassarheur/Result.class" root0="SKIP_INSPECTION" />
+  </component>
   <component name="ProjectCodeStyleSettingsMigration">
     <option name="version" value="1" />
   </component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: -1
+}</component>
   <component name="ProjectId" id="1ptd3Og4O543uCVrSK5QumnOdCO" />
-  <component name="PropertiesComponent">
-    <property name="last_directory_selection" value="$PROJECT_DIR$/src/main/java" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../VASSAR_AMOS" />
-    <property name="project.structure.last.edited" value="Project" />
-    <property name="project.structure.proportion" value="0.15" />
-    <property name="project.structure.side.proportion" value="0.2" />
-    <property name="settings.editor.selected.configurable" value="reference.settingsdialog.project.gradle" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;heuristics&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  }
+}</component>
+  <component name="RdControllerToolWindowsLayoutState" isNewUi="true">
+    <layout>
+      <window_info id="Space Code Reviews" />
+      <window_info id="Bookmarks" side_tool="true" />
+      <window_info id="Merge Requests" />
+      <window_info id="Commit_Guest" />
+      <window_info id="Pull Requests" />
+      <window_info id="Learn" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.16220368" />
+      <window_info id="Commit" order="1" weight="0.25" />
+      <window_info id="Structure" order="2" side_tool="true" weight="0.25" />
+      <window_info anchor="bottom" id="Database Changes" />
+      <window_info anchor="bottom" id="TypeScript" />
+      <window_info anchor="bottom" id="Profiler" />
+      <window_info anchor="bottom" id="Build" />
+      <window_info anchor="bottom" id="TODO" />
+      <window_info anchor="bottom" id="File Transfer" />
+      <window_info anchor="bottom" id="Version Control" order="0" />
+      <window_info anchor="bottom" id="Problems View" order="1" />
+      <window_info anchor="bottom" id="Services" order="3" />
+      <window_info anchor="right" id="Endpoints" />
+      <window_info anchor="right" id="Meet New UI" side_tool="true" />
+      <window_info anchor="right" content_ui="combo" id="Notifications" order="0" weight="0.25" />
+      <window_info anchor="right" id="Database" order="1" weight="0.25" />
+      <window_info anchor="right" id="Gradle" order="2" weight="0.32990313" />
+      <window_info anchor="right" id="Terminal" order="3" side_tool="true" weight="0.32989466" />
+    </layout>
   </component>
   <component name="RecentsManager">
     <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
@@ -94,18 +225,6 @@
       <recent name="C:\SEAK Lab\SEAK Lab Github\VASSAR\VASSAR_exec_heur\src\main\java\seakers\vassarheur\search\softconstraints\PartitioningAndAssigning" />
       <recent name="C:\SEAK Lab\SEAK Lab Github\VASSAR\VASSAR_exec_heur\src\main\java" />
     </key>
-  </component>
-  <component name="RunDashboard">
-    <option name="ruleStates">
-      <list>
-        <RuleState>
-          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
-        </RuleState>
-        <RuleState>
-          <option name="name" value="StatusDashboardGroupingRule" />
-        </RuleState>
-      </list>
-    </option>
   </component>
   <component name="RunManager" selected="Gradle.VASSAR_exec_heur [publishToMavenLocal]">
     <configuration name="GenerateForMetricsStudyPartitioning" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
@@ -150,7 +269,10 @@
         </option>
         <option name="vmOptions" />
       </ExternalSystemSettings>
-      <GradleScriptDebugEnabled>true</GradleScriptDebugEnabled>
+      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>false</RunAsTest>
       <method v="2" />
     </configuration>
     <configuration name="VASSAR_exec_heur [clean]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
@@ -169,7 +291,10 @@
         </option>
         <option name="vmOptions" />
       </ExternalSystemSettings>
-      <GradleScriptDebugEnabled>true</GradleScriptDebugEnabled>
+      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>false</RunAsTest>
       <method v="2" />
     </configuration>
     <configuration name="VASSAR_exec_heur [publishToMavenLocal]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
@@ -188,7 +313,10 @@
         </option>
         <option name="vmOptions" />
       </ExternalSystemSettings>
-      <GradleScriptDebugEnabled>true</GradleScriptDebugEnabled>
+      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>false</RunAsTest>
       <method v="2" />
     </configuration>
     <recent_temporary>
@@ -201,6 +329,7 @@
       </list>
     </recent_temporary>
   </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="SvnConfiguration">
     <configuration />
   </component>
@@ -211,17 +340,28 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1616006120698</updated>
+      <workItem from="1692307390443" duration="599000" />
+      <workItem from="1692371775315" duration="7537000" />
+      <workItem from="1692397264340" duration="82000" />
+      <workItem from="1692627178699" duration="2935000" />
+      <workItem from="1692631533168" duration="135000" />
+      <workItem from="1693620615183" duration="222000" />
+      <workItem from="1693621012090" duration="236000" />
+      <workItem from="1693772354080" duration="763000" />
+      <workItem from="1693954740830" duration="74000" />
+      <workItem from="1693954821965" duration="4433000" />
     </task>
     <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
     <option name="TAB_STATES">
       <map>
         <entry key="MAIN">
           <value>
-            <State>
-              <option name="COLUMN_ORDER" />
-            </State>
+            <State />
           </value>
         </entry>
       </map>
@@ -235,6 +375,10 @@
         <watch expression="operatorParameters" />
       </configuration>
     </watches-manager>
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/vassarexecheur$MOEARun.ic" NAME="MOEARun Coverage Results" MODIFIED="1652112326034" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false">

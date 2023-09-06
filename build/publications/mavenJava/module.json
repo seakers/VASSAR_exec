@@ -1,0 +1,149 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "seakers",
+    "module": "vassarexecheur",
+    "version": "1.0",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "6.9",
+      "buildId": "fhf4rmim45flzpptekfjz3vgoe"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 12,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api"
+      },
+      "dependencies": [
+        {
+          "group": "org.moeaframework",
+          "module": "moeaframework",
+          "version": {
+            "requires": "2.12"
+          }
+        },
+        {
+          "group": "seakers",
+          "module": "system-architecture-problems",
+          "version": {
+            "requires": "1.0"
+          }
+        },
+        {
+          "group": "seakers",
+          "module": "vassarheur",
+          "version": {
+            "requires": "1.0"
+          }
+        },
+        {
+          "group": "seakers",
+          "module": "engineer-server",
+          "version": {
+            "requires": "1.0"
+          }
+        },
+        {
+          "group": "seakers",
+          "module": "mopAOS",
+          "version": {
+            "requires": "1.0"
+          }
+        },
+        {
+          "group": "seakers",
+          "module": "EOSSAIAA",
+          "version": {
+            "requires": "1.0-SNAPSHOT"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "vassarexecheur-1.0.jar",
+          "url": "vassarexecheur-1.0.jar",
+          "size": 264336,
+          "sha512": "a076f0031f024bb22c33f052ee039718e2721ec2d253e7442ed2b29a1d5c50508f73172ab652301a7b7750c4aa92b6b17f6e39c86afc5b4a16a73d77e4529f06",
+          "sha256": "17abcd26c67b31b413ba9344c42609c9d707768fd285b5aa64671ee5db2f2408",
+          "sha1": "747760bdb73740cfed32707a9523d66ed5d05e6d",
+          "md5": "455db79d9cb60d24ce981f8d4bef248c"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 12,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "org.moeaframework",
+          "module": "moeaframework",
+          "version": {
+            "requires": "2.12"
+          }
+        },
+        {
+          "group": "seakers",
+          "module": "system-architecture-problems",
+          "version": {
+            "requires": "1.0"
+          }
+        },
+        {
+          "group": "seakers",
+          "module": "vassarheur",
+          "version": {
+            "requires": "1.0"
+          }
+        },
+        {
+          "group": "seakers",
+          "module": "engineer-server",
+          "version": {
+            "requires": "1.0"
+          }
+        },
+        {
+          "group": "seakers",
+          "module": "mopAOS",
+          "version": {
+            "requires": "1.0"
+          }
+        },
+        {
+          "group": "seakers",
+          "module": "EOSSAIAA",
+          "version": {
+            "requires": "1.0-SNAPSHOT"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "vassarexecheur-1.0.jar",
+          "url": "vassarexecheur-1.0.jar",
+          "size": 264336,
+          "sha512": "a076f0031f024bb22c33f052ee039718e2721ec2d253e7442ed2b29a1d5c50508f73172ab652301a7b7750c4aa92b6b17f6e39c86afc5b4a16a73d77e4529f06",
+          "sha256": "17abcd26c67b31b413ba9344c42609c9d707768fd285b5aa64671ee5db2f2408",
+          "sha1": "747760bdb73740cfed32707a9523d66ed5d05e6d",
+          "md5": "455db79d9cb60d24ce981f8d4bef248c"
+        }
+      ]
+    }
+  ]
+}

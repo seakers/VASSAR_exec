@@ -20,7 +20,9 @@ import seakers.vassarheur.utils.MatlabFunctions;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 public class AssigningProblem  extends AbstractProblem implements SystemArchitectureProblem {
 
@@ -63,6 +65,53 @@ public class AssigningProblem  extends AbstractProblem implements SystemArchitec
         evaluateArch(arch);
         //System.out.println(String.format("Arch %s Science = %10f; Cost = %10f", arch.toString(), arch.getObjective(0), arch.getObjective(1)));
     }
+
+    public void evaluatePopulation(ArrayList<AssigningArchitecture> population){
+        int populationSize = population.size();
+        ArrayList<Future<Result>> futures = new ArrayList<>();
+        for(AssigningArchitecture arch: population){
+            int numInstruments = getNumberOfInstruments(arch);
+            if (numInstruments > 35) {
+                System.out.println("--> ARCH CONTAINS MORE THAN 35 INSTRUMENTS");
+                continue;
+            }
+            AbstractArchitecture arch_abs = getAbstractArchitecture(arch);
+            Future<Result> result = evalManager.evaluateArchitectureAsync(arch_abs, "Slow", interferenceMap, synergyMap, dcThreshold, massThreshold, packingEfficiencyThreshold);
+            futures.add(result);
+        }
+        int cnt = 0;
+        for(Future<Result> future: futures){
+            try {
+                Result resu = future.get(); // Do something with the results..
+                System.out.println("Evaluated " + cnt + "/" + populationSize + ": " + resu.getScience() + ", " + resu.getCost());
+                cnt++;
+            }
+            catch (Exception e) {
+                System.out.println(e.getMessage());
+            }
+        }
+
+    }
+
+    public Future<Result> evaluateArchAsync(AssigningArchitecture arch){
+        AbstractArchitecture arch_abs = getAbstractArchitecture(arch);
+        try {
+            Result result = new Result(arch_abs, 0.0, 2.5e4);
+            double[] objectives = new double[2];
+            int numInstruments = getNumberOfInstruments(arch);
+            if (numInstruments > 35) {
+                return CompletableFuture.completedFuture(result);
+            }
+            else{
+                return evalManager.evaluateArchitectureAsync(arch_abs, "Slow", interferenceMap, synergyMap, dcThreshold, massThreshold, packingEfficiencyThreshold);
+            }
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 
     public void evaluateArch(AssigningArchitecture arch) {
         if (!arch.getAlreadyEvaluated()) {
@@ -185,6 +234,7 @@ public class AssigningProblem  extends AbstractProblem implements SystemArchitec
         for (int i = 1; i < this.getNumberOfVariables(); ++i) {
             bitStringBuilder.append(arch.getVariable(i).toString());
         }
+//        System.out.println("--> bitstring " + bitStringBuilder.toString());
 
         AbstractArchitecture abs_arch;
         if (problem.equalsIgnoreCase("ClimateCentric")) {
