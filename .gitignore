@@ -20,3 +20,5 @@ gradle-app.setting
 classes
 *.DS_Store
 */MANIFEST.MF
+debug
+designs

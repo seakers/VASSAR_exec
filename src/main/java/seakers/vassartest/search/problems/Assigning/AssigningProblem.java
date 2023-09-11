@@ -18,6 +18,7 @@ import seakers.vassar.problems.Assigning.AssigningParams;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 
 /**
@@ -64,14 +65,44 @@ public class AssigningProblem extends AbstractProblem implements SystemArchitect
         this.hashedArch = new HashMap<>();
     }
 
+    public void parallelizeCoverageCalcs(){
+
+
+
+    }
+
     @Override
     public void evaluate(Solution sltn) {
-        AssigningArchitecture arch = (AssigningArchitecture) sltn;
-        evaluateArch(arch);
+//        AssigningArchitecture arch = (AssigningArchitecture) sltn;
+//        evaluateArch(arch);
+
+        GigaArchitecture arch = (GigaArchitecture) sltn;
+        evaluateGigaArch(arch);
+
         this.nfe++;
-        System.out.println(this.nfe + ": " + String.format("Arch %s Science = %10f; Cost = %10f",
-                arch.toString(), arch.getObjective(0), arch.getObjective(1)));
+//        System.out.println(this.nfe + ": " + String.format("Arch %s Science = %10f; Cost = %10f",
+//                arch.toString(), arch.getObjective(0), arch.getObjective(1)));
     }
+
+    public Result evaluateGigaArch(GigaArchitecture arch){
+
+        AbstractArchitecture abs_arch = new Architecture(arch.bit_string, 1, (AssigningParams)params);
+        Result result = this.evaluationManager.evaluateArchitectureSync(abs_arch, "Slow");
+
+        // Get Objectives
+        arch.setObjective(0, -result.getScience()); //negative because MOEAFramework assumes minimization problems
+        arch.setObjective(1, result.getCost()); //normalize cost to maximum value
+        arch.already_evaluated = true;
+
+        return result;
+    }
+
+    public Future<Result> evaluateGigaArchAsync(GigaArchitecture arch){
+        AbstractArchitecture abs_arch = new Architecture(arch.bit_string, 1, (AssigningParams)params);
+        return this.evaluationManager.evaluateArchitectureAsync(abs_arch, "Slow");
+    }
+
+
 
     private void evaluateArch(AssigningArchitecture arch) {
         if (!arch.getAlreadyEvaluated()) {

@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'maven-publish'
 }
 
 group 'seakers'
@@ -15,6 +16,78 @@ repositories {
 dependencies {
     compile 'org.moeaframework:moeaframework:2.12'
     compile 'seakers:system-architecture-problems:1.0'
-    compile 'seakers:vassar:1.0'
+    compile 'seakers:engineer-server:1.0'
+    compile 'seakers:mopAOS:1.0'
+    compile files('/home/ec2-user/vassar/EOSS/java/mopAOS.jar')
+    compile 'seakers:EOSSAIAA:1.0-SNAPSHOT'
+    compile files('/home/ec2-user/vassar/VASSAR_lib/jess.jar')
     testCompile group: 'junit', name: 'junit', version: '4.12'
+    implementation group: 'com.google.code.gson', name: 'gson', version: '2.7'
+//    implementation project(':VASSAR_lib')
+    compile 'seakers:vassar:1.0'
 }
+
+
+task run(type: JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'seakers.vassartest.App'
+}
+
+task runParallel(type: JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'seakers.vassartest.AppParallel'
+}
+
+task genPop(type: JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'seakers.vassartest.GeneratePopulation'
+    jvmArgs = ['-Xms10g'] // setting the initial and maximum heap size to 10GB}
+}
+
+task evalPop(type: JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'seakers.vassartest.EvaluatePopulation'
+    jvmArgs = ['-Xms10g'] // setting the initial and maximum heap size to 10GB}
+}
+
+task evalPopMulti(type: JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'seakers.vassartest.EvaluatePopulationMultiProc'
+}
+
+task enumCoverage(type: JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'seakers.vassartest.EnumerateCoverageCalcs'
+}
+
+task consCalcs(type: JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'seakers.vassartest.ConsolidateCalcs'
+}
+
+task runDebug(type: JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'seakers.vassartest.DebugRun'
+}
+
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId = 'vassarexec'
+            from components.java
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
