@@ -2,7 +2,7 @@ package seakers.vassartest.search.problems.Assigning;
 
 
 import org.moeaframework.core.Solution;
-import org.moeaframework.core.variable.IntegerVariable;
+import org.moeaframework.core.variable.BinaryVariable;
 import seakers.architecture.Architecture;
 import seakers.architecture.pattern.ArchitecturalDecision;
 import seakers.architecture.pattern.Assigning;
@@ -25,7 +25,7 @@ public class GigaArchitecture extends Solution {
         this.bit_string = bit_string;
         this.already_evaluated = false;
 
-        IntegerVariable var = new IntegerVariable(0, 0, 10000);
+        BinaryVariable var = new BinaryVariable(0);
         this.setVariable(0, var);
     }
 
