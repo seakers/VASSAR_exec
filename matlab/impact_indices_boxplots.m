@@ -59,6 +59,22 @@ end
 
 plot_boxplot(I_heurs_combined, p_pos_heur, mean_heur, heur_ticks, heurs, heur_form);
 
+%% Plot truss biased sampling case
+
+prob = "stiffness";
+heur_form = 'biasedsample';
+
+heurs = 'Stiffness - OR';
+%heur_ticks = linspace(1, size(heurs,2), size(heurs,2));
+heur_ticks = 1;
+
+I_heur = read_data(prob, heur_form);
+
+p_pos_heur = sum(I_heur > 0)/size(I_heur,1);
+mean_heur = mean(I_heur);
+
+plot_boxplot(I_heur, p_pos_heur, mean_heur, heur_ticks, heurs, heur_form);
+
 %% Functions
 function [I_heurs_array] = read_data(prob_type, heur_form_type)
     filepath = 'C:\\SEAK Lab\\SEAK Lab Github\\VASSAR\\VASSAR_exec_heur\\results\\Impact Indices\\';
@@ -108,7 +124,7 @@ function [] = plot_boxplot(I_heurs_arr, p_pos_heurs, mean_heurs, heur_ticks, heu
     ylabel('Impact Index')
     %legend('$mean(I(h))$','Interpreter','Latex','Location','Best')
     hold off
-    ylim([-1,1])
+    %ylim([-1,1])
     xticks(heur_ticks)
     xticklabels(heur_strs)
     ax = gca;

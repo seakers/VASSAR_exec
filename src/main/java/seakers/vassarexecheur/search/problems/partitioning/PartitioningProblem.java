@@ -66,6 +66,10 @@ public class PartitioningProblem extends AbstractProblem implements SystemArchit
                 objectives[0] = -result.getScience()/0.4;
                 objectives[1] = result.getCost()/7250;
 
+                // Set objective attributes for Heuristic Coevolutionary Problem
+                arch.setAttribute("TrueObjective1", objectives[0]);
+                arch.setAttribute("TrueObjective2", objectives[1]);
+
                 double penaltyWeight = 1;
                 double heuristicPenalty = 0;
                 int numHeuristicInteriorPenalty = 0;
@@ -106,10 +110,6 @@ public class PartitioningProblem extends AbstractProblem implements SystemArchit
                 arch.setSatellitePayloads(result.getSatellitePayloads());
 
                 arch.setSatelliteOrbits(result.getSatelliteOrbits());
-
-                // Set objective attributes for Heuristic Coevolutionary Problem
-                arch.setAttribute("TrueObjective1", arch.getObjective(0));
-                arch.setAttribute("TrueObjective2", arch.getObjective(1));
 
                 arch.setAlreadyEvaluated(true);
             }

@@ -60,6 +60,7 @@ public class AssigningProblem  extends AbstractProblem implements SystemArchitec
     @Override
     public void evaluate(Solution solution) {
         AssigningArchitecture arch = (AssigningArchitecture) solution;
+        System.out.println("Architecture: " + arch.getBitString());
         evaluateArch(arch);
         //System.out.println(String.format("Arch %s Science = %10f; Cost = %10f", arch.toString(), arch.getObjective(0), arch.getObjective(1)));
     }
@@ -115,6 +116,10 @@ public class AssigningProblem  extends AbstractProblem implements SystemArchitec
                     arch.setSatelliteOrbits(result.getSatelliteOrbits());
                 }
 
+                // Set objective attributes for Heuristic Coevolutionary Problem
+                arch.setAttribute("TrueObjective1", objectives[0]);
+                arch.setAttribute("TrueObjective2", objectives[1]);
+
                 ArrayList<Double> archHeuristics = result.getHeuristics();
 
                 double numInstrumentsPenalty = getInstrumentCountPenalty2(numInstruments);
@@ -158,10 +163,6 @@ public class AssigningProblem  extends AbstractProblem implements SystemArchitec
                 arch.setAttribute("SpMassViolation",archHeuristics.get(4));
                 arch.setAttribute("SynergyViolation",archHeuristics.get(5));
                 arch.setAttribute("InstrCountViolation",archHeuristics.get(6));
-
-                // Set objective attributes for Heuristic Coevolutionary Problem
-                arch.setAttribute("TrueObjective1", arch.getObjective(0));
-                arch.setAttribute("TrueObjective2", arch.getObjective(1));
 
                 arch.setAlreadyEvaluated(true);
             }
