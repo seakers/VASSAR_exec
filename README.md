@@ -1,0 +1,21 @@
+# VASSAR_exec
+
+Scripts to generate datasets for the EOSS problems for the paper: 
+Suresh Kumar, Roshan, Srikar Srivatsa, Emilie Baker, Meredith Silberstein, and Daniel Selva. "Identifying and Leveraging Promising Design Heuristics for Multi-Objective Combinatorial Design Optimization." Journal of Mechanical Design 145, no. 12 (2023).
+
+## Important scripts:
+### JAVA:
+1. MOEARun.java - Start and store results for multiple runs of either problem with different heuristic implementations
+2. GenerateForMetricsStudyAssigning.java - Generate datasets for soft constraints screening study for the Assigning problem
+3. GenerateForMetricsStudyPartitioning.java - Generate datasets for soft constraints screening study for the Partitioning problem
+4. GenerateOperatorIndexDataAssigning.java - Generate datasets for repair operators screening study for the Assigning problem
+5. GenerateOperatorIndexDataPartitioning.java - Generate datasets for repair operators screening study for the Partitioning problem
+
+### MATLAB:
+1. metrics_study.m - Conduct soft constraints screening study
+2. impact_indices_boxplots.m - Plot impact indices boxplots (for both EOSS and Metamaterial Problems)
+
+### PYTHON:
+1. hv_satellite_heurcomp.py - Compute hypervolumes and statistics for different cases (efficacy study results)
+2. operator_index_computation.py - Compute HDIs for repair operators 
+3. biased_sampling_index_computation.py - Compute HDI for Instrument Count Violation biased sampling function
