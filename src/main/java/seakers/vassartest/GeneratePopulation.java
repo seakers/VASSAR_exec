@@ -18,12 +18,12 @@ public class GeneratePopulation {
 //        getPopulationChunkPruned(0, 10000);
 //        generateEvalPop();
 //        countEvalPopulationJsonDupes();
-//        deleteFilesWithScienceNegativeOne();
-        splitFiles();
+        deleteFilesWithScienceNegativeOne();
+//        splitFiles();
     }
 
     public static void deleteFilesWithScienceNegativeOne() {
-        String source_dir = "/home/ec2-user/designs2_100k/designs_all";
+        String source_dir = "/home/ec2-user/designs3_100k/designs_all";
         try{
             // Initialize Gson's JsonParser
             JsonParser parser = new JsonParser();
@@ -54,9 +54,9 @@ public class GeneratePopulation {
     }
 
     public static void splitFiles(){
-        String source_dir = "/home/ec2-user/designs2_100k/designs_all";
-        String train_dir = "/home/ec2-user/designs2_100k/designs_train";
-        String val_dir = "/home/ec2-user/designs2_100k/designs_val";
+        String source_dir = "/home/ec2-user/designs3_100k/designs_all";
+        String train_dir = "/home/ec2-user/designs3_100k/designs_train";
+        String val_dir = "/home/ec2-user/designs3_100k/designs_val";
         // Getting the list of JSON files in the source directory
         try{
             DirectoryStream<Path> directoryStream = Files.newDirectoryStream(Paths.get(source_dir), "*.json");
@@ -95,7 +95,7 @@ public class GeneratePopulation {
 
 
     public static void generate(){
-        String filePath = "/home/ec2-user/designs2_100k/population.txt";
+        String filePath = "/home/ec2-user/designs3_100k/population.txt";
         int pop_size = 100000;
 
         // Problem Parameters
@@ -108,7 +108,8 @@ public class GeneratePopulation {
         // Create Population
         HashSet<String> uniqueBitStrings = new HashSet<>();
         while (uniqueBitStrings.size() < pop_size) {
-            uniqueBitStrings.add(DesignBuilder.randomBitString(num_insts, num_orbs, 40));
+//            uniqueBitStrings.add(DesignBuilder.randomBitString(num_insts, num_orbs, 35));
+            uniqueBitStrings.add(DesignBuilder.randomPartitionBitString(num_insts, num_orbs, 35));
         }
 
         // Write Population
@@ -123,7 +124,7 @@ public class GeneratePopulation {
     }
 
     public static void generateEvalPop(){
-        String filePath = "/home/ec2-user/designs2_100k/population_eval.txt";
+        String filePath = "/home/ec2-user/designs3_100k/population_eval.txt";
         HashSet<String> eval_designs = getEvalPopulationStringsJson();
         System.out.println("--> EVALED DESIGNS: " + eval_designs.size());
 
@@ -149,7 +150,7 @@ public class GeneratePopulation {
     }
 
     public static List<String> getPopulation(){
-        String filePath = "/home/ec2-user/designs2_100k/population.txt";
+        String filePath = "/home/ec2-user/designs3_100k/population.txt";
         List<String> designs = new ArrayList<>();
         try{
             designs = Files.readAllLines(Paths.get(filePath));
@@ -161,7 +162,7 @@ public class GeneratePopulation {
     }
 
     public static HashSet<String> getEvalPopulation(){
-        String filePath = "/home/ec2-user/designs2_100k/population_eval.txt";
+        String filePath = "/home/ec2-user/designs3_100k/population_eval.txt";
         List<String> designs = new ArrayList<>();
         try{
             designs = Files.readAllLines(Paths.get(filePath));
@@ -177,7 +178,7 @@ public class GeneratePopulation {
 
 
     public static List<String> getPopulationChunk(int begin, int end){
-        String filePath = "/home/ec2-user/designs2_100k/population.txt";
+        String filePath = "/home/ec2-user/designs3_100k/population.txt";
         List<String> designs = new ArrayList<>();
         try{
             designs = Files.readAllLines(Paths.get(filePath));
@@ -196,7 +197,7 @@ public class GeneratePopulation {
     }
 
     public static List<String> getPopulationChunkPruned(int begin, int end){
-        String filePath = "/home/ec2-user/designs2_100k/population.txt";
+        String filePath = "/home/ec2-user/designs3_100k/population.txt";
         List<String> designs = new ArrayList<>();
         try{
             designs = Files.readAllLines(Paths.get(filePath));
@@ -206,10 +207,10 @@ public class GeneratePopulation {
         }
 
         // Prune Evaluated Designs
-        System.out.println("--> BEFORE: " + designs.size());
-        HashSet<String> eval_designs = getEvalPopulation();
-        designs.removeIf(eval_designs::contains);
-        System.out.println("--> AFTER: " + designs.size());
+//        System.out.println("--> BEFORE: " + designs.size());
+//        HashSet<String> eval_designs = getEvalPopulation();
+//        designs.removeIf(eval_designs::contains);
+//        System.out.println("--> AFTER: " + designs.size());
 
         List<String> designs_chunk = new ArrayList<>();
         for(int x = 0; x < designs.size(); x++){
@@ -223,7 +224,7 @@ public class GeneratePopulation {
 
 
     public static HashSet<String> getEvalPopulationStringsJson(){
-        String path_str = "/home/ec2-user/designs2_100k/designs_all";
+        String path_str = "/home/ec2-user/designs3_100k/designs_all";
         HashSet<String> all_designs = new HashSet<>();
 
         File directory = new File(path_str);
@@ -243,7 +244,7 @@ public class GeneratePopulation {
     }
 
     public static HashSet<String> countEvalPopulationJsonDupes(){
-        String path_str = "/home/ec2-user/designs2_100k/designs_all";
+        String path_str = "/home/ec2-user/designs3_100k/designs_all";
         HashSet<String> all_designs = new HashSet<>();
         File directory = new File(path_str);
         File[] files = directory.listFiles((dir, name) -> name.endsWith(".json"));

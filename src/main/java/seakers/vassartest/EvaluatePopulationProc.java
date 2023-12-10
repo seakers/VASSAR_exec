@@ -35,23 +35,50 @@ public class EvaluatePopulationProc {
 
         // --> PARALLEL
         List<String> population = GeneratePopulation.getPopulationChunkPruned(pop_lb, pop_ub);
-        ArrayList<Future<Result>> futures = new ArrayList<Future<Result>>();
-        for(String design: population){
-            GigaArchitecture arch = new GigaArchitecture(design);
-            Future<Result> future = problem.evaluateGigaArchAsync(arch);
-            futures.add(future);
-        }
-        int future_count = 0;
-        for(Future<Result> future: futures){
-            try{
-                System.out.println("--> WAITING ON FUTURE: " + future_count);
-                future.get();
+        List<List<String>> chunks = getChunks(population);
+
+        int chunk_counter = 0;
+        for(List<String> chunk: chunks){
+            chunk_counter++;
+            System.out.println("--> PROCESSING CHUNK: " + chunk_counter);
+            ArrayList<Future<Result>> futures = new ArrayList<Future<Result>>();
+            for(String design: chunk){
+                GigaArchitecture arch = new GigaArchitecture(design);
+                Future<Result> future = problem.evaluateGigaArchAsync(arch);
+                futures.add(future);
             }
-            catch (Exception ex){
-                ex.printStackTrace();
+            int future_count = 0;
+            for(Future<Result> future: futures){
+                try{
+                    System.out.println("--> WAITING ON FUTURE: " + future_count);
+                    future.get();
+                }
+                catch (Exception ex){
+                    ex.printStackTrace();
+                }
+                future_count++;
             }
-            future_count++;
         }
         System.exit(0);
     }
+
+
+    public static List<List<String>> getChunks(List<String> population){
+        List<List<String>> chunks = new ArrayList<>();
+
+        List<String> chunk = new ArrayList<>();
+        for(String design: population){
+            if(chunk.size() >= 1000){
+                chunks.add(chunk);
+                chunk = new ArrayList<>();
+            }
+            chunk.add(design);
+        }
+        if(chunk.size() > 0){
+            chunks.add(chunk);
+        }
+        return chunks;
+    }
+
+
 }

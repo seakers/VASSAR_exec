@@ -14,7 +14,7 @@ public class EvaluatePopulationMultiProc {
     public static void main(String[] args) {
 
         int num_procs = 8;
-        int proc_chunks = 5000;
+        int proc_chunks = 10000;
         List<Process> processes = new ArrayList<>();
         try{
             for(int x = 0; x < num_procs; x++){

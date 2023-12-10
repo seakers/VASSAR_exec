@@ -54,7 +54,7 @@ public class App {
 
 
 
-        // Create Testing Design: 7175 Variables
+        // Create Testing Design: 7000 Variables
         int num_insts = params.getNumInstr();
         int num_orbs = params.getNumOrbits();
 
@@ -81,10 +81,12 @@ public class App {
 
 
         // Eval in loop
-        int num_designs = 10;
+        int num_designs = 1;
         for(int x = 0; x < num_designs; x++){
 
-            String bit_string = DesignBuilder.randomBitStringOrbs(num_insts, num_orbs, 10);
+//            String bit_string = DesignBuilder.randomBitStringOrbs(num_insts, num_orbs, 10);
+            String bit_string = DesignBuilder.randomPartitionBitString(num_insts, num_orbs, 35);
+            System.exit(0);
 
             // Architecture
             GigaArchitecture arch = new GigaArchitecture(bit_string);
