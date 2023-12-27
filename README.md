@@ -3,6 +3,23 @@
 Scripts to generate datasets for the EOSS problems for the paper: 
 Suresh Kumar, Roshan, Srikar Srivatsa, Emilie Baker, Meredith Silberstein, and Daniel Selva. "Identifying and Leveraging Promising Design Heuristics for Multi-Objective Combinatorial Design Optimization." Journal of Mechanical Design 145, no. 12 (2023).
 
+## Dependencies:
+### JAVA (can be found in the Gradle build.gradle file):
+1. MOEAFramework: https://github.com/MOEAFramework/MOEAFramework
+2. mopAOS: https://github.com/seakers/mopAOS/tree/heuristics (heuristics branch)
+3. System Architecture Problems: https://github.com/seakers/SystemArchitectureProblems
+4. VASSAR_lib: https://github.com/seakers/VASSAR_lib/tree/heuristics (heuristics branch)
+5. VASSAR_resourecs: https://github.com/seakers/VASSAR_resources/tree/heuristics (heuristics branch)
+6. VASSAR_server: https://github.com/seakers/VASSAR_server
+7. Jess rules engine: Separate jess.jar file
+8. Older version of mopAOS for previous version of the EOSS problems: Separate mopAOS.jar
+9. Old EOSS scripts (older version of satellite problems): https://github.com/seakers/EOSS/tree/AIAA (AIAA branch)
+
+### Python:
+1. PyGMO (Python Parallel Global Multiobjective Optimizer): https://esa.github.io/pygmo/
+2. Scipy
+3. Matplotlib
+
 ## Important scripts:
 ### JAVA:
 1. MOEARun.java - Start and store results for multiple runs of either problem with different heuristic implementations
