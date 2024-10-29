@@ -29,8 +29,8 @@ public class CCEvaluationTest {
 //      {"LEO-600-polar-NA", "SSO-600-SSO-AM", "SSO-600-SSO-DD", "SSO-800-SSO-DD", "SSO-800-SSO-PM"};
 
         //Reference rbsa.eoss.architecture #1
-        testArch = new Architecture("001001011110000001110101101000100101000101110010010011101101", 1, params);
-//        testArch = new Architecture("111100000000000000000000000000000000000000000000000000000000", 1, params);
+//        testArch = new Architecture("001001011110000001110101101000100101000101110010010011101101", 1, params);
+        testArch = new Architecture("111100000000000000000000000000000000000000000000000000000000", 1, params);
 
         AE.init(1);
         OrekitConfig.init(1, params.orekitResourcesPath);
