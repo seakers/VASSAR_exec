@@ -28,7 +28,7 @@ public class IntegrationManager {
         System.out.println("Gateway Server Started");
 
 //        String archPath = "C:\\Users\\demagall\\Documents\\VS Code\\Research\\SpaDes\\adjArch.json";
-//        Double science = getArchitectureScience(archPath);
+//        Double science = getArchitectureScience(archPath, 10.);
 //        System.out.println("Science: " + science);
     }
 
@@ -42,6 +42,21 @@ public class IntegrationManager {
 
             String content = new String(Files.readAllBytes(Paths.get(archPath)));
             JSONObject arch = new JSONObject(content);
+//            JSONArray constList = arch.getJSONArray("spaceSegment");
+//            for (int i = 0; i < constList.length(); i++) {
+//                JSONObject constellation = constList.getJSONObject(i);
+//                JSONArray satList = constellation.getJSONArray("satellites");
+//                for (int j = 0; j < satList.length(); j++) {
+//                    JSONObject satellite = satList.getJSONObject(j);
+//                    JSONArray instrList = satellite.getJSONArray("instruments");
+//                    for (int k = 0; k < instrList.length(); k++) {
+//                        JSONObject instrument = instrList.getJSONObject(k);
+//                        String instrName = instrument.getString("name");
+//                        String instrOrbit = satellite.getString("orbit");
+//                        System.out.println(instrName + " " + instrOrbit);
+//                    }
+//                }
+//            }
 //            JSONObject mission = arch.getJSONObject("spaceSegment");
             ArchitectureEvaluator evaluator = new ArchitectureEvaluator();
 
