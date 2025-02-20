@@ -23,6 +23,7 @@ public class PartitioningProblem extends AbstractProblem implements SystemArchit
     private final BaseParams params;
     private final HashMap<String, String[]> interferenceMap;
     private final HashMap<String, String[]> synergyMap;
+    private final double penaltyWeight;
     private final double dcThreshold;
     private final double massThreshold; //[kg]
     private final double packingEffThreshold;
@@ -30,13 +31,14 @@ public class PartitioningProblem extends AbstractProblem implements SystemArchit
     private final int numberOfHeuristicConstraints;
     private final boolean[][] heuristicsConstrained;
 
-    public PartitioningProblem(String problem, ArchitectureEvaluationManager evalManager, BaseParams params, HashMap<String, String[]> interferenceMap, HashMap<String, String[]> synergyMap, double dcThreshold, double massThreshold, double packingEfficiencyThreshold, int numberOfHeuristicObjectives, int numberOfHeuristicConstraints, boolean[][] heuristicsConstrained) {
+    public PartitioningProblem(String problem, ArchitectureEvaluationManager evalManager, BaseParams params, HashMap<String, String[]> interferenceMap, HashMap<String, String[]> synergyMap, double dcThreshold, double massThreshold, double packingEfficiencyThreshold, double penaltyWeight, int numberOfHeuristicObjectives, int numberOfHeuristicConstraints, boolean[][] heuristicsConstrained) {
         super(2 * params.getNumInstr(),2);
         this.problem = problem;
         this.evaluationManager = evalManager;
         this.params = params;
         this.interferenceMap = interferenceMap;
         this.synergyMap = synergyMap;
+        this.penaltyWeight = penaltyWeight;
         this.dcThreshold = dcThreshold;
         this.massThreshold = massThreshold;
         this.packingEffThreshold = packingEfficiencyThreshold;
@@ -70,7 +72,7 @@ public class PartitioningProblem extends AbstractProblem implements SystemArchit
                 arch.setAttribute("TrueObjective1", objectives[0]);
                 arch.setAttribute("TrueObjective2", objectives[1]);
 
-                double penaltyWeight = 1;
+                //double penaltyWeight = 0.1;
                 double heuristicPenalty = 0;
                 int numHeuristicInteriorPenalty = 0;
                 for (int i = 0; i < heuristicsConstrained.length; i++) {
@@ -83,8 +85,8 @@ public class PartitioningProblem extends AbstractProblem implements SystemArchit
                     heuristicPenalty /= numHeuristicInteriorPenalty;
                 }
 
-                objectives[0] += penaltyWeight*heuristicPenalty;
-                objectives[1] += penaltyWeight*heuristicPenalty;
+                objectives[0] += this.penaltyWeight*heuristicPenalty;
+                objectives[1] += this.penaltyWeight*heuristicPenalty;
 
                 arch.setObjective(0, objectives[0]);
                 arch.setObjective(1, objectives[1]);

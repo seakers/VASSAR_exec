@@ -7,8 +7,8 @@ clc
 %prob_types = ['assign','partition','stiffness','artery'];
 %heur_forms = ['softconstraint','operator','biasedsample'];
 
-prob = 'artery';
-heur_form = 'operator';
+prob = 'stiffness';
+heur_form = 'softconstraint';
 
 I_heur = read_data(prob, heur_form);
 
@@ -124,7 +124,7 @@ function [] = plot_boxplot(I_heurs_arr, p_pos_heurs, mean_heurs, heur_ticks, heu
     ylabel('Impact Index')
     %legend('$mean(I(h))$','Interpreter','Latex','Location','Best')
     hold off
-    %ylim([-1,1])
+    ylim([-1,1])
     xticks(heur_ticks)
     xticklabels(heur_strs)
     ax = gca;

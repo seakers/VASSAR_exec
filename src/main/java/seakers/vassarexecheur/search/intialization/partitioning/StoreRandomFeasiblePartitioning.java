@@ -61,6 +61,9 @@ public class StoreRandomFeasiblePartitioning {
             }
         }
 
+        // Penalty weight for interior penalty (if applicable)
+        double penaltyWeight = 0.1;
+
         double dcThreshold = 0.5;
         double massThreshold = 3000.0; // [kg]
         double packEffThreshold = 0.4;
@@ -76,7 +79,7 @@ public class StoreRandomFeasiblePartitioning {
         AbstractArchitectureEvaluator evaluator = new seakers.vassarheur.problems.PartitioningAndAssigning.ArchitectureEvaluator(considerFeasibility, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold);
         ArchitectureEvaluationManager evaluationManager = new ArchitectureEvaluationManager(params, evaluator);
 
-        PartitioningProblem satelliteProblem = new PartitioningProblem(params.getProblemName(), evaluationManager, params, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
+        PartitioningProblem satelliteProblem = new PartitioningProblem(params.getProblemName(), evaluationManager, params, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, penaltyWeight, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
 
         String savePath = System.getProperty("user.dir") + File.separator + "results";
 

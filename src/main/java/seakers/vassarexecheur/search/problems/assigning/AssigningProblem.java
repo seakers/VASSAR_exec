@@ -31,6 +31,7 @@ public class AssigningProblem  extends AbstractProblem implements SystemArchitec
     private final BaseParams params;
     private final HashMap<String, String[]> interferenceMap;
     private final HashMap<String, String[]> synergyMap;
+    private final double penaltyWeight;
     private final double dcThreshold;
     private final double massThreshold; //[kg]
     private final double packingEfficiencyThreshold;
@@ -39,7 +40,7 @@ public class AssigningProblem  extends AbstractProblem implements SystemArchitec
     private final int numberOfHeuristicConstraints;
     private final boolean[][] heuristicsConstrained;
 
-    public AssigningProblem(int[] alternativesForNumberOfSatellites, String problem, ArchitectureEvaluationManager evalManager, ArchitectureEvaluator evaluator, BaseParams params, HashMap<String, String[]> interferenceMap, HashMap<String, String[]> synergyMap, double dcThreshold, double massThreshold, double packingEfficiencyThreshold, double instrumentCountThreshold, int numberOfHeuristicObjectives, int numberOfHeuristicConstraints, boolean[][] heuristicsConstrained) {
+    public AssigningProblem(int[] alternativesForNumberOfSatellites, String problem, ArchitectureEvaluationManager evalManager, ArchitectureEvaluator evaluator, BaseParams params, HashMap<String, String[]> interferenceMap, HashMap<String, String[]> synergyMap, double dcThreshold, double massThreshold, double packingEfficiencyThreshold, double instrumentCountThreshold, double penaltyWeight, int numberOfHeuristicObjectives, int numberOfHeuristicConstraints, boolean[][] heuristicsConstrained) {
         super(1 + params.getNumInstr()*params.getNumOrbits(), 2+numberOfHeuristicObjectives, numberOfHeuristicConstraints);
         this.problem = problem;
         this.evalManager = evalManager;
@@ -48,6 +49,7 @@ public class AssigningProblem  extends AbstractProblem implements SystemArchitec
         this.params = params;
         this.interferenceMap = interferenceMap;
         this.synergyMap = synergyMap;
+        this.penaltyWeight = penaltyWeight;
         this.dcThreshold = dcThreshold;
         this.massThreshold = massThreshold;
         this.packingEfficiencyThreshold = packingEfficiencyThreshold;
@@ -60,7 +62,7 @@ public class AssigningProblem  extends AbstractProblem implements SystemArchitec
     @Override
     public void evaluate(Solution solution) {
         AssigningArchitecture arch = (AssigningArchitecture) solution;
-        System.out.println("Architecture: " + arch.getBitString());
+        //System.out.println("Architecture: " + arch.getBitString());
         evaluateArch(arch);
         //System.out.println(String.format("Arch %s Science = %10f; Cost = %10f", arch.toString(), arch.getObjective(0), arch.getObjective(1)));
     }
@@ -126,7 +128,7 @@ public class AssigningProblem  extends AbstractProblem implements SystemArchitec
                 archHeuristics.add(numInstrumentsPenalty);
 
                 // Interior Penalization
-                double penaltyWeight = 1;
+                //double penaltyWeight = 0.1;
                 double heuristicPenalty = 0;
                 int numHeuristicsInteriorPenalty = 0;
 
@@ -140,8 +142,8 @@ public class AssigningProblem  extends AbstractProblem implements SystemArchitec
                     heuristicPenalty /= numHeuristicsInteriorPenalty;
                 }
 
-                objectives[0] += penaltyWeight*heuristicPenalty;
-                objectives[1] += penaltyWeight*heuristicPenalty;
+                objectives[0] += this.penaltyWeight*heuristicPenalty;
+                objectives[1] += this.penaltyWeight*heuristicPenalty;
 
                 arch.setObjective(0, objectives[0]);
                 arch.setObjective(1, objectives[1]);

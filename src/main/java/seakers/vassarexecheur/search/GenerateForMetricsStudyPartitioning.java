@@ -105,6 +105,9 @@ public class GenerateForMetricsStudyPartitioning {
         //setup for epsilon MOEA
         double[] epsilonDouble = new double[]{0.01, 0.01};
 
+        // Penalty weight for interior penalty (if applicable)
+        double penaltyWeight = 0.1;
+
         double dcThreshold = 0.5;
         double massThreshold = 3000.0; // [kg]
         double packEffThreshold = 0.7;
@@ -134,7 +137,7 @@ public class GenerateForMetricsStudyPartitioning {
 
                 for (int i = 0; i < numRuns; i++) {
 
-                    PartitioningProblem problem = new PartitioningProblem(params.getProblemName(), evaluationManager, params, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
+                    PartitioningProblem problem = new PartitioningProblem(params.getProblemName(), evaluationManager, params, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, penaltyWeight, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
 
                     switch (initializationMode) {
                         case InitializeRandom:
@@ -219,7 +222,7 @@ public class GenerateForMetricsStudyPartitioning {
                 break;
 
             case RandomPopulation:
-                PartitioningProblem problem = new PartitioningProblem(params.getProblemName(), evaluationManager, params, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
+                PartitioningProblem problem = new PartitioningProblem(params.getProblemName(), evaluationManager, params, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, penaltyWeight, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
 
                 switch (randomMode) {
                     case FullyRandom:

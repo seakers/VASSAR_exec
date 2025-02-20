@@ -143,6 +143,9 @@ public class MOEARun {
         //setup for epsilon MOEA
         double[] epsilonDouble = new double[]{0.01, 0.01};
 
+        // Weight for static interior penalty (if applicable)
+        double penaltyWeight = 0.1;
+
         double dcThreshold = 0.5;
         double massThreshold = 3000.0; // [kg]
         double packEffThreshold = 0.7;
@@ -223,9 +226,9 @@ public class MOEARun {
             // Problem class
             AbstractProblem satelliteProblem;
             if (assigningProblem) {
-                satelliteProblem = new AssigningProblem(new int[]{1}, params.getProblemName(), evaluationManager, (ArchitectureEvaluator) evaluator, params, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, instrCountThreshold, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
+                satelliteProblem = new AssigningProblem(new int[]{1}, params.getProblemName(), evaluationManager, (ArchitectureEvaluator) evaluator, params, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, instrCountThreshold, penaltyWeight, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
             } else {
-                satelliteProblem = new PartitioningProblem(params.getProblemName(), evaluationManager, params, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
+                satelliteProblem = new PartitioningProblem(params.getProblemName(), evaluationManager, params, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, penaltyWeight, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
             }
 
             // Initial population

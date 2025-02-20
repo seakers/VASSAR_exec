@@ -45,6 +45,9 @@ public class CheckHeuristicImprovement2 {
         // Define problem parameters
         boolean assigningProblem = true; // True -> assigning problem, False -> partitioning problem
 
+        // Penalty weight for interior penalty (if applicable)
+        double penaltyWeight = 0.1;
+
         double dcThreshold = 0.5;
         double massThreshold = 3000.0; // [kg]
         double packEffThreshold = 0.4;
@@ -168,9 +171,9 @@ public class CheckHeuristicImprovement2 {
         // Problem class
         AbstractProblem satelliteProblem;
         if (assigningProblem) {
-            satelliteProblem = new AssigningProblem(new int[]{1}, assigningParams.getProblemName(), evaluationManager, (ArchitectureEvaluator) evaluator, assigningParams, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, instrCountThreshold, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
+            satelliteProblem = new AssigningProblem(new int[]{1}, assigningParams.getProblemName(), evaluationManager, (ArchitectureEvaluator) evaluator, assigningParams, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, instrCountThreshold, penaltyWeight, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
         } else {
-            satelliteProblem = new PartitioningProblem(partitionParams.getProblemName(), evaluationManager, partitionParams, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
+            satelliteProblem = new PartitioningProblem(partitionParams.getProblemName(), evaluationManager, partitionParams, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, penaltyWeight, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
         }
 
         // Initialize heuristic operators

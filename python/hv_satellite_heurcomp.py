@@ -258,7 +258,7 @@ def extract_data_from_csv(csv_filepath, assigning, intpen_constr_heur):
     else:
         heur_objs_norm = [0.4, 7250]
         
-    heur_weight = 1 # change to 0.1 for interior penalty for either problem
+    heur_weight = 0 # change to 0.1 for interior penalty for either problem
     
     heur_objs = np.zeros(len(instrdc_scores_sorted))
     if any(intpen_constr_heur):

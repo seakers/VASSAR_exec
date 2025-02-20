@@ -101,6 +101,9 @@ public class GenerateForMetricsStudyAssigning {
         //setup for epsilon MOEA
         double[] epsilonDouble = new double[]{0.01, 0.01};
 
+        // Penalty weight for interior penalty (if applicable)
+        double penaltyWeight = 0.1;
+
         double dcThreshold = 0.5;
         double massThreshold = 3000.0; // [kg]
         double packEffThreshold = 0.7;
@@ -131,7 +134,7 @@ public class GenerateForMetricsStudyAssigning {
 
                 for (int i = 0; i < numRuns; i++) {
 
-                    AssigningProblem problem = new AssigningProblem(new int[]{1}, params.getProblemName(), evaluationManager, evaluator, params, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, instrCountThreshold, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
+                    AssigningProblem problem = new AssigningProblem(new int[]{1}, params.getProblemName(), evaluationManager, evaluator, params, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, instrCountThreshold, penaltyWeight, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
 
                     switch (initializationMode) {
                         case InitializeRandom:
@@ -201,7 +204,7 @@ public class GenerateForMetricsStudyAssigning {
                 System.out.println("Starting random population evaluation for Assigning Problem");
 
                 for (int i = 0; i < numRuns; i++) {
-                    AssigningProblem problem = new AssigningProblem(new int[]{1}, params.getProblemName(), evaluationManager, evaluator, params, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, instrCountThreshold, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
+                    AssigningProblem problem = new AssigningProblem(new int[]{1}, params.getProblemName(), evaluationManager, evaluator, params, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, instrCountThreshold, penaltyWeight, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
                     String runName = "random_" + params.getProblemName() + "_" + "assign" + "_" + i;
 
                     List<Solution> randomPopulation = new ArrayList<>();

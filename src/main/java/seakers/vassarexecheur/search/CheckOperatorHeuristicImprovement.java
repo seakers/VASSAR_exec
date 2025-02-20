@@ -1,5 +1,6 @@
 package seakers.vassarexecheur.search;
 
+import com.sun.org.apache.xpath.internal.res.XPATHErrorResources_en;
 import org.moeaframework.core.*;
 import org.moeaframework.core.operator.RandomInitialization;
 import org.moeaframework.problem.AbstractProblem;
@@ -40,6 +41,9 @@ public class CheckOperatorHeuristicImprovement {
     public static void main(String[] args) throws IOException {
         // Define problem parameters
         boolean assigningProblem = true; // True -> assigning problem, False -> partitioning problem
+
+        // Penalty weight for interior penalty (if applicable)
+        double penaltyWeight = 0.1;
 
         double dcThreshold = 0.5;
         double massThreshold = 3000.0; // [kg]
@@ -149,9 +153,9 @@ public class CheckOperatorHeuristicImprovement {
         // Problem class
         AbstractProblem satelliteProblem;
         if (assigningProblem) {
-            satelliteProblem = new AssigningProblem(new int[]{1}, params.getProblemName(), evaluationManager, (ArchitectureEvaluator) evaluator, params, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, instrCountThreshold, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
+            satelliteProblem = new AssigningProblem(new int[]{1}, params.getProblemName(), evaluationManager, (ArchitectureEvaluator) evaluator, params, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, instrCountThreshold, penaltyWeight, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
         } else {
-            satelliteProblem = new PartitioningProblem(params.getProblemName(), evaluationManager, params, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
+            satelliteProblem = new PartitioningProblem(params.getProblemName(), evaluationManager, params, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, penaltyWeight, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
         }
 
         // Initialize heuristic operators

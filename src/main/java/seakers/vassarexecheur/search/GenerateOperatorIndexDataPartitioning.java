@@ -87,6 +87,9 @@ public class GenerateOperatorIndexDataPartitioning {
         //setup for epsilon MOEA
         double[] epsilonDouble = new double[]{0.001, 10};
 
+        // Penalty weight for interior penalty (if applicable)
+        double penaltyWeight = 0.1;
+
         double dcThreshold = 0.5;
         double massThreshold = 3000.0; // [kg]
         double packEffThreshold = 0.7;
@@ -108,7 +111,7 @@ public class GenerateOperatorIndexDataPartitioning {
 
         PRNG.setRandom(new SynchronizedMersenneTwister());
 
-        PartitioningProblem problem = new PartitioningProblem(params.getProblemName(), evaluationManager, params, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
+        PartitioningProblem problem = new PartitioningProblem(params.getProblemName(), evaluationManager, params, interferingInstrumentsMap, instrumentSynergyMap, dcThreshold, massThreshold, packEffThreshold, penaltyWeight, numberOfHeuristicObjectives, numberOfHeuristicConstraints, heuristicsConstrained);
 
         Initialization initialization = new RandomFeasiblePartitioning(popSize, problem, params.getInstrumentList(), params.getOrbitList());
 

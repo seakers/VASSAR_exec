@@ -1,0 +1,10 @@
+
+*.png
+*.pdf
+*.eps
+*.pptx
+*.xlsx
+python/assigning problem mann whitney.txt
+python/partitioning problem/offspring parent dominance/injected initialization/stats.txt
+python/partitioning problem/set contribution dominance/injected initialization/stats.txt
+python/partitioning problem/set improvement dominance/injected initialization/stats.txt
