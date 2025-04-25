@@ -27,16 +27,17 @@ public class IntegrationManager {
         gatewayServer.start();
         System.out.println("Gateway Server Started");
 
-//        String archPath = "C:\\Users\\demagall\\Documents\\VS Code\\Research\\SpaDes\\adjArch.json";
-//        Double science = getArchitectureScience(archPath);
+        //String archPath = "C:\\Users\\dfornos\\Desktop\\3D-CHESS-aumentation-MQTT\\3D-Chess-augmentation\\TSE_Module\\tse\\results\\results_2024-10-29_15-12-07\\arch-0\\arch.json";
+//        Double revisit = 1.5;
+//        Double science = getArchitectureScience(archPath, revisit);
 //        System.out.println("Science: " + science);
-    }
+}
 
     public static Double getArchitectureScience(String archPath, Double revisit){
         Double science = 0.0;
         try {
             // Getting params
-            String resourcesPath = "C:\\Users\\demagall\\Documents\\IntelliJ\\VASSAR\\VASSAR_resources_dev\\VASSAR_resources";
+            String resourcesPath = "C:\\Users\\dfornos\\Desktop\\VASSAR_3D_Chess_Augmentation\\VASSAR_resources";
             AssigningParams params = new ClimateCentricParams(resourcesPath, "CRISP-ATTRIBUTES",
                     "test", "normal");
 
