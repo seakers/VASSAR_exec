@@ -262,7 +262,8 @@ public class VASSAREvaluator {
         try {
             String paramsFile = "params.ser";
             // Getting params
-            String resourcesPath = "C:\\Users\\dfornos\\Desktop\\VASSAR_3D_Chess_Augmentation\\VASSAR_resources"; // Update this path accordingly
+            String resourcesPath = new File(System.getProperty("user.dir")).getParent() + File.separator + "VASSAR_resources";
+            //String resourcesPath = new File("C:\\Users\\dfornos\\OneDrive - Texas A&M University\\Desktop\\VASSAR_3D_Chess_Augmentation\\VASSAR_resources").getAbsolutePath();
             AssigningParams params;
 //            if (new File(paramsFile).exists()) {
 //                params = (AssigningParams) loadObjectFromFile(paramsFile);
