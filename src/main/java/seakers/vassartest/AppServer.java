@@ -1,0 +1,200 @@
+package seakers.vassartest;
+
+import com.google.gson.*;
+import com.google.gson.reflect.TypeToken;
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+import com.sun.net.httpserver.HttpServer;
+import seakers.vassar.evaluation.ArchitectureEvaluationManager;
+import seakers.vassar.problems.Assigning.ArchitectureEvaluator;
+import seakers.vassar.problems.Assigning.GigaAssigningParams;
+import seakers.vassartest.search.problems.Assigning.AssigningProblem;
+import seakers.vassartest.search.problems.Assigning.GigaArchitecture;
+
+import java.io.*;
+import java.lang.reflect.Type;
+import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.concurrent.*;
+
+public class AppServer {
+
+    private static volatile boolean INITIALIZED = false;
+    private static GigaAssigningParams params;
+    private static ArchitectureEvaluationManager evaluationManager;
+    private static AssigningProblem problem;
+    private static ExecutorService evalExecutor;
+
+    private static final Gson gson = new GsonBuilder().serializeNulls().create();
+
+    public static void main(String[] args) throws Exception {
+        initOnce();
+
+        int port = getEnvInt("PORT", 8080);
+        HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
+        server.createContext("/healthz", exchange -> respondJson(exchange, 200, Collections.singletonMap("status","ok")));
+        server.createContext("/.well-known/ready", exchange -> respondPlain(exchange, 200, "ready"));
+        server.createContext("/evaluate", new EvaluateHandler());
+        server.setExecutor(Executors.newCachedThreadPool());
+        server.start();
+        System.out.println("Evaluation server listening on port " + port);
+    }
+
+    private static synchronized void initOnce() {
+        if (INITIALIZED) return;
+
+        int orekitThreads = getEnvInt("OREKIT_THREADS", 1);
+        String resourcesPath = getEnvStr("RESOURCES_PATH", "/app/VASSAR_resources");
+        int numCpus = getEnvInt("EVAL_CPUS", 1);
+
+        params = new GigaAssigningParams(resourcesPath, "FUZZY-CASES", "test", "normal", orekitThreads);
+        ArchitectureEvaluator evaluator = new ArchitectureEvaluator();
+        evaluationManager = new ArchitectureEvaluationManager(params, evaluator);
+        evaluationManager.init(numCpus);
+
+        problem = new AssigningProblem(new int[]{1}, "GigaProblem", evaluationManager, params);
+
+        evalExecutor = Executors.newSingleThreadExecutor(new ThreadFactory() {
+            @Override public Thread newThread(Runnable r) {
+                Thread t = new Thread(r, "eval-exec");
+                t.setDaemon(true);
+                return t;
+            }
+        });
+
+        INITIALIZED = true;
+    }
+
+    static class EvaluateHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+                respondJson(exchange, 405, Collections.singletonMap("error", "Use POST"));
+                return;
+            }
+            if (!contentTypeIsJson(exchange)) {
+                respondJson(exchange, 415, Collections.singletonMap("error", "Content-Type must be application/json"));
+                return;
+            }
+
+            String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+
+            try {
+                Type mapType = new TypeToken<Map<String, List<String>>>(){}.getType();
+                JsonObject root = JsonParser.parseString(body).getAsJsonObject();
+
+                // Accept either: { "bitString": "..." } OR { "design": {orbit: [instruments]} }
+                String bitString = null;
+                if (root.has("bitString") && root.get("bitString").isJsonPrimitive()) {
+                    bitString = root.get("bitString").getAsString();
+                } else {
+                    if (!root.has("design") || !root.get("design").isJsonObject()) {
+                        respondJson(exchange, 400, Collections.singletonMap("error", "Provide either 'bitString' or a 'design' object (orbit -> [instruments])"));
+                        return;
+                    }
+                    Map<String, List<String>> designMap = gson.fromJson(root.get("design"), mapType);
+
+                    // Convert to the exact type the params method expects
+                    HashMap<String, ArrayList<String>> hm = new HashMap<>();
+                    for (Map.Entry<String, List<String>> e : designMap.entrySet()) {
+                        hm.put(e.getKey(), new ArrayList<String>(e.getValue()));
+                    }
+                    bitString = params.getBitString(hm);
+                }
+
+                final String finalBitString = bitString;
+                long t0 = System.nanoTime();
+
+                Future<EvalResult> fut = evalExecutor.submit(new Callable<EvalResult>() {
+                    @Override public EvalResult call() throws Exception {
+                        GigaArchitecture arch = new GigaArchitecture(finalBitString);
+                        problem.evaluate(arch);
+                        double science = -1.0 * arch.getObjective(0);
+                        double cost = arch.getObjective(1);
+                        return new EvalResult(finalBitString, science, cost);
+                    }
+                });
+
+                EvalResult result = fut.get(); // consider fut.get(timeout, unit) if you want timeouts
+                long elapsedMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - t0);
+
+                Map<String, Object> response = new LinkedHashMap<String, Object>();
+                response.put("science", result.science);
+                response.put("cost", result.cost);
+                response.put("bitString", result.bitString);
+                response.put("elapsedMs", elapsedMs);
+
+                respondJson(exchange, 200, response);
+
+            } catch (RejectedExecutionException rex) {
+                Map<String, Object> resp = new LinkedHashMap<String, Object>();
+                resp.put("error", "Server busy, retry");
+                resp.put("details", rex.getMessage());
+                respondJson(exchange, 503, resp);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                Map<String, Object> resp = new LinkedHashMap<String, Object>();
+                resp.put("error", "Evaluation failed");
+                resp.put("details", ex.getMessage());
+                respondJson(exchange, 500, resp);
+            }
+        }
+    }
+
+    // ---- helpers ----
+    private static boolean contentTypeIsJson(HttpExchange exchange) {
+        List<String> ct = exchange.getRequestHeaders().get("Content-Type");
+        if (ct == null || ct.isEmpty()) return false;
+        for (String s : ct) {
+            if (s != null && s.toLowerCase().contains("application/json")) return true;
+        }
+        return false;
+    }
+
+    private static void respondJson(HttpExchange exchange, int status, Object obj) throws IOException {
+        byte[] payload = gson.toJson(obj).getBytes(StandardCharsets.UTF_8);
+        exchange.getResponseHeaders().add("Content-Type", "application/json; charset=utf-8");
+        exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+        exchange.sendResponseHeaders(status, payload.length);
+        OutputStream os = exchange.getResponseBody();
+        try { os.write(payload); }
+        finally { os.close(); }
+    }
+
+    private static void respondPlain(HttpExchange exchange, int status, String text) throws IOException {
+        byte[] payload = text.getBytes(StandardCharsets.UTF_8);
+        exchange.getResponseHeaders().add("Content-Type", "text/plain; charset=utf-8");
+        exchange.sendResponseHeaders(status, payload.length);
+        OutputStream os = exchange.getResponseBody();
+        try { os.write(payload); }
+        finally { os.close(); }
+    }
+
+    private static String getEnvStr(String key, String fallback) {
+        String v = System.getenv(key);
+        if (v == null || v.trim().isEmpty()) return fallback;
+        return v;
+    }
+
+    private static int getEnvInt(String key, int fallback) {
+        try {
+            String v = System.getenv(key);
+            return (v == null || v.trim().isEmpty()) ? fallback : Integer.parseInt(v.trim());
+        } catch (Exception e) {
+            return fallback;
+        }
+    }
+
+    // simple POJO instead of 'record'
+    private static class EvalResult {
+        final String bitString;
+        final double science;
+        final double cost;
+        EvalResult(String bitString, double science, double cost) {
+            this.bitString = bitString;
+            this.science = science;
+            this.cost = cost;
+        }
+    }
+}

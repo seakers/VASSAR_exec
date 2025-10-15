@@ -34,6 +34,12 @@ task run(type: JavaExec) {
     jvmArgs = ['-Xms20g', '-XX:NewSize=5g'] // setting the initial and maximum heap size to 10GB}
 }
 
+task runServer(type: JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'seakers.vassartest.AppServer'
+    jvmArgs = ['-Xms20g', '-XX:NewSize=5g'] // setting the initial and maximum heap size to 10GB}
+}
+
 task runParallel(type: JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
     main = 'seakers.vassartest.AppParallel'
