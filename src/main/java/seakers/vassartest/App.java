@@ -36,7 +36,7 @@ public class App {
 //        ClimateCentricAssigningParams l_params = new ClimateCentricAssigningParams(resourcesPath, "FUZZY-ATTRIBUTES", "test", "normal");
 
         // Problem Parameters
-        String resourcesPath = "/home/ubuntu/vassar/giga/VASSAR_resources";
+        String resourcesPath = "/app/VASSAR_resources";
         GigaAssigningParams params = new GigaAssigningParams(resourcesPath, "FUZZY-CASES", "test", "normal", orekit_threads);
 
         // Evaluator

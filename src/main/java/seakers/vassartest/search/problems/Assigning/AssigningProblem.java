@@ -80,8 +80,8 @@ public class AssigningProblem extends AbstractProblem implements SystemArchitect
         evaluateGigaArch(arch);
 
         this.nfe++;
-//        System.out.println(this.nfe + ": " + String.format("Arch %s Science = %10f; Cost = %10f",
-//                arch.toString(), arch.getObjective(0), arch.getObjective(1)));
+        System.out.println(this.nfe + ": " + String.format("Arch %s Science = %10f; Cost = %10f",
+                arch.toString(), arch.getObjective(0), arch.getObjective(1)));
     }
 
     public Result evaluateGigaArch(GigaArchitecture arch){
