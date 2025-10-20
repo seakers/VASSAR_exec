@@ -103,6 +103,26 @@ public class AppServer {
                     bitString = params.getBitString(hm);
                 }
 
+                // If a panelWeights key is provided, we need to re-initialize the problem with those weights
+                if (root.has("panelWeights") && root.get("panelWeights").isJsonObject()) {
+                    JsonObject pwObj = root.get("panelWeights").getAsJsonObject();
+                    HashMap<String, Double> panelWeights = new HashMap<>();
+                    for (Map.Entry<String, JsonElement> e : pwObj.entrySet()) {
+                        panelWeights.put(e.getKey(), e.getValue().getAsDouble());
+                    }
+
+                    // Re-initialization
+                    int orekitThreads = getEnvInt("OREKIT_THREADS", 1);
+                    String resourcesPath = getEnvStr("RESOURCES_PATH", "/app/VASSAR_resources");
+                    int numCpus = getEnvInt("EVAL_CPUS", 1);
+                    params = new GigaAssigningParams(resourcesPath, "FUZZY-CASES", "test", "normal", orekitThreads);
+                    params.setPanelWeightMap(panelWeights);
+                    ArchitectureEvaluator evaluator = new ArchitectureEvaluator();
+                    evaluationManager = new ArchitectureEvaluationManager(params, evaluator);
+                    evaluationManager.init(numCpus);
+                    problem = new AssigningProblem(new int[]{1}, "GigaProblem", evaluationManager, params);
+                }
+
                 final String finalBitString = bitString;
                 long t0 = System.nanoTime();
 
