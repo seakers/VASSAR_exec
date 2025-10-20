@@ -38,6 +38,17 @@ public class App {
         String resourcesPath = "/app/VASSAR_resources";
         GigaAssigningParams params = new GigaAssigningParams(resourcesPath, "FUZZY-CASES", "test", "normal", orekit_threads);
 
+        HashMap<String, Double> panelWeightMap = new HashMap<>();
+        panelWeightMap.put("WEA", 0.0);
+        panelWeightMap.put("CLI", 0.0);
+        panelWeightMap.put("ECO", 0.406);
+        panelWeightMap.put("WAT", 0.0);
+        panelWeightMap.put("HEA", 0.0);
+        panelWeightMap.put("SOL", 0.0);
+        params.setPanelWeightMap(panelWeightMap);
+
+
+
         // Evaluator
         ArchitectureEvaluator evaluator = new ArchitectureEvaluator();
 
