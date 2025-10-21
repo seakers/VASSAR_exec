@@ -17,6 +17,7 @@ import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class AppServer {
 
@@ -25,6 +26,9 @@ public class AppServer {
     private static ArchitectureEvaluationManager evaluationManager;
     private static AssigningProblem problem;
     private static ExecutorService evalExecutor;
+
+    // Guards read access during evaluation vs write access during (re)initialization
+    private static final ReentrantReadWriteLock RW = new ReentrantReadWriteLock();
 
     private static final Gson gson = new GsonBuilder().serializeNulls().create();
 
@@ -36,6 +40,7 @@ public class AppServer {
         server.createContext("/healthz", exchange -> respondJson(exchange, 200, Collections.singletonMap("status","ok")));
         server.createContext("/.well-known/ready", exchange -> respondPlain(exchange, 200, "ready"));
         server.createContext("/evaluate", new EvaluateHandler());
+        server.createContext("/initialize", new InitializeHandler()); // <-- NEW
         server.setExecutor(Executors.newCachedThreadPool());
         server.start();
         System.out.println("Evaluation server listening on port " + port);
@@ -64,6 +69,32 @@ public class AppServer {
         });
 
         INITIALIZED = true;
+    }
+
+    // --- made static and write-locked ---
+    private static void initPanelWeights(HashMap<String, Double> panelWeights) {
+        RW.writeLock().lock();
+        try {
+            int orekitThreads = getEnvInt("OREKIT_THREADS", 1);
+            String resourcesPath = getEnvStr("RESOURCES_PATH", "/app/VASSAR_resources");
+            int numCpus = getEnvInt("EVAL_CPUS", 1);
+
+            GigaAssigningParams newParams = new GigaAssigningParams(resourcesPath, "FUZZY-CASES", "test", "normal", orekitThreads);
+            if (panelWeights != null) {
+                newParams.setPanelWeightMap(panelWeights);
+            }
+
+            ArchitectureEvaluator evaluator = new ArchitectureEvaluator();
+            ArchitectureEvaluationManager newManager = new ArchitectureEvaluationManager(newParams, evaluator);
+            newManager.init(numCpus);
+
+            // Atomically swap shared state
+            params = newParams;
+            evaluationManager = newManager;
+            problem = new AssigningProblem(new int[]{1}, "GigaProblem", evaluationManager, params);
+        } finally {
+            RW.writeLock().unlock();
+        }
     }
 
     static class EvaluateHandler implements HttpHandler {
@@ -95,7 +126,6 @@ public class AppServer {
                     }
                     Map<String, List<String>> designMap = gson.fromJson(root.get("design"), mapType);
 
-                    // Convert to the exact type the params method expects
                     HashMap<String, ArrayList<String>> hm = new HashMap<>();
                     for (Map.Entry<String, List<String>> e : designMap.entrySet()) {
                         hm.put(e.getKey(), new ArrayList<String>(e.getValue()));
@@ -103,24 +133,14 @@ public class AppServer {
                     bitString = params.getBitString(hm);
                 }
 
-                // If a panelWeights key is provided, we need to re-initialize the problem with those weights
+                // Check to see if re-initialization is requested in the evaluation
                 if (root.has("panelWeights") && root.get("panelWeights").isJsonObject()) {
                     JsonObject pwObj = root.get("panelWeights").getAsJsonObject();
                     HashMap<String, Double> panelWeights = new HashMap<>();
                     for (Map.Entry<String, JsonElement> e : pwObj.entrySet()) {
                         panelWeights.put(e.getKey(), e.getValue().getAsDouble());
                     }
-
-                    // Re-initialization
-                    int orekitThreads = getEnvInt("OREKIT_THREADS", 1);
-                    String resourcesPath = getEnvStr("RESOURCES_PATH", "/app/VASSAR_resources");
-                    int numCpus = getEnvInt("EVAL_CPUS", 1);
-                    params = new GigaAssigningParams(resourcesPath, "FUZZY-CASES", "test", "normal", orekitThreads);
-                    params.setPanelWeightMap(panelWeights);
-                    ArchitectureEvaluator evaluator = new ArchitectureEvaluator();
-                    evaluationManager = new ArchitectureEvaluationManager(params, evaluator);
-                    evaluationManager.init(numCpus);
-                    problem = new AssigningProblem(new int[]{1}, "GigaProblem", evaluationManager, params);
+                    initPanelWeights(panelWeights);
                 }
 
                 final String finalBitString = bitString;
@@ -128,15 +148,20 @@ public class AppServer {
 
                 Future<EvalResult> fut = evalExecutor.submit(new Callable<EvalResult>() {
                     @Override public EvalResult call() throws Exception {
-                        GigaArchitecture arch = new GigaArchitecture(finalBitString);
-                        problem.evaluate(arch);
-                        double science = -1.0 * arch.getObjective(0);
-                        double cost = arch.getObjective(1);
-                        return new EvalResult(finalBitString, science, cost);
+                        RW.readLock().lock(); // prevent re-init during evaluation
+                        try {
+                            GigaArchitecture arch = new GigaArchitecture(finalBitString);
+                            problem.evaluate(arch);
+                            double science = -1.0 * arch.getObjective(0);
+                            double cost = arch.getObjective(1);
+                            return new EvalResult(finalBitString, science, cost);
+                        } finally {
+                            RW.readLock().unlock();
+                        }
                     }
                 });
 
-                EvalResult result = fut.get(); // consider fut.get(timeout, unit) if you want timeouts
+                EvalResult result = fut.get();
                 long elapsedMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - t0);
 
                 Map<String, Object> response = new LinkedHashMap<String, Object>();
@@ -156,6 +181,55 @@ public class AppServer {
                 ex.printStackTrace();
                 Map<String, Object> resp = new LinkedHashMap<String, Object>();
                 resp.put("error", "Evaluation failed");
+                resp.put("details", ex.getMessage());
+                respondJson(exchange, 500, resp);
+            }
+        }
+    }
+
+    // --- NEW: /initialize handler ---
+    static class InitializeHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+                respondJson(exchange, 405, Collections.singletonMap("error", "Use POST"));
+                return;
+            }
+            if (!contentTypeIsJson(exchange)) {
+                respondJson(exchange, 415, Collections.singletonMap("error", "Content-Type must be application/json"));
+                return;
+            }
+
+            String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+            try {
+                JsonObject root = JsonParser.parseString(body).getAsJsonObject();
+                if (!root.has("panelWeights") || !root.get("panelWeights").isJsonObject()) {
+                    respondJson(exchange, 400, Collections.singletonMap("error", "Provide 'panelWeights' object"));
+                    return;
+                }
+
+                JsonObject pwObj = root.getAsJsonObject("panelWeights");
+                HashMap<String, Double> panelWeights = new HashMap<>();
+                for (Map.Entry<String, JsonElement> e : pwObj.entrySet()) {
+                    if (!e.getValue().isJsonPrimitive() || !e.getValue().getAsJsonPrimitive().isNumber()) {
+                        respondJson(exchange, 400, Collections.singletonMap("error", "All panelWeights values must be numbers"));
+                        return;
+                    }
+                    panelWeights.put(e.getKey(), e.getValue().getAsDouble());
+                }
+
+                initPanelWeights(panelWeights);
+
+                Map<String, Object> resp = new LinkedHashMap<>();
+                resp.put("status", "ok");
+                resp.put("message", "Initialization completed with provided panel weights.");
+                resp.put("numWeights", panelWeights.size());
+                respondJson(exchange, 200, resp);
+
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                Map<String, Object> resp = new LinkedHashMap<>();
+                resp.put("error", "Initialization failed");
                 resp.put("details", ex.getMessage());
                 respondJson(exchange, 500, resp);
             }
