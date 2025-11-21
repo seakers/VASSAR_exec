@@ -32,6 +32,39 @@ public class AppServer {
 
     private static final Gson gson = new GsonBuilder().serializeNulls().create();
 
+    // ---- cache (bitString -> evaluated result) ----
+    private static final int MAX_CACHE_SIZE =
+            getEnvInt("EVAL_CACHE_SIZE", 10_000); // configurable upper bound
+
+    // Each entry stores the science, cost, and the elapsedMs observed during the
+    // original evaluation, plus a timestamp (handy for troubleshooting or TTLs later)
+    private static final class CacheEntry {
+        final double science;
+        final double cost;
+        final long elapsedMs;
+        final long createdEpochMs;
+        CacheEntry(double science, double cost, long elapsedMs) {
+            this.science = science;
+            this.cost = cost;
+            this.elapsedMs = elapsedMs;
+            this.createdEpochMs = System.currentTimeMillis();
+        }
+    }
+
+    // A simple LRU implemented with LinkedHashMap(accessOrder = true)
+    // Wrapped in a synchronized Map for thread-safety.
+    private static final Map<String, CacheEntry> CACHE =
+            Collections.synchronizedMap(new LinkedHashMap<String, CacheEntry>(256, 0.75f, true) {
+                @Override
+                protected boolean removeEldestEntry(Map.Entry<String, CacheEntry> eldest) {
+                    return size() > MAX_CACHE_SIZE;
+                }
+            });
+
+    // Optional: deduplicate concurrent evaluations of the same bitstring
+    // so we don't schedule duplicates while the first is in-flight.
+    private static final ConcurrentHashMap<String, Future<EvalResult>> INFLIGHT = new ConcurrentHashMap<>();
+
     public static void main(String[] args) throws Exception {
         initOnce();
 
@@ -41,6 +74,15 @@ public class AppServer {
         server.createContext("/.well-known/ready", exchange -> respondPlain(exchange, 200, "ready"));
         server.createContext("/evaluate", new EvaluateHandler());
         server.createContext("/initialize", new InitializeHandler()); // <-- NEW
+        // Optional: simple cache stats endpoint
+        server.createContext("/cachez", exchange -> {
+            Map<String, Object> stats = new LinkedHashMap<>();
+            synchronized (CACHE) {
+                stats.put("size", CACHE.size());
+                stats.put("maxSize", MAX_CACHE_SIZE);
+            }
+            respondJson(exchange, 200, stats);
+        });
         server.setExecutor(Executors.newCachedThreadPool());
         server.start();
         System.out.println("Evaluation server listening on port " + port);
@@ -92,6 +134,10 @@ public class AppServer {
             params = newParams;
             evaluationManager = newManager;
             problem = new AssigningProblem(new int[]{1}, "GigaProblem", evaluationManager, params);
+
+            // Invalidate caches because the scoring surface changed
+            CACHE.clear();
+            INFLIGHT.clear();
         } finally {
             RW.writeLock().unlock();
         }
@@ -146,29 +192,64 @@ public class AppServer {
                 final String finalBitString = bitString;
                 long t0 = System.nanoTime();
 
-                Future<EvalResult> fut = evalExecutor.submit(new Callable<EvalResult>() {
-                    @Override public EvalResult call() throws Exception {
-                        RW.readLock().lock(); // prevent re-init during evaluation
-                        try {
-                            GigaArchitecture arch = new GigaArchitecture(finalBitString);
-                            problem.evaluate(arch);
-                            double science = -1.0 * arch.getObjective(0);
-                            double cost = arch.getObjective(1);
-                            return new EvalResult(finalBitString, science, cost);
-                        } finally {
-                            RW.readLock().unlock();
-                        }
-                    }
-                });
+                // ---- CACHE USAGE ----
+                // 1) Fast path: cache hit
+                CacheEntry cached;
+                synchronized (CACHE) { // LinkedHashMap LRU needs external synchronization
+                    cached = CACHE.get(finalBitString);
+                }
+                if (cached != null) {
+                    Map<String, Object> response = new LinkedHashMap<>();
+                    response.put("science", cached.science);
+                    response.put("cost", cached.cost);
+                    response.put("bitString", finalBitString);
+                    response.put("elapsedMs", cached.elapsedMs); // original eval latency
+                    response.put("cached", true);
+                    respondJson(exchange, 200, response);
+                    return;
+                }
 
-                EvalResult result = fut.get();
+                // 2) Cache miss: deduplicate concurrent evaluations for the same bitString
+                Future<EvalResult> fut = INFLIGHT.computeIfAbsent(finalBitString, bs ->
+                        evalExecutor.submit(new Callable<EvalResult>() {
+                            @Override public EvalResult call() throws Exception {
+                                RW.readLock().lock(); // prevent re-init during evaluation
+                                try {
+                                    GigaArchitecture arch = new GigaArchitecture(bs);
+                                    problem.evaluate(arch);
+                                    double science = -1.0 * arch.getObjective(0);
+                                    double cost = arch.getObjective(1);
+                                    return new EvalResult(bs, science, cost);
+                                } finally {
+                                    RW.readLock().unlock();
+                                }
+                            }
+                        })
+                );
+
+                // Wait for the (possibly shared) result
+                EvalResult result;
+                try {
+                    result = fut.get();
+                } finally {
+                    // Ensure INFLIGHT is cleaned so future identical requests can re-enter
+                    INFLIGHT.remove(finalBitString, fut);
+                }
+
                 long elapsedMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - t0);
+
+                // 3) Store in cache for future requests using the original elapsed
+                CacheEntry toCache = new CacheEntry(result.science, result.cost, elapsedMs);
+                synchronized (CACHE) {
+                    CACHE.put(finalBitString, toCache);
+                }
 
                 Map<String, Object> response = new LinkedHashMap<String, Object>();
                 response.put("science", result.science);
                 response.put("cost", result.cost);
                 response.put("bitString", result.bitString);
                 response.put("elapsedMs", elapsedMs);
+                response.put("cached", false);
 
                 respondJson(exchange, 200, response);
 
